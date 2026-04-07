@@ -1,6 +1,5 @@
-'use strict'
+import 'dotenv/config';
 import express, { json } from 'express';
-import { config } from 'dotenv'; config();
 import logger from 'morgan';
 import { connectDB } from './DB/connectdb.js';
 import mongoose from 'mongoose';

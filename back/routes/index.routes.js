@@ -39,7 +39,8 @@ import {
   getProductById,
   getProductBySlug,
   updateProduct,
-  deleteProduct
+  deleteProduct,
+  searchProducts
 } from "../controller/product.controller.js";
 import {
   createProductVariant,
@@ -47,7 +48,9 @@ import {
   getProductVariantById,
   updateProductVariant,
   deleteProductVariant,
-  getVariantsByProductId
+  getVariantsByProductId,
+  getColorsByProductId,
+  getSizesByVariantId
 } from "../controller/productVariant.controller.js";
 import {
   createSizeGuide,
@@ -79,7 +82,9 @@ import {
   placeOrder,
   getMyOrders,
   confirmStripePayment,
-  orderSummaryController
+  orderSummaryController,
+  getAllOrdersAdmin,
+  updateOrderStatusAdmin
 } from "../controller/order.controller.js";
 import {
   myPaymentController,
@@ -98,7 +103,10 @@ import {
   addSavedCardController,
   getSavedCardsController,
   deleteSavedCardController,
-  selectCardController
+  selectCardController,
+  updateProfileController,
+  sendEmailOtpController,
+  verifyEmailOtpController
 } from "../controller/user.controller.js";
 import { sendResponse, sendSuccessResponse } from "../utils/Response.utils.js";
 
@@ -145,6 +153,7 @@ router.delete("/inside-sub-category/delete/:id", UserAuth, adminAuth, deleteInsi
 // --- Product Routes ---
 router.post("/product/create", UserAuth, adminAuth, createProduct);
 router.get("/product/get-all", getAllProducts);
+router.get("/product/search", searchProducts);
 router.get("/product/get-by-id/:id", getProductById);
 router.get("/product/get-by-slug/:slug", getProductBySlug);
 router.put("/product/update/:id", UserAuth, adminAuth, updateProduct);
@@ -155,6 +164,8 @@ router.post("/product-variant/create", UserAuth, adminAuth, upload.array("images
 router.get("/product-variant/get-all", getAllProductVariant);
 router.get("/product-variant/get-by-id/:id", getProductVariantById);
 router.get("/product-variant/get-by-product/:productId", getVariantsByProductId);
+router.get("/product-variant/colors/:productId", getColorsByProductId);
+router.get("/product-variant/sizes/:variantId", getSizesByVariantId);
 router.put("/product-variant/update/:id", UserAuth, adminAuth, upload.array("images", 10), updateProductVariant);
 router.delete("/product-variant/delete/:id", UserAuth, adminAuth, deleteProductVariant);
 
@@ -186,6 +197,8 @@ router.delete("/cart/coupon/remove", UserAuth, removeCoupon);
 // --- Order & Payment Routes ---
 router.post("/order/place", UserAuth, placeOrder);
 router.get("/order/my", UserAuth, getMyOrders);
+router.get("/order/admin/all", UserAuth, adminAuth, getAllOrdersAdmin);
+router.put("/order/admin/status/:id", UserAuth, adminAuth, updateOrderStatusAdmin);
 router.get("/order/summary", UserAuth, orderSummaryController);
 
 router.post("/payment/confirm", UserAuth, confirmStripePaymentController);
@@ -196,6 +209,9 @@ router.put("/payment/status/:orderId", UserAuth, adminAuth, paymentStatusChangeC
 router.get("/payment/admin/all", UserAuth, adminAuth, getAllPaymentHistory);
 
 // --- User Profile & Address Routes ---
+router.put("/user/profile/update", UserAuth, updateProfileController);
+router.post("/user/email/send-otp", UserAuth, sendEmailOtpController);
+router.post("/user/email/verify-otp", UserAuth, verifyEmailOtpController);
 router.post("/user/address/add", UserAuth, userAddressAddController);
 router.put("/user/address/update/:addressId", UserAuth, userAddressUpdateController);
 router.delete("/user/address/delete/:addressId", UserAuth, userAddressDeleteController);

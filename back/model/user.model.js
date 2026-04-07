@@ -3,11 +3,6 @@ import mongoose from "mongoose";
 export const UserAddressSchema = new mongoose.Schema({
   firstName: { type: String, trim: true, default: null },
   lastName: { type: String, trim: true, default: null },
-  phone: {
-    type: String,
-    default: null,
-    match: [/^[0-9]{10}$/, "Please enter a valid 10-digit phone number"]
-  },
   country: { type: String, default: null },
   address: { type: String, default: null },
   aptSuite: { type: String, default: null },
@@ -60,9 +55,10 @@ const UserSchema = new mongoose.Schema({
   avatar: { type: String, default: null },
   resetOtpExpiry: { type: Date, default: null },
   verified: { type: Boolean, default: false },
+  emailVerified: { type: Boolean, default: false },
   role: {
     type: String,
-    enum: ["user","admin"],
+    enum: ["user", "admin"],
     default: "user",
   },
   refreshToken: {

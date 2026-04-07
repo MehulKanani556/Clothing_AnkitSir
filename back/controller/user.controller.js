@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import axios from "axios";
 import UserModel from "../model/user.model.js";
+import transporter from "../utils/Email.config.js";
 import { sendBadRequestResponse, sendErrorResponse, sendNotFoundResponse, sendSuccessResponse } from "../utils/Response.utils.js";
 
 export const userAddressAddController = async (req, res) => {
@@ -14,7 +15,6 @@ export const userAddressAddController = async (req, res) => {
             country,
             firstName,
             lastName,
-            phone,
             address,
             aptSuite,
             city,
@@ -22,7 +22,7 @@ export const userAddressAddController = async (req, res) => {
             zipcode
         } = req.body;
 
-        if (!firstName || !lastName || !phone || !zipcode || !address) {
+        if (!firstName || !lastName || !zipcode || !address) {
             return sendBadRequestResponse(res, "All required fields must be provided!");
         }
 
@@ -40,7 +40,7 @@ export const userAddressAddController = async (req, res) => {
                     return sendBadRequestResponse(res, "Invalid or inactive zipcode!");
                 }
             } catch (err) {
-               console.log("Zipcode fetching error:", err.message);
+                console.log("Zipcode fetching error:", err.message);
             }
         }
 
@@ -49,7 +49,6 @@ export const userAddressAddController = async (req, res) => {
             country: country || "Australia", // assuming Aus by image layout/earlier Stripe AUD code
             firstName,
             lastName,
-            phone,
             address,
             aptSuite,
             city: autoCity,
@@ -95,7 +94,6 @@ export const userAddressUpdateController = async (req, res) => {
             country,
             firstName,
             lastName,
-            phone,
             address,
             aptSuite,
             city,
@@ -107,7 +105,6 @@ export const userAddressUpdateController = async (req, res) => {
         if (country) updateFields["address.$.country"] = country;
         if (firstName) updateFields["address.$.firstName"] = firstName;
         if (lastName) updateFields["address.$.lastName"] = lastName;
-        if (phone) updateFields["address.$.phone"] = phone;
         if (address) updateFields["address.$.address"] = address;
         if (aptSuite) updateFields["address.$.aptSuite"] = aptSuite;
         if (city) updateFields["address.$.city"] = city;
@@ -159,7 +156,7 @@ export const userAddressDeleteController = async (req, res) => {
 
         let updateQuery = { $pull: { address: { _id: addressId } } };
         if (user.selectedAddress?.toString() === addressId) {
-            updateQuery.$set = { 
+            updateQuery.$set = {
                 selectedAddress: null
             };
         }
@@ -174,40 +171,40 @@ export const userAddressDeleteController = async (req, res) => {
 };
 
 export const getUserAddressController = async (req, res) => {
-  try {
-    const id = req.user?.id || req.user?._id;
+    try {
+        const id = req.user?.id || req.user?._id;
 
-    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
-      return sendBadRequestResponse(res, "Invalid or missing User ID from token!");
+        if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+            return sendBadRequestResponse(res, "Invalid or missing User ID from token!");
+        }
+
+        const user = await UserModel.findById(id).select("address selectedAddress");
+        if (!user) {
+            return sendNotFoundResponse(res, "User not found!");
+        }
+
+        if (!user.address || user.address.length === 0) {
+            return sendSuccessResponse(res, "No addresses found for this user!", {
+                total: 0,
+                selectedAddressId: null,
+                selectedAddress: null,
+                addresses: []
+            });
+        }
+
+        const selectedAddress = user.address.find(
+            a => a._id.toString() === user.selectedAddress?.toString()
+        );
+
+        return sendSuccessResponse(res, "User addresses fetched successfully", {
+            total: user.address.length,
+            selectedAddressId: user.selectedAddress,
+            selectedAddress: selectedAddress || user.address[0], // fallback to first address
+            addresses: user.address
+        });
+    } catch (error) {
+        return sendErrorResponse(res, 500, "Error while getting user addresses!", error.message);
     }
-
-    const user = await UserModel.findById(id).select("address selectedAddress");
-    if (!user) {
-      return sendNotFoundResponse(res, "User not found!");
-    }
-
-    if (!user.address || user.address.length === 0) {
-      return sendSuccessResponse(res, "No addresses found for this user!", {
-         total: 0,
-         selectedAddressId: null,
-         selectedAddress: null,
-         addresses: []
-      });
-    }
-
-    const selectedAddress = user.address.find(
-      a => a._id.toString() === user.selectedAddress?.toString()
-    );
-
-    return sendSuccessResponse(res, "User addresses fetched successfully", {
-      total: user.address.length,
-      selectedAddressId: user.selectedAddress,
-      selectedAddress: selectedAddress || user.address[0], // fallback to first address
-      addresses: user.address
-    });
-  } catch (error) {
-    return sendErrorResponse(res, 500, "Error while getting user addresses!", error.message);
-  }
 };
 
 export const selectAddressController = async (req, res) => {
@@ -216,7 +213,7 @@ export const selectAddressController = async (req, res) => {
         const { addressId } = req.params;
 
         const user = await UserModel.findById(id);
-        if(!user) return sendNotFoundResponse(res, "User not found");
+        if (!user) return sendNotFoundResponse(res, "User not found");
 
         const addressExists = user.address?.some(addr => addr._id.toString() === addressId);
         if (!addressExists) {
@@ -227,7 +224,7 @@ export const selectAddressController = async (req, res) => {
         await user.save();
 
         return sendSuccessResponse(res, "Address selected successfully", user);
-    } catch(err) {
+    } catch (err) {
         return sendErrorResponse(res, 500, "Error selecting address", err.message);
     }
 };
@@ -266,7 +263,7 @@ export const addSavedCardController = async (req, res) => {
 
         await user.save();
         return sendSuccessResponse(res, "Card saved successfully!", { addedCard });
-    } catch(err) {
+    } catch (err) {
         return sendErrorResponse(res, 500, "Error saving card", err.message);
     }
 };
@@ -290,10 +287,10 @@ export const getSavedCardsController = async (req, res) => {
 
         if (!user.savedCards || user.savedCards.length === 0) {
             return sendSuccessResponse(res, "No saved cards found!", {
-               total: 0,
-               selectedCardId: null,
-               selectedCard: null,
-               cards: []
+                total: 0,
+                selectedCardId: null,
+                selectedCard: null,
+                cards: []
             });
         }
 
@@ -332,7 +329,7 @@ export const deleteSavedCardController = async (req, res) => {
         }
 
         user.savedCards.splice(cardIndex, 1);
-        
+
         if (user.selectedCard && user.selectedCard.toString() === cardId) {
             user.selectedCard = null;
         }
@@ -353,7 +350,7 @@ export const selectCardController = async (req, res) => {
         const { cardId } = req.params;
 
         const user = await UserModel.findById(id);
-        if(!user) return sendNotFoundResponse(res, "User not found");
+        if (!user) return sendNotFoundResponse(res, "User not found");
 
         const cardExists = user.savedCards?.some(card => card._id.toString() === cardId);
         if (!cardExists) {
@@ -364,7 +361,144 @@ export const selectCardController = async (req, res) => {
         await user.save();
 
         return sendSuccessResponse(res, "Card selected successfully", user);
-    } catch(err) {
+    } catch (err) {
         return sendErrorResponse(res, 500, "Error selecting card", err.message);
+    }
+};
+
+export const updateProfileController = async (req, res) => {
+    try {
+        const id = req.user.id || req.user._id;
+        const { firstName, lastName, email } = req.body;
+
+        const user = await UserModel.findById(id);
+        if (!user) return sendNotFoundResponse(res, "User not found!");
+
+        let emailChanged = false;
+        if (email && email !== user.email) {
+            const existing = await UserModel.findOne({ email });
+            if (existing && existing._id.toString() !== id.toString()) {
+                return sendBadRequestResponse(res, "Email already in use by another account!");
+            }
+            user.email = email;
+            user.emailVerified = false;
+            emailChanged = true;
+        }
+
+        if (firstName !== undefined) user.firstName = firstName;
+        if (lastName !== undefined) user.lastName = lastName;
+
+        let mailSentMsg = "";
+
+        if (emailChanged) {
+            const otp = Math.floor(1000 + Math.random() * 9000);
+            const otpExpiry = new Date(Date.now() + 5 * 60 * 1000); // 5 mins
+
+            user.otp = otp;
+            user.resetOtpExpiry = otpExpiry;
+
+            const mailOptions = {
+                from: process.env.EMAIL_USER,
+                to: email,
+                subject: "Verify Your Email Address",
+                html: `<p>Your email verification OTP is: <strong>${otp}</strong>.</p><p>It will expire in 5 minutes.</p>`
+            };
+
+            try {
+                await transporter.sendMail(mailOptions);
+                mailSentMsg = " OTP sent to your new email.";
+            } catch (mailErr) {
+                console.error("Error sending email OTP on profile update:", mailErr);
+            }
+        }
+
+        await user.save();
+
+        // return the updated sensitive info without OTPs
+        const updatedUser = user.toObject();
+        delete updatedUser.otp;
+        delete updatedUser.resetOtpExpiry;
+        delete updatedUser.password;
+
+        return sendSuccessResponse(res, "Profile updated successfully!" + mailSentMsg, updatedUser);
+    } catch (e) {
+        return sendErrorResponse(res, 500, "Error updating profile", e.message);
+    }
+};
+
+export const sendEmailOtpController = async (req, res) => {
+    try {
+        const id = req.user.id || req.user._id;
+        const { email } = req.body;
+
+        const user = await UserModel.findById(id);
+        if (!user) return sendNotFoundResponse(res, "User not found!");
+
+        const targetEmail = email || user.email;
+        if (!targetEmail) {
+            return sendBadRequestResponse(res, "Please provide an email address to verify.");
+        }
+
+        const existing = await UserModel.findOne({ email: targetEmail });
+        if (existing && existing._id.toString() !== id.toString()) {
+            return sendBadRequestResponse(res, "Email already in use by another account!");
+        }
+
+        const otp = Math.floor(1000 + Math.random() * 9000);
+        const otpExpiry = new Date(Date.now() + 5 * 60 * 1000); // 5 mins
+
+        user.otp = otp;
+        user.resetOtpExpiry = otpExpiry;
+
+        if (email && email !== user.email) {
+            user.email = targetEmail;
+            user.emailVerified = false;
+        }
+
+        await user.save();
+
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: targetEmail,
+            subject: "Verify Your Email Address",
+            html: `<p>Your email verification OTP is: <strong>${otp}</strong>.</p><p>It will expire in 5 minutes.</p>`
+        };
+
+        await transporter.sendMail(mailOptions);
+
+        return sendSuccessResponse(res, "Email verification OTP sent successfully!");
+    } catch (e) {
+        console.error("sendEmailOtpController error:", e.message);
+        return sendErrorResponse(res, 500, "Error sending email OTP", e.message);
+    }
+};
+
+export const verifyEmailOtpController = async (req, res) => {
+    try {
+        const id = req.user.id || req.user._id;
+        const { otp } = req.body;
+
+        if (!otp) return sendBadRequestResponse(res, "OTP is required!");
+
+        const user = await UserModel.findById(id);
+        if (!user) return sendNotFoundResponse(res, "User not found!");
+
+        if (!user.otp || user.otp !== Number(otp) || new Date() > user.resetOtpExpiry) {
+            return sendBadRequestResponse(res, "Invalid or expired OTP!");
+        }
+
+        user.emailVerified = true;
+        user.otp = null;
+        user.resetOtpExpiry = null;
+        await user.save();
+
+        const updatedUser = user.toObject();
+        delete updatedUser.otp;
+        delete updatedUser.resetOtpExpiry;
+        delete updatedUser.password;
+
+        return sendSuccessResponse(res, "Email verified successfully!", updatedUser);
+    } catch (e) {
+        return sendErrorResponse(res, 500, "Error verifying email OTP", e.message);
     }
 };

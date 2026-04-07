@@ -409,3 +409,84 @@ export const orderSummaryController = async (req, res) => {
         return sendErrorResponse(res, 500, "Error during order summary.", error.message);
     }
 };
+
+export const getAllOrdersAdmin = async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+
+        const count = await Order.countDocuments();
+
+        const orders = await Order.find()
+            .populate("userId", "firstName lastName email mobileNo")
+            .populate("products.productId", "name images slug")
+            .populate("products.variantId", "color sku options")
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        return sendSuccessResponse(res, "All orders fetched successfully", {
+            orders,
+            currentPage: page,
+            totalPages: Math.ceil(count / limit),
+            totalOrders: count
+        });
+
+    } catch (error) {
+        return sendErrorResponse(res, 500, "Error fetching orders", error.message);
+    }
+};
+
+export const updateOrderStatusAdmin = async (req, res) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+        const { id } = req.params;
+        const { orderStatus } = req.body;
+
+        const validStatuses = [
+            "Pending", "Order Confirmed", "Processing", "Shipped",
+            "Out For Delivery", "Delivered", "Cancelled"
+        ];
+
+        if (!orderStatus || !validStatuses.includes(orderStatus)) {
+            await session.abortTransaction();
+            return sendBadRequestResponse(res, `Invalid order status. Allowed values: ${validStatuses.join(", ")}`);
+        }
+
+        const order = await Order.findById(id).session(session);
+        if (!order) {
+            await session.abortTransaction();
+            return sendNotFoundResponse(res, "Order not found");
+        }
+
+        // Prevent redundant updates
+        if (order.orderStatus === orderStatus) {
+            await session.abortTransaction();
+            return sendBadRequestResponse(res, `Order is already marked as ${orderStatus}`);
+        }
+
+        order.orderStatus = orderStatus;
+
+        // Add to timeline
+        order.timeline.push({
+            status: orderStatus,
+            message: `Status updated to ${orderStatus} by admin.`,
+            updatedBy: "admin"
+        });
+
+        await order.save({ session });
+        await session.commitTransaction();
+
+        return sendSuccessResponse(res, "Order status updated successfully", order);
+
+    } catch (error) {
+        await session.abortTransaction();
+        console.error("Order Status Update Error:", error);
+        return sendErrorResponse(res, 500, "Error updating order status", error.message);
+    } finally {
+        session.endSession();
+    }
+};

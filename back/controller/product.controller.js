@@ -253,3 +253,45 @@ export const deleteProduct = async (req, res) => {
     return ThrowError(res, 500, error.message);
   }
 };
+
+export const searchProducts = async (req, res) => {
+  try {
+    const { 
+      q, 
+      mainCategoryId, 
+      categoryId, 
+      subCategoryId, 
+      insideSubCategoryId 
+    } = req.query;
+
+    const filter = { isActive: true };
+
+    if (q) {
+      filter.name = { $regex: q, $options: "i" };
+    }
+
+    if (insideSubCategoryId && mongoose.Types.ObjectId.isValid(insideSubCategoryId)) {
+      filter.insideSubCategory = insideSubCategoryId;
+    } else if (subCategoryId && mongoose.Types.ObjectId.isValid(subCategoryId)) {
+      filter.subCategory = subCategoryId;
+    } else if (categoryId && mongoose.Types.ObjectId.isValid(categoryId)) {
+      filter.category = categoryId;
+    } else if (mainCategoryId && mongoose.Types.ObjectId.isValid(mainCategoryId)) {
+      filter.mainCategory = mainCategoryId;
+    }
+
+    const products = await productModel.find(filter)
+      .populate("mainCategory")
+      .populate("category")
+      .populate("subCategory")
+      .populate("insideSubCategory")
+      .populate("variants")
+      .sort({ createdAt: -1 });
+
+    return sendSuccessResponse(res, "Products searched successfully!", products);
+  } catch (error) {
+    console.error("Search Products Error:", error);
+    return ThrowError(res, 500, error.message);
+  }
+};
+

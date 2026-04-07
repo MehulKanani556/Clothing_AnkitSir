@@ -241,7 +241,7 @@ export class AuthController {
     try {
       const id = req.user._id;
 
-      const user = await UserModel.findById(id).select("-refreshToken -otp -resetOtpExpiry");
+      const user = await UserModel.findById(id).select("-refreshToken -otp -resetOtpExpiry -password");
       if (!user) {
         return sendNotFoundResponse(res, "User not found");
       }

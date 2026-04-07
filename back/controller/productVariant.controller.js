@@ -290,3 +290,45 @@ export const getVariantsByProductId = async (req, res) => {
     return sendErrorResponse(res, 500, error.message);
   }
 };
+
+export const getColorsByProductId = async (req, res) => {
+  try {
+    const { productId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(productId)) {
+      return sendBadRequestResponse(res, "Valid productId is required!");
+    }
+
+    const variants = await ProductVariant.find({ productId }, "color images isDefault")
+      .sort({ isDefault: -1, createdAt: -1 });
+
+    return sendSuccessResponse(res, "Product colors/variants fetched successfully!", variants);
+  } catch (error) {
+    return sendErrorResponse(res, 500, error.message);
+  }
+};
+
+export const getSizesByVariantId = async (req, res) => {
+  try {
+    const { variantId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(variantId)) {
+      return sendBadRequestResponse(res, "Valid variantId is required!");
+    }
+
+    const variant = await ProductVariant.findById(variantId, "options price stock");
+
+    if (!variant) {
+      return sendNotFoundResponse(res, "Variant not found.");
+    }
+
+    return sendSuccessResponse(res, "Variant sizes and options fetched successfully!", {
+      options: variant.options,
+      price: variant.price, // in case it's a sizeless variant
+      stock: variant.stock  // in case it's a sizeless variant
+    });
+  } catch (error) {
+    return sendErrorResponse(res, 500, error.message);
+  }
+};
+

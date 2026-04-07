@@ -15,7 +15,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const STRIPE_SECRET = process.env.STRIPE_SECRET_KEY;
+const STRIPE_SECRET = process.env.STRIPE_SECRET;
 const stripe = new Stripe(STRIPE_SECRET)
 
 export const myPaymentController = async (req, res) => {
