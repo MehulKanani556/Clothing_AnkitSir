@@ -1,19 +1,15 @@
 import logo from './logo.svg';
 import './App.css';
-import { Provider } from 'react-redux';
-import { configureStore } from './redux/Store';
-import Layout from './components/Layout';
+import Auth from './components/Auth';
+import { Route, Routes } from 'react-router-dom';
 import Home from './pages/Home';
-const { store, persistor } = configureStore();
+
 function App() {
   return (
- <>
- <Provider store={store}>
- <Layout>
-  <Home />
- </Layout>
- </Provider>
- </>
+    <Routes>
+      <Route path="/auth" element={<Auth />} />
+      <Route path="/" element={<Home />} />
+    </Routes>
   );
 }
 
