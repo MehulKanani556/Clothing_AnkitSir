@@ -6,7 +6,7 @@ import { FaRegHeart } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchMainCategories, fetchCategories, fetchSubCategories } from '../redux/slice/category.slice';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { ReactComponent as EoLogo } from '../assets/images/eo.svg';
 
 export default function Header() {
@@ -16,8 +16,12 @@ export default function Header() {
     const [searchQuery, setSearchQuery] = useState('');
     const [isScrolled, setIsScrolled] = useState(false);
     const dispatch = useDispatch();
+    const location = useLocation();
     const { mainCategories, categories, subCategories } = useSelector((state) => state.category);
     const { user } = useSelector((state) => state.auth);
+
+    // Check if we're on the home page
+    const isHomePage = location.pathname === '/';
 
     useEffect(() => {
         dispatch(fetchMainCategories());
@@ -108,7 +112,10 @@ export default function Header() {
                     </p>
                 </div>
                 {/* Header Content */}
-                <header className={`transition-colors duration-300 ${isScrolled || hoveredCategory ? 'bg-white text-dark' : 'bg-transparent text-white'}`}>
+                <header className={`transition-colors duration-300 ${isHomePage
+                    ? (isScrolled || hoveredCategory ? 'bg-white text-dark border-b border-border' : 'bg-transparent text-white')
+                    : 'bg-white text-dark'
+                    }`}>
                     <div className="mx-auto px-4 lg:px-10">
                         <div className="flex items-center h-20 relative">
 
@@ -140,17 +147,26 @@ export default function Header() {
                                                     className={`text-base font-medium text-nowrap transition-all duration-300 relative uppercase ${hoveredCategory === category._id
                                                         ? 'opacity-100'
                                                         : 'opacity-60 hover:opacity-100'
-                                                        } ${isScrolled || hoveredCategory ? 'text-dark' : 'text-white'}`}
+                                                        } ${isHomePage
+                                                            ? (isScrolled || hoveredCategory ? 'text-dark' : 'text-white')
+                                                            : 'text-dark'
+                                                        }`}
                                                 >
                                                     {category.mainCategoryName}
                                                     <span className={`absolute -bottom-1 left-0 h-[1px] transition-all duration-300 ${hoveredCategory === category._id ? 'w-full' : 'w-0 group-hover:w-full'
-                                                        } ${isScrolled || hoveredCategory ? 'bg-dark' : 'bg-white'}`}></span>
+                                                        } ${isHomePage
+                                                            ? (isScrolled || hoveredCategory ? 'bg-dark' : 'bg-white')
+                                                            : 'bg-dark'
+                                                        }`}></span>
                                                 </Link>
                                             </div>
                                         ))
                                     ) : (
                                         ['SHOP', 'MEN', 'WOMEN', 'LUX CARE'].map((item) => (
-                                            <Link key={item} to="#" className={`text-base font-medium uppercase transition-colors opacity-60 hover:opacity-100 ${isScrolled || hoveredCategory ? 'text-dark' : 'text-white'}`}>{item}</Link>
+                                            <Link key={item} to="#" className={`text-base font-medium uppercase transition-colors opacity-60 hover:opacity-100 ${isHomePage
+                                                    ? (isScrolled || hoveredCategory ? 'text-dark' : 'text-white')
+                                                    : 'text-dark'
+                                                }`}>{item}</Link>
                                         ))
                                     )}
                                 </nav>
@@ -160,7 +176,10 @@ export default function Header() {
                             <div className="flex-1 flex justify-center z-[60]">
                                 <Link to="/" className="hover:opacity-80 transition-opacity duration-300 outline-none">
                                     <EoLogo
-                                        className={`h-8 w-auto transition-all duration-300 ${isScrolled || hoveredCategory ? '[&_path]:fill-primary' : '[&_path]:fill-white'}`}
+                                        className={`h-8 w-auto transition-all duration-300 ${isHomePage
+                                            ? (isScrolled || hoveredCategory ? '[&_path]:fill-primary' : '[&_path]:fill-white')
+                                            : '[&_path]:fill-primary'
+                                            }`}
                                     />
                                 </Link>
                             </div>
@@ -169,25 +188,40 @@ export default function Header() {
                             <div className="flex items-center justify-end w-1/4 lg:w-auto lg:flex-1 space-x-1 sm:space-x-2 md:space-x-4">
                                 <button
                                     onClick={() => setIsSearchOpen(true)}
-                                    className={`p-2 rounded-full transition-all duration-300 opacity-70 hover:opacity-100 ${isScrolled || hoveredCategory ? 'hover:bg-mainBG text-dark' : 'hover:bg-white/5 text-white'}`}
+                                    className={`p-2 rounded-full transition-all duration-300 opacity-70 hover:opacity-100 ${isHomePage
+                                        ? (isScrolled || hoveredCategory ? 'hover:bg-mainBG text-dark' : 'hover:bg-white/5 text-white')
+                                        : 'hover:bg-mainBG text-dark'
+                                        }`}
                                 >
                                     <LuSearch className='text-2xl' />
                                 </button>
-                                <button className={`hidden xs:block p-2 rounded-full transition-all duration-300 opacity-70 hover:opacity-100 ${isScrolled || hoveredCategory ? 'hover:bg-mainBG text-dark' : 'hover:bg-white/5 text-white'}`}>
+                                <button className={`hidden xs:block p-2 rounded-full transition-all duration-300 opacity-70 hover:opacity-100 ${isHomePage
+                                    ? (isScrolled || hoveredCategory ? 'hover:bg-mainBG text-dark' : 'hover:bg-white/5 text-white')
+                                    : 'hover:bg-mainBG text-dark'
+                                    }`}>
                                     <FaRegHeart className='text-2xl' />
                                 </button>
-                                <button className={`p-2 rounded-full transition-all duration-300 opacity-70 hover:opacity-100 relative ${isScrolled || hoveredCategory ? 'hover:bg-mainBG text-dark' : 'hover:bg-white/5 text-white'}`}>
+                                <button className={`p-2 rounded-full transition-all duration-300 opacity-70 hover:opacity-100 relative ${isHomePage
+                                    ? (isScrolled || hoveredCategory ? 'hover:bg-mainBG text-dark' : 'hover:bg-white/5 text-white')
+                                    : 'hover:bg-mainBG text-dark'
+                                    }`}>
                                     <HiOutlineShoppingBag className='text-2xl' />
                                 </button>
                                 {user ? (
-                                    <div className={`flex gap-2 items-center ${isScrolled || hoveredCategory ? 'text-dark' : 'text-white'}`}>
+                                    <div className={`flex gap-2 items-center ${isHomePage
+                                        ? (isScrolled || hoveredCategory ? 'text-dark' : 'text-white')
+                                        : 'text-dark'
+                                        }`}>
                                         <div className="h-8 w-8 bg-primary uppercase rounded-full flex items-center justify-center font-bold text-white">
                                             {user?.firstName?.slice(0, 1) || 'U'}
                                         </div>
                                         <span className='capitalize'>{user?.firstName}</span>
                                     </div>
                                 ) : (
-                                    <Link to="/auth" className={`hidden sm:block p-2 rounded-full transition-all duration-300 opacity-70 hover:opacity-100 ${isScrolled || hoveredCategory ? 'hover:bg-mainBG text-dark' : 'hover:bg-white/5 text-white'}`}>
+                                    <Link to="/auth" className={`hidden sm:block p-2 rounded-full transition-all duration-300 opacity-70 hover:opacity-100 ${isHomePage
+                                        ? (isScrolled || hoveredCategory ? 'hover:bg-mainBG text-dark' : 'hover:bg-white/5 text-white')
+                                        : 'hover:bg-mainBG text-dark'
+                                        }`}>
                                         <CgProfile className='text-2xl' />
                                     </Link>
                                 )}
