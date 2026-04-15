@@ -5,6 +5,7 @@ import axios from 'axios';
 const initialState = {
     user: null,
     isAuthenticated: false,
+    isNewUser: false,   // true = just registered, false = existing user login
     loading: false,
     error: null,
     message: null,
@@ -40,14 +41,14 @@ export const verifyOtp = createAsyncThunk(
                 localStorage.setItem('userId', response.data.user.id);
                 localStorage.setItem('role', response.data.user.role);
             }
-            return response.data;
+            // Backend message: "Registered and logged in successfully" = new user
+            const isNewUser = response.data?.message?.toLowerCase().includes('registered');
+            return { ...response.data, isNewUser };
         } catch (error) {
             return handleErrors(error, rejectWithValue);
         }
     }
 );
-
-// Refresh access token
 export const refreshAccessToken = createAsyncThunk(
     'auth/refreshAccessToken',
     async (_, { rejectWithValue }) => {
@@ -87,6 +88,7 @@ export const authSlice = createSlice({
         logout: (state) => {
             state.user = null;
             state.isAuthenticated = false;
+            state.isNewUser = false;
             state.error = null;
             state.message = null;
             state.otp = null;
@@ -114,6 +116,8 @@ export const authSlice = createSlice({
                 state.error = null;
                 state.message = action.payload?.message || 'OTP sent successfully!';
                 state.otp = action.payload?.otp || null; // dev only
+                // existingUser is null/undefined for new users, populated for existing users
+                state.isNewUser = !action.payload?.existingUser;
             })
             .addCase(sendOtp.rejected, (state, action) => {
                 state.loading = false;
@@ -133,6 +137,7 @@ export const authSlice = createSlice({
                 state.isAuthenticated = true;
                 state.user = action.payload?.user || null;
                 state.message = action.payload?.message || 'Logged in successfully';
+                // Keep isNewUser as set during sendOtp — no override needed
             })
             .addCase(verifyOtp.rejected, (state, action) => {
                 state.loading = false;

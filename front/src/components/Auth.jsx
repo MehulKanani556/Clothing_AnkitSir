@@ -14,7 +14,7 @@ export default function Auth() {
     const inputRefs = useRef([]);
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const { loading, error } = useSelector((state) => state.auth);
+    const { loading, error, isNewUser } = useSelector((state) => state.auth);
     const [timer, setTimer] = useState(30);
     const [showResend, setShowResend] = useState(false);
 
@@ -107,7 +107,13 @@ export default function Auth() {
         onSubmit: async (values) => {
             const result = await dispatch(verifyOtp({ mobileNo, otp: values.otp }));
             if (verifyOtp.fulfilled.match(result)) {
-                setStep(3);
+                // Read isNewUser from the action result, not stale closure
+                const newUser = result.payload?.isNewUser;
+                if (newUser) {
+                    setStep(3);
+                } else {
+                    navigate('/');
+                }
             }
         },
     });
