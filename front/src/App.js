@@ -8,6 +8,7 @@ import CategoryList from './admin/pages/Category/CategoryList';
 import SubCategoryList from './admin/pages/SubCategory/SubCategoryList';
 import InsideSubCategoryList from './admin/pages/InsideSubCategory/InsideSubCategoryList';
 import Auth from './components/Auth';
+import ProductDetails from './pages/ProductDetails';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
       {/* User Routes */}
       <Route path="/" element={<Layout><Home /></Layout>} />
       <Route path="/auth" element={<Auth />} />
+      <Route path="/product" element={<ProductDetails />} />
 
       {/* Admin Routes */}
       <Route path="/admin" element={<AdminLayout />}>
@@ -29,3 +31,4 @@ function App() {
 }
 
 export default App;
+
