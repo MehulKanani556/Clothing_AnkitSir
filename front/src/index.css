@@ -7,7 +7,7 @@
 
 @layer base {
   body {
-    @apply bg-black text-white antialiased selection:bg-white selection:text-black;
+    @apply  text-white antialiased selection:bg-white selection:text-black;
     font-family: 'Outfit', 'Urbanist', sans-serif;
   }
 }
