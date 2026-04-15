@@ -7,12 +7,14 @@ import MainCategoryList from './admin/pages/MainCategory/CategoryList';
 import CategoryList from './admin/pages/Category/CategoryList';
 import SubCategoryList from './admin/pages/SubCategory/SubCategoryList';
 import InsideSubCategoryList from './admin/pages/InsideSubCategory/InsideSubCategoryList';
+import Auth from './components/Auth';
 
 function App() {
   return (
     <Routes>
       {/* User Routes */}
       <Route path="/" element={<Layout><Home /></Layout>} />
+      <Route path="/auth" element={<Auth />} />
 
       {/* Admin Routes */}
       <Route path="/admin" element={<AdminLayout />}>
