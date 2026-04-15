@@ -4,6 +4,7 @@ import Home from '../pages/Home';
 import Auth from '../components/Auth';
 import ProductDetails from '../pages/ProductDetails';
 import ProtectedRoute from './ProtectedRoute';
+import Profile from '../pages/account/Profile';
 
 const UserRoutes = () => {
     return (
@@ -13,9 +14,9 @@ const UserRoutes = () => {
             <Route path="/auth" element={<Auth />} />
             <Route path="/product" element={<ProductDetails />} />
 
-            {/* Protected user-only routes — add more inside here */}
+            {/* Protected user-only routes */}
             <Route element={<ProtectedRoute allowedRole="user" />}>
-                {/* e.g. <Route path="/profile" element={<Profile />} /> */}
+                <Route path="/profile" element={<Profile />} />
             </Route>
         </Routes>
     );

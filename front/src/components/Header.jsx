@@ -6,22 +6,51 @@ import { FaRegHeart } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchMainCategories, fetchCategories, fetchSubCategories } from '../redux/slice/category.slice';
-import { Link, useLocation } from 'react-router-dom';
+import { logout } from '../redux/slice/auth.slice';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { HiArrowUpRight } from 'react-icons/hi2';
 import { ReactComponent as EoLogo } from '../assets/images/eo.svg';
+
+const ACCOUNT_MENU = [
+    { label: 'Profile', href: '/profile' },
+    { label: 'Orders', href: '/orders' },
+    { label: 'Wishlist', href: '/wishlist' },
+    { label: 'Addresses', href: '/addresses' },
+    { label: 'Payments', href: '/payments' },
+    { label: 'Settings', href: '/settings' },
+    { label: 'Support', href: '/support' },
+];
 
 export default function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isAccountOpen, setIsAccountOpen] = useState(false);
     const [hoveredCategory, setHoveredCategory] = useState(null);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [isScrolled, setIsScrolled] = useState(false);
     const dispatch = useDispatch();
     const location = useLocation();
+    const navigate = useNavigate();
     const { mainCategories, categories, subCategories } = useSelector((state) => state.category);
     const { user } = useSelector((state) => state.auth);
 
     // Check if we're on the home page
     const isHomePage = location.pathname === '/';
+
+    useEffect(() => {
+        if (isAccountOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+        return () => { document.body.style.overflow = ''; };
+    }, [isAccountOpen]);
+
+    const handleLogout = () => {
+        dispatch(logout());
+        setIsAccountOpen(false);
+        navigate('/');
+    };
 
     useEffect(() => {
         dispatch(fetchMainCategories());
@@ -164,8 +193,8 @@ export default function Header() {
                                     ) : (
                                         ['SHOP', 'MEN', 'WOMEN', 'LUX CARE'].map((item) => (
                                             <Link key={item} to="#" className={`text-base font-medium uppercase transition-colors opacity-60 hover:opacity-100 ${isHomePage
-                                                    ? (isScrolled || hoveredCategory ? 'text-dark' : 'text-white')
-                                                    : 'text-dark'
+                                                ? (isScrolled || hoveredCategory ? 'text-dark' : 'text-white')
+                                                : 'text-dark'
                                                 }`}>{item}</Link>
                                         ))
                                     )}
@@ -208,15 +237,17 @@ export default function Header() {
                                     <HiOutlineShoppingBag className='text-2xl' />
                                 </button>
                                 {user ? (
-                                    <div className={`flex gap-2 items-center ${isHomePage
-                                        ? (isScrolled || hoveredCategory ? 'text-dark' : 'text-white')
-                                        : 'text-dark'
-                                        }`}>
+                                    <button
+                                        onClick={() => setIsAccountOpen(true)}
+                                        className={`flex gap-2 items-center ${isHomePage
+                                            ? (isScrolled || hoveredCategory ? 'text-dark' : 'text-white')
+                                            : 'text-dark'
+                                            }`}>
                                         <div className="h-8 w-8 bg-primary uppercase rounded-full flex items-center justify-center font-bold text-white">
                                             {user?.firstName?.slice(0, 1) || 'U'}
                                         </div>
                                         <span className='capitalize'>{user?.firstName}</span>
-                                    </div>
+                                    </button>
                                 ) : (
                                     <Link to="/auth" className={`hidden sm:block p-2 rounded-full transition-all duration-300 opacity-70 hover:opacity-100 ${isHomePage
                                         ? (isScrolled || hoveredCategory ? 'hover:bg-mainBG text-dark' : 'hover:bg-white/5 text-white')
@@ -470,6 +501,55 @@ export default function Header() {
                         }}
                     />
                 )}
+            </div>
+
+            {/* Account Sidebar Backdrop */}
+            {isAccountOpen && (
+                <div
+                    className="fixed inset-0 z-[80] bg-black/30"
+                    onClick={() => setIsAccountOpen(false)}
+                />
+            )}
+
+            {/* Account Sidebar */}
+            <div
+                className={`fixed top-0 right-0 h-full w-96 bg-white z-[90] shadow-xl flex flex-col transition-transform duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] ${isAccountOpen ? 'translate-x-0' : 'translate-x-full'
+                    }`}
+            >
+                {/* Sidebar Header */}
+                <div className="flex items-center justify-between px-6 py-5 border-b border-border">
+                    <span className="text-2xl font-bold text-dark tracking-wide">Account</span>
+                    <button
+                        onClick={() => setIsAccountOpen(false)}
+                        className="text-dark transition-colors"
+                        aria-label="Close account menu"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                        </svg>
+                    </button>
+                </div>
+
+                {/* Nav Links */}
+                <nav className="flex-1 flex flex-col px-6 pt-4">
+                    {ACCOUNT_MENU.map((item) => (
+                        <Link
+                            key={item.label}
+                            to={item.href}
+                            onClick={() => setIsAccountOpen(false)}
+                            className="group p-6 text-lg text-mainText font-medium hover:bg-mainBG transition-colors tracking-wide hover:ring-1 hover:ring-border flex items-center justify-between"
+                        >
+                            {item.label}
+                            <HiArrowUpRight className='text-lightText font-bold opacity-0 group-hover:opacity-100 transition-opacity' />
+                        </Link>
+                    ))}
+                    <button
+                        onClick={handleLogout}
+                        className="p-6 text-lg text-mainText font-medium hover:bg-mainBG transition-colors tracking-wide hover:ring-1 hover:ring-border text-left"
+                    >
+                        Logout
+                    </button>
+                </nav>
             </div>
         </div>
     )
