@@ -9,7 +9,7 @@ import cookieParser from 'cookie-parser';
 import { initCron } from './cron/index.js';
 
 //connect DB
-const DB_URL = process.env.DB_URL 
+const DB_URL = process.env.DB_URL
 connectDB(DB_URL)
 
 // Init Cron Jobs
@@ -23,7 +23,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(logger("dev"));
-app.use(cors())
+app.use(cors({
+  origin: ['http://localhost:3000', 'http://localhost:3001'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
 app.use("/public", express.static("public"));
 //port define
 const PORT = process.env.PORT || 8000;

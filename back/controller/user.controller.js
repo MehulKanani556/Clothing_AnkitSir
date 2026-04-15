@@ -388,30 +388,6 @@ export const updateProfileController = async (req, res) => {
         if (firstName !== undefined) user.firstName = firstName;
         if (lastName !== undefined) user.lastName = lastName;
 
-        let mailSentMsg = "";
-
-        if (emailChanged) {
-            const otp = Math.floor(1000 + Math.random() * 9000);
-            const otpExpiry = new Date(Date.now() + 5 * 60 * 1000); // 5 mins
-
-            user.otp = otp;
-            user.resetOtpExpiry = otpExpiry;
-
-            const mailOptions = {
-                from: process.env.EMAIL_USER,
-                to: email,
-                subject: "Verify Your Email Address",
-                html: `<p>Your email verification OTP is: <strong>${otp}</strong>.</p><p>It will expire in 5 minutes.</p>`
-            };
-
-            try {
-                await transporter.sendMail(mailOptions);
-                mailSentMsg = " OTP sent to your new email.";
-            } catch (mailErr) {
-                console.error("Error sending email OTP on profile update:", mailErr);
-            }
-        }
-
         await user.save();
 
         // return the updated sensitive info without OTPs
@@ -420,7 +396,7 @@ export const updateProfileController = async (req, res) => {
         delete updatedUser.resetOtpExpiry;
         delete updatedUser.password;
 
-        return sendSuccessResponse(res, "Profile updated successfully!" + mailSentMsg, updatedUser);
+        return sendSuccessResponse(res, "Profile updated successfully!", updatedUser);
     } catch (e) {
         return sendErrorResponse(res, 500, "Error updating profile", e.message);
     }
@@ -429,7 +405,7 @@ export const updateProfileController = async (req, res) => {
 export const sendEmailOtpController = async (req, res) => {
     try {
         const id = req.user.id || req.user._id;
-        const { email } = req.body;
+        const email = req.body?.email || null;
 
         const user = await UserModel.findById(id);
         if (!user) return sendNotFoundResponse(res, "User not found!");

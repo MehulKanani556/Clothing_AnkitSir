@@ -1,20 +1,25 @@
-import { applyMiddleware, createStore } from "redux";
-import { thunk } from "redux-thunk";
+import { configureStore } from "@reduxjs/toolkit";
 import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage";
 import { rootReducer } from "./rootReducer.js";
 
-export const configureStore = () => {
-    const persistConfig = {
-        key: "root",
-        storage,
-        whitelist: ['auth'],
-    };
-    const persistedReducer = persistReducer(persistConfig, rootReducer);
+const persistConfig = {
+    key: "root",
+    storage,
+    whitelist: ['auth'],
+};
 
-    const store = createStore(persistedReducer, applyMiddleware(thunk));
+const persistedReducer = persistReducer(persistConfig, rootReducer);
 
-    let persistor = persistStore(store);
+export const store = configureStore({
+    reducer: persistedReducer,
+    middleware: (getDefaultMiddleware) =>
+        getDefaultMiddleware({
+            serializableCheck: {
+                // redux-persist dispatches non-serializable actions internally
+                ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE', 'persist/PURGE', 'persist/FLUSH', 'persist/PAUSE', 'persist/REGISTER'],
+            },
+        }),
+});
 
-    return { store, persistor };
-}
+export const persistor = persistStore(store);

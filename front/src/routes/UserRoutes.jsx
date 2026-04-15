@@ -15,7 +15,7 @@ const UserRoutes = () => {
             <Route path="/product" element={<ProductDetails />} />
 
             {/* Protected user-only routes */}
-            <Route element={<ProtectedRoute allowedRole="user" />}>
+            <Route element={<ProtectedRoute />}>
                 <Route path="/profile" element={<Layout><Profile /></Layout>} />
             </Route>
         </Routes>
