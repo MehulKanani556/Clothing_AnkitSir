@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { CgProfile } from "react-icons/cg";
 import { HiOutlineShoppingBag } from "react-icons/hi";
 import { LuSearch } from "react-icons/lu";
@@ -7,6 +7,7 @@ import { IoClose } from "react-icons/io5";
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchMainCategories, fetchCategories, fetchSubCategories } from '../redux/slice/category.slice';
 import { logout } from '../redux/slice/auth.slice';
+import { logSearch, fetchPopularSearches, fetchRecentSearches, fetchTrendingProducts, searchProducts, clearSearchResults } from '../redux/slice/search.slice';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { HiArrowUpRight } from 'react-icons/hi2';
 import { ReactComponent as EoLogo } from '../assets/images/eo.svg';
@@ -28,11 +29,13 @@ export default function Header() {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [isScrolled, setIsScrolled] = useState(false);
+    const debounceTimer = useRef(null);
     const dispatch = useDispatch();
     const location = useLocation();
     const navigate = useNavigate();
     const { mainCategories, categories, subCategories } = useSelector((state) => state.category);
     const { user } = useSelector((state) => state.auth);
+    const { popularSearches, recentSearches, trendingProducts, searchResults, searchLoading } = useSelector((state) => state.search);
 
     // Check if we're on the home page
     const isHomePage = location.pathname === '/';
@@ -66,6 +69,40 @@ export default function Header() {
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
+
+    useEffect(() => {
+        if (isSearchOpen) {
+            dispatch(fetchPopularSearches());
+            dispatch(fetchRecentSearches());
+            dispatch(fetchTrendingProducts());
+        } else {
+            dispatch(clearSearchResults());
+            setSearchQuery('');
+        }
+    }, [isSearchOpen, dispatch]);
+
+    const handleSearchSubmit = (e) => {
+        if (e.key === 'Enter' && searchQuery.trim()) {
+            dispatch(logSearch(searchQuery.trim()));
+            navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+            setIsSearchOpen(false);
+            setSearchQuery('');
+            dispatch(clearSearchResults());
+        }
+    };
+
+    const handleSearchChange = useCallback((e) => {
+        const value = e.target.value;
+        setSearchQuery(value);
+        clearTimeout(debounceTimer.current);
+        if (value.trim().length > 0) {
+            debounceTimer.current = setTimeout(() => {
+                dispatch(searchProducts(value.trim()));
+            }, 400);
+        } else {
+            dispatch(clearSearchResults());
+        }
+    }, [dispatch]);
 
     useEffect(() => {
         const handleResize = () => {
@@ -115,20 +152,6 @@ export default function Header() {
         };
     };
 
-    const popularSearches = [
-        'Leather clothing',
-        'Sculptural Cross-body Bags',
-        'Oxford Shoes',
-        'Vitamin C Brightening Elixirs'
-    ];
-
-    const suggestions = [
-        'Barbana bag',
-        'Gifts for her',
-        'Gifts for him',
-        "Men's new arrivals",
-        "Women's new arrivals"
-    ];
 
     return (
         <>
@@ -460,104 +483,196 @@ export default function Header() {
 
                 {/* Search Overlay */}
                 {isSearchOpen && (
-                    <div className="fixed top-[120px] left-0 w-full bg-white z-[100] shadow-2xl max-h-[60vh] overflow-y-auto">
-                        <div className="container mx-auto px-10 py-8">
-                            {/* Search Header */}
-                            <div className="flex items-center justify-between pb-6 border-b border-border">
-                                <div className="flex-1 flex items-center gap-4">
-                                    <LuSearch className="text-2xl text-mainText" />
+                    <div
+                        className="fixed top-0 left-0 w-full bg-white z-[100] shadow-2xl"
+                        style={{ minHeight: '520px' }}
+                    >
+                        {/* Close button row */}
+                        <div className="flex items-center justify-end px-6 md:px-10 pt-4">
+                            <button
+                                onClick={() => setIsSearchOpen(false)}
+                                className="p-2 hover:bg-mainBG rounded-full transition-colors"
+                            >
+                                <IoClose className="text-2xl text-dark" />
+                            </button>
+                        </div>
+
+                        <div className="flex flex-col md:flex-row">
+                            {/* Left Sidebar */}
+                            <div className="hidden md:flex flex-col gap-10 w-64 shrink-0 px-8 pb-10 pt-2 border-r border-border">
+                                <div>
+                                    <h3 className="text-[11px] font-bold tracking-[0.18em] uppercase mb-4 text-dark">
+                                        Popular Searches
+                                    </h3>
+                                    <ul className="space-y-3">
+                                        {(popularSearches && popularSearches.length > 0
+                                            ? popularSearches
+                                            : ['Leather clothing', 'Sculptural Cross-body Bags', 'Oxford Shoes', 'Vitamin C Brightening Elixirs']
+                                        ).map((s, i) => (
+                                            <li key={i}>
+                                                <button
+                                                    onClick={() => {
+                                                        dispatch(logSearch(s));
+                                                        navigate(`/search?q=${encodeURIComponent(s)}`);
+                                                        setIsSearchOpen(false);
+                                                    }}
+                                                    className="text-sm text-mainText hover:text-gold transition-colors text-left w-full"
+                                                >
+                                                    {s}
+                                                </button>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+
+                                <div>
+                                    <h3 className="text-[11px] font-bold tracking-[0.18em] uppercase mb-4 text-dark">
+                                        {recentSearches?.length > 0 ? 'Recent Searches' : 'Suggestions'}
+                                    </h3>
+                                    <ul className="space-y-3">
+                                        {(recentSearches?.length > 0
+                                            ? recentSearches
+                                            : ['Barbara bag', 'Gifts for her', 'Gifts for him', "Men's new arrivals", "Women's new arrivals"]
+                                        ).map((s, i) => (
+                                            <li key={i}>
+                                                <button
+                                                    onClick={() => {
+                                                        navigate(`/search?q=${encodeURIComponent(s)}`);
+                                                        setIsSearchOpen(false);
+                                                    }}
+                                                    className="text-sm text-mainText hover:text-gold transition-colors text-left w-full"
+                                                >
+                                                    {s}
+                                                </button>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            </div>
+
+                            {/* Right Content */}
+                            <div className="flex-1 flex flex-col px-6 md:px-10 pb-10 pt-2 overflow-y-auto">
+                                {/* Search Input */}
+                                <div className="flex items-center gap-3 border border-border px-4 py-3 mb-8 bg-[#F9F9F9]">
+                                    <LuSearch className="text-lg text-primary/40 shrink-0" />
                                     <input
                                         type="text"
                                         value={searchQuery}
-                                        onChange={(e) => setSearchQuery(e.target.value)}
-                                        placeholder="Search our global archive for objects of rarity."
-                                        className="flex-1 text-lg text-mainText placeholder:text-lightText outline-none bg-transparent"
+                                        onChange={handleSearchChange}
+                                        onKeyDown={handleSearchSubmit}
+                                        placeholder="Search our global archive for objects of rarity.."
+                                        className="flex-1 text-sm text-dark placeholder:text-primary/30 outline-none bg-transparent"
                                         autoFocus
                                     />
+                                    {searchQuery && (
+                                        <button onClick={() => { setSearchQuery(''); dispatch(clearSearchResults()); }}>
+                                            <IoClose className="text-lg text-primary/40 hover:text-dark transition-colors" />
+                                        </button>
+                                    )}
                                 </div>
-                                <button
-                                    onClick={() => {
-                                        setIsSearchOpen(false);
-                                        setSearchQuery('');
-                                    }}
-                                    className="p-2 hover:bg-mainBG rounded-full transition-colors"
-                                >
-                                    <IoClose className="text-2xl text-mainText" />
-                                </button>
-                            </div>
 
-                            {/* Search Content */}
-                            <div className="py-8">
-                                <div className="grid grid-cols-4 gap-12">
-                                    {/* Left Column - Searches */}
-                                    <div className="col-span-1 space-y-8">
-                                        {/* Popular Searches */}
-                                        <div>
-                                            <h3 className="text-xs font-bold tracking-wider uppercase mb-4 text-dark/80">
-                                                POPULAR SEARCHES
-                                            </h3>
-                                            <ul className="space-y-2.5">
-                                                {popularSearches.map((search, index) => (
-                                                    <li key={index}>
-                                                        <Link
-                                                            to={`/search?q=${encodeURIComponent(search)}`}
-                                                            className="text-sm text-mainText hover:text-primary transition-colors duration-200"
-                                                        >
-                                                            {search}
-                                                        </Link>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </div>
-
-                                        {/* Suggestions */}
-                                        <div>
-                                            <h3 className="text-xs font-bold tracking-wider uppercase mb-4 text-dark/80">
-                                                SUGGESTIONS
-                                            </h3>
-                                            <ul className="space-y-2.5">
-                                                {suggestions.map((suggestion, index) => (
-                                                    <li key={index}>
-                                                        <Link
-                                                            to={`/search?q=${encodeURIComponent(suggestion)}`}
-                                                            className="text-sm text-mainText hover:text-primary transition-colors duration-200"
-                                                        >
-                                                            {suggestion}
-                                                        </Link>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </div>
-                                    </div>
-
-                                    {/* Right Column - Trending Products */}
-                                    <div className="col-span-3">
-                                        <h3 className="text-xs font-bold tracking-wider uppercase mb-6 text-dark/80">
-                                            TRENDING PRODUCTS
+                                {/* Live Results or Trending */}
+                                {searchQuery.trim().length > 0 ? (
+                                    <div>
+                                        <h3 className="text-[11px] font-bold tracking-[0.18em] uppercase mb-6 text-dark">
+                                            {searchLoading ? 'Searching...' : `Results for "${searchQuery}"`}
                                         </h3>
-                                        <div className="grid grid-cols-4 gap-6">
-                                            {/* Mock trending products - replace with actual data */}
-                                            {[1, 2, 3, 4].map((item) => (
-                                                <div key={item} className="group cursor-pointer">
-                                                    <div className="relative mb-3 bg-mainBG aspect-square overflow-hidden">
-                                                        <img
-                                                            src="/images/product.png"
-                                                            alt="Product"
-                                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                                        />
-                                                        <button className="absolute top-3 right-3 p-2 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-                                                            <FaRegHeart className="text-sm" />
-                                                        </button>
+                                        {searchLoading ? (
+                                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                                                {[1, 2, 3, 4].map((i) => (
+                                                    <div key={i} className="animate-pulse">
+                                                        <div className="aspect-[3/4] bg-mainBG mb-3"></div>
+                                                        <div className="h-3 bg-mainBG w-3/4 mb-2"></div>
+                                                        <div className="h-3 bg-mainBG w-1/4"></div>
                                                     </div>
-                                                    <h4 className="text-sm font-medium text-mainText mb-1">
-                                                        Product Name {item}
-                                                    </h4>
-                                                    <p className="text-sm text-lightText">$XXX</p>
-                                                </div>
-                                            ))}
+                                                ))}
+                                            </div>
+                                        ) : searchResults.length > 0 ? (
+                                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                                                {searchResults.slice(0, 8).map((product) => (
+                                                    <Link
+                                                        key={product._id}
+                                                        to={`/product/${product.slug}`}
+                                                        onClick={() => setIsSearchOpen(false)}
+                                                        className="group cursor-pointer"
+                                                    >
+                                                        <div className="relative mb-3 bg-[#F9F9F9] aspect-[3/4] overflow-hidden">
+                                                            <img
+                                                                src={product.variants?.[0]?.images?.[0] || "/images/product.png"}
+                                                                alt={product.name}
+                                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                                            />
+                                                            {product.badge && (
+                                                                <span className="absolute top-3 left-3 text-[9px] font-bold tracking-widest uppercase text-lightText bg-white px-1.5 py-0.5">
+                                                                    {product.badge}
+                                                                </span>
+                                                            )}
+                                                            <button className="absolute top-3 right-3 p-2 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-sm">
+                                                                <FaRegHeart className="text-xs" />
+                                                            </button>
+                                                        </div>
+                                                        <h4 className="text-sm font-medium text-dark group-hover:text-gold transition-colors leading-snug">
+                                                            {product.name}
+                                                        </h4>
+                                                        <p className="text-sm text-lightText mt-0.5">
+                                                            ${product.variants?.[0]?.price || '0.00'}
+                                                        </p>
+                                                    </Link>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <p className="text-sm text-lightText">No products found for "{searchQuery}"</p>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div>
+                                        <h3 className="text-[11px] font-bold tracking-[0.18em] uppercase mb-6 text-dark">
+                                            Trending Products
+                                        </h3>
+                                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                                            {trendingProducts && trendingProducts.length > 0 ? (
+                                                trendingProducts.map((product) => (
+                                                    <Link
+                                                        key={product._id}
+                                                        to={`/product/${product.slug}`}
+                                                        onClick={() => setIsSearchOpen(false)}
+                                                        className="group cursor-pointer"
+                                                    >
+                                                        <div className="relative mb-3 bg-[#F9F9F9] aspect-[3/4] overflow-hidden">
+                                                            <img
+                                                                src={product.variants?.[0]?.images?.[0] || "/images/product.png"}
+                                                                alt={product.name}
+                                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                                            />
+                                                            {product.badge && (
+                                                                <span className="absolute top-3 left-3 text-[9px] font-bold tracking-widest uppercase text-lightText bg-white px-1.5 py-0.5">
+                                                                    {product.badge}
+                                                                </span>
+                                                            )}
+                                                            <button className="absolute top-3 right-3 p-2 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-sm">
+                                                                <FaRegHeart className="text-xs" />
+                                                            </button>
+                                                        </div>
+                                                        <h4 className="text-sm font-medium text-dark group-hover:text-gold transition-colors leading-snug">
+                                                            {product.name}
+                                                        </h4>
+                                                        <p className="text-sm text-lightText mt-0.5">
+                                                            ${product.variants?.[0]?.price || '0.00'}
+                                                        </p>
+                                                    </Link>
+                                                ))
+                                            ) : (
+                                                [1, 2, 3, 4].map((i) => (
+                                                    <div key={i} className="animate-pulse">
+                                                        <div className="aspect-[3/4] bg-mainBG mb-3"></div>
+                                                        <div className="h-3 bg-mainBG w-3/4 mb-2"></div>
+                                                        <div className="h-3 bg-mainBG w-1/4"></div>
+                                                    </div>
+                                                ))
+                                            )}
                                         </div>
                                     </div>
-                                </div>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -567,10 +682,7 @@ export default function Header() {
                 {isSearchOpen && (
                     <div
                         className="fixed inset-0 bg-black/20 z-[90]"
-                        onClick={() => {
-                            setIsSearchOpen(false);
-                            setSearchQuery('');
-                        }}
+                        onClick={() => setIsSearchOpen(false)}
                     />
                 )}
             </div>

@@ -1,6 +1,6 @@
 import express from "express";
 import { AuthController } from "../controller/auth.controller.js";
-import { UserAuth, adminAuth } from "../middleware/auth.middleware.js";
+import { UserAuth, adminAuth, OptionalUserAuth } from "../middleware/auth.middleware.js";
 import { upload, listBucketObjects, deleteManyFromS3 } from "../middleware/imageupload.js";
 import {
   createMainCategory,
@@ -109,6 +109,12 @@ import {
   sendEmailOtpController,
   verifyEmailOtpController
 } from "../controller/user.controller.js";
+import {
+  logSearch,
+  getPopularSearches,
+  getRecentSearches,
+  getTrendingProducts
+} from "../controller/search.controller.js";
 import { sendResponse, sendSuccessResponse } from "../utils/Response.utils.js";
 
 const router = express.Router();
@@ -159,6 +165,12 @@ router.get("/product/get-by-id/:id", getProductById);
 router.get("/product/get-by-slug/:slug", getProductBySlug);
 router.put("/product/update/:id", UserAuth, adminAuth, updateProduct);
 router.delete("/product/delete/:id", UserAuth, adminAuth, deleteProduct);
+
+// --- Search & Discovery Routes ---
+router.post("/search/log", OptionalUserAuth, logSearch);
+router.get("/search/popular", getPopularSearches);
+router.get("/search/recent", OptionalUserAuth, getRecentSearches);
+router.get("/search/trending", getTrendingProducts);
 
 // --- Product Variant Routes ---
 router.post("/product-variant/create", UserAuth, adminAuth, upload.array("images", 10), createProductVariant);

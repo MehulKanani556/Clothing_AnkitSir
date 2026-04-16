@@ -37,6 +37,29 @@ export const UserAuth = async (req, res, next) => {
     }
 };
 
+export const OptionalUserAuth = async (req, res, next) => {
+    try {
+        const token = req.header('Authorization')?.replace('Bearer ', '') || req.cookies?.accessToken || req.query.token;
+
+        if (token) {
+            try {
+                const decodedObj = jwt.verify(token, process.env.JWT_SECRET);
+                const { id } = decodedObj;
+                const user = await UserModel.findById(id);
+                if (user) {
+                    req.user = user;
+                }
+            } catch (err) {
+                // Ignore token errors for optional auth
+                console.log("Optional Auth Token Error:", err.message);
+            }
+        }
+        next();
+    } catch (error) {
+        next();
+    }
+};
+
 export const authorize = (roles = []) => {
     if (typeof roles === 'string') {
         roles = [roles];
