@@ -133,7 +133,7 @@ export default function Header() {
     return (
         <>
             {/* Main Header Container - Fixed at top */}
-            <div className={`${isHomePage ?"fixed" : "sticky"} top-0 left-0 w-full z-50 transition-shadow duration-300 ${isScrolled || hoveredCategory ? 'shadow-md' : ''}`}>
+            <div className={`${isHomePage ?"fixed" : "sticky"} top-0 left-0 w-full z-50 transition-shadow duration-300`}>
                 {/* Promo Bar */}
                 <div className={`hidden md:block border-b transition-colors duration-300 ${isScrolled || hoveredCategory ? 'bg-primary border-primary/10' : 'bg-primary border-white/5'}`}>
                     <p className='text-white text-center text-[10px] sm:text-xs py-2 font-medium tracking-[0.25em] opacity-80 uppercase'>
@@ -143,7 +143,7 @@ export default function Header() {
                 {/* Header Content */}
                 <header className={`transition-colors duration-300 ${isHomePage
                     ? (isScrolled || hoveredCategory ? 'bg-white text-dark border-b border-border' : 'bg-transparent text-white')
-                    : 'bg-white text-dark'
+                    : 'bg-white text-dark border-b border-border'
                     }`}>
                     <div className="mx-auto px-4 lg:px-10">
                         <div className="flex items-center h-20 relative">

@@ -164,20 +164,20 @@ export default function Profile() {
     };
 
     const inputClass = (field) =>
-        `w-full text-lg font-medium bg-transparent outline-none border-none placeholder:text-lightText ${formik.touched[field] && formik.errors[field] ? 'text-red-500' : 'text-primary'
+        `w-full text-sm sm:text-lg font-medium bg-transparent outline-none border-none placeholder:text-lightText ${formik.touched[field] && formik.errors[field] ? 'text-red-500' : 'text-primary'
         }`;
 
     return (
         <AccountLayout>
             <form onSubmit={formik.handleSubmit}>
                 {/* Page Title */}
-                <div className="flex justify-between items-center mb-8">
-                    <h1 className="text-[28px] font-semibold text-primary">Profile</h1>
+                <div className="flex justify-between items-center md:mb-8 mb-4">
+                    <h1 className="text-2xl md:text-[28px] font-semibold text-primary">Profile</h1>
                     {!isEditing ? (
                         <button
                             type="button"
                             onClick={handleEdit}
-                            className="bg-primary text-white uppercase py-2 px-6 text-base font-semibold hover:bg-primary/90 transition-colors"
+                            className="bg-primary text-white uppercase py-2 px-4 md:px-6 text-xs md:text-base font-semibold hover:bg-primary/90 transition-colors tracking-wide"
                         >
                             EDIT
                         </button>
@@ -186,14 +186,14 @@ export default function Profile() {
                             <button
                                 type="button"
                                 onClick={handleCancel}
-                                className="bg-border text-lightText uppercase py-2 px-6 text-base font-semibold hover:bg-border/70 transition-colors"
+                                className="bg-border text-lightText uppercase py-2 px-4 md:px-6 text-xs md:text-base font-semibold hover:bg-border/70 transition-colors tracking-wide"
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
                                 disabled={loading || !formik.isValid}
-                                className="bg-primary text-white uppercase py-2 px-6 text-base font-semibold hover:bg-primary/90 transition-colors disabled:opacity-60"
+                                className="bg-primary text-white uppercase py-2 px-4 md:px-6 text-xs md:text-base font-semibold hover:bg-primary/90 transition-colors disabled:opacity-60 tracking-wide"
                             >
                                 {loading ? 'Saving...' : 'Save'}
                             </button>
@@ -202,15 +202,15 @@ export default function Profile() {
                 </div>
 
                 {/* ── Personal Information ── */}
-                <div className="mb-10">
-                    <p className="text-base font-semibold tracking-widest text-mainText uppercase mb-5">
+                <div className="md:mb-10 mb-6">
+                    <p className="text-xs sm:text-sm lg:text-base font-semibold tracking-widest text-mainText uppercase mb-5">
                         Personal Information (Member since {memberSince})
                     </p>
 
                     {/* Row 1: First Name / Last Name */}
                     <div className="grid grid-cols-2 gap-x-10 mb-6">
                         {/* First Name */}
-                        <div className="border-b border-border pb-3">
+                        <div className="border-b border-border sm:pb-3">
                             <p className={`text-sm mb-1 font-bold ${formik.touched.firstName && formik.errors.firstName ? 'text-red-500' : user?.firstName ? 'text-lightText' : 'text-primary'}`}>
                                 {formik.touched.firstName && formik.errors.firstName
                                     ? formik.errors.firstName
@@ -226,14 +226,14 @@ export default function Profile() {
                                     placeholder="Enter first name"
                                 />
                             ) : (
-                                <p className={`text-lg font-medium ${user?.firstName ? 'text-primary' : 'text-lightText'}`}>
+                                <p className={`text-sm sm:text-lg font-medium ${user?.firstName ? 'text-primary' : 'text-lightText'}`}>
                                     {user?.firstName || '—'}
                                 </p>
                             )}
                         </div>
 
                         {/* Last Name */}
-                        <div className="border-b border-border pb-3">
+                        <div className="border-b border-border sm:pb-3">
                             <p className={`text-sm mb-1 font-bold ${formik.touched.lastName && formik.errors.lastName ? 'text-red-500' : user?.lastName ? 'text-lightText' : 'text-primary'}`}>
                                 {formik.touched.lastName && formik.errors.lastName
                                     ? formik.errors.lastName
@@ -249,7 +249,7 @@ export default function Profile() {
                                     placeholder="Enter last name"
                                 />
                             ) : (
-                                <p className={`text-lg font-medium ${user?.lastName ? 'text-primary' : 'text-lightText'}`}>
+                                <p className={`text-sm sm:text-lg font-medium ${user?.lastName ? 'text-primary' : 'text-lightText'}`}>
                                     {user?.lastName || '—'}
                                 </p>
                             )}
@@ -257,7 +257,7 @@ export default function Profile() {
                     </div>
 
                     {/* Row 2: Contact / Email */}
-                    <div className="grid grid-cols-2 gap-x-10">
+                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-y-5 xl:gap-x-10">
                         {/* Contact Number — always read-only */}
                         <div>
                             <div className="border-b border-border pb-3">
@@ -265,11 +265,11 @@ export default function Profile() {
                                     Contact Number
                                 </p>
                                 <div className="flex items-center justify-between">
-                                    <p className={`text-lg font-medium ${user?.mobileNo ? 'text-primary' : 'text-lightText'}`}>
+                                    <p className={`text-sm sm:text-lg font-medium ${user?.mobileNo ? 'text-primary' : 'text-lightText'}`}>
                                         {user?.mobileNo ? `+1 ${user.mobileNo}` : 'Not added yet'}
                                     </p>
                                     {user?.verified && (
-                                        <span className="flex items-center gap-1 text-base font-semibold text-primary tracking-widest uppercase">
+                                        <span className="flex items-center gap-1 text-xs sm:text-base font-semibold text-primary tracking-widest uppercase">
                                             <HiOutlineCheckCircle className="text-base text-[#009951]" />
                                             Verified
                                         </span>
@@ -298,9 +298,9 @@ export default function Profile() {
                                     />
                                 ) : user?.email ? (
                                     <div className="flex items-center justify-between">
-                                        <p className="text-lg font-medium text-primary">{user.email}</p>
+                                        <p className="text-sm sm:text-lg font-medium text-primary">{user.email}</p>
                                         {user?.emailVerified ? (
-                                            <span className="flex items-center gap-1 text-base font-semibold text-primary tracking-widest uppercase">
+                                            <span className="flex items-center gap-1 text-xs sm:text-base font-semibold text-primary tracking-widest uppercase">
                                                 <HiOutlineCheckCircle className="text-base text-[#009951]" />
                                                 Verified
                                             </span>
@@ -313,8 +313,8 @@ export default function Profile() {
                                     </div>
                                 ) : (
                                     <div className="flex items-start justify-between">
-                                        <p className="text-lg text-lightText">Not added yet</p>
-                                        <button type="button" onClick={handleSendOtp} disabled={emailOtpLoading} className="flex items-center gap-1 text-base font-semibold text-mainText tracking-widest uppercase hover:opacity-80 transition-opacity mt-0.5 disabled:opacity-50">
+                                        <p className="text-sm sm:text-lg text-lightText">Not added yet</p>
+                                        <button type="button" onClick={handleSendOtp} disabled={emailOtpLoading} className="flex items-center gap-1 text-xs sm:text-base font-semibold text-mainText tracking-widest uppercase hover:opacity-80 transition-opacity mt-0.5 disabled:opacity-50">
                                             <HiOutlineExclamationTriangle className="text-base text-gold" />
                                             Verify
                                         </button>
@@ -322,7 +322,7 @@ export default function Profile() {
                                 )}
                             </div>
                             {!isEditing && !user?.email && !user?.emailVerified && (
-                                <p className="text-base text-lightText mt-1">Add your email for order updates.</p>
+                                <p className="text-xs sm:text-base text-lightText mt-1">Add your email for order updates.</p>
                             )}
                         </div>
                     </div>
@@ -330,25 +330,25 @@ export default function Profile() {
             </form>
 
             {/* ── Default Address ── */}
-            <div className="mb-10">
-                <div className="grid grid-cols-2 gap-x-10">
+            <div className="md:mb-10 mb-6">
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-y-5 xl:gap-x-10">
                     <div className="flex items-center justify-between mb-5">
-                        <p className="text-base font-semibold tracking-normal text-mainText uppercase">
+                        <p className="text-xs sm:text-sm lg:text-base font-semibold tracking-normal text-mainText uppercase">
                             Default Address (Preview)
                         </p>
                         <Link to="/addresses"
-                            className="flex items-center gap-1 text-base font-semibold tracking-widest text-mainText uppercase hover:text-primary transition-colors">
+                            className="flex items-center gap-1 text-xs sm:text-sm lg:text-base font-semibold tracking-widest text-mainText uppercase hover:text-primary transition-colors">
                             Manage <ArrowUpRight />
                         </Link>
                     </div>
                 </div>
-                <div className="grid grid-cols-2 gap-x-10">
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-y-5 xl:gap-x-10">
                     <div className="border-b border-border pb-3">
                         <p className={`text-sm mb-1 font-bold ${addressLine ? 'text-lightText' : 'text-primary'}`}>Address</p>
                         {addressLine ? (
-                            <p className="text-lg font-medium text-primary">{addressLine}</p>
+                            <p className="text-sm sm:text-lg font-medium text-primary">{addressLine}</p>
                         ) : (
-                            <p className="text-lg text-lightText">No address saved yet.</p>
+                            <p className="text-sm sm:text-lg text-lightText">No address saved yet.</p>
                         )}
                     </div>
                 </div>
@@ -356,18 +356,18 @@ export default function Profile() {
 
             {/* ── Payment Preview ── */}
             <div>
-                <div className="grid grid-cols-2 gap-x-10">
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-y-5 xl:gap-x-10">
                     <div className="flex items-center justify-between mb-5">
-                        <p className="text-base font-semibold tracking-normal text-mainText uppercase">
+                        <p className="text-xs sm:text-sm lg:text-base font-semibold tracking-normal text-mainText uppercase">
                             Payment (Preview)
                         </p>
                         <Link to="/payments"
-                            className="flex items-center gap-1 text-base font-semibold tracking-widest text-mainText uppercase hover:text-primary transition-colors">
+                            className="flex items-center gap-1 text-xs sm:text-sm lg:text-base font-semibold tracking-widest text-mainText uppercase hover:text-primary transition-colors">
                             View <ArrowUpRight />
                         </Link>
                     </div>
                 </div>
-                <div className="grid grid-cols-2 gap-x-10">
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-y-5 xl:gap-x-10">
                     <div className="border-b border-border pb-3">
                         <p className={`text-sm mb-1 font-bold ${defaultCard ? 'text-lightText' : 'text-primary'}`}>Payment</p>
                         {defaultCard ? (
@@ -385,7 +385,7 @@ export default function Profile() {
                                 </span>
                             </div>
                         ) : (
-                            <p className="text-lg text-lightText">No payment method saved yet.</p>
+                            <p className="text-sm sm:text-lg text-lightText">No payment method saved yet.</p>
                         )}
                     </div>
                 </div>

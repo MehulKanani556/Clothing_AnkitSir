@@ -1,7 +1,6 @@
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { logout } from '../../redux/slice/auth.slice';
-import Header from '../../components/Header';
 import { HiChevronRight } from 'react-icons/hi2';
 
 const NAV_ITEMS = [
@@ -26,8 +25,8 @@ export default function AccountLayout({ children }) {
     return (
         <div className="min-h-[calc(100vh-10rem)] bg-mainBG">
 
-            {/* Breadcrumb */}
-            <div className="py-6 px-8 text-center bg-background border border-border">
+            {/* Breadcrumb - Sticky below header */}
+            <div className="sticky top-[81px] md:top-[114px] z-20 py-6 px-8 text-center bg-background border-b border-border">
                 <p className="text-base text-lightText leading-5 uppercase font-semibold">
                     <Link to="/" className="">Home</Link>
                     <span className="mx-2">/</span>
@@ -36,10 +35,10 @@ export default function AccountLayout({ children }) {
             </div>
 
             {/* Body */}
-            <div className="flex min-h-[calc(100vh-11.5rem)] px-0 lg:px-0">
+            <div className="flex min-h-[calc(100vh-9.4rem)] md:min-h-[calc(100vh-11.5rem)] px-0 lg:px-0">
 
-                {/* Left Sidebar */}
-                <aside className="hidden md:flex flex-col w-96 shrink-0 border-r border-border bg-white">
+                {/* Left Sidebar - Sticky below breadcrumb */}
+                <aside className="sticky top-[183px] hidden md:flex flex-col w-64 2xl:w-96 h-[calc(100vh-192px)] shrink-0 bg-white overflow-y-auto">
                     {NAV_ITEMS.map((item) => (
                         <NavLink
                             key={item.label}
@@ -69,7 +68,7 @@ export default function AccountLayout({ children }) {
                 </aside>
 
                 {/* Main Content */}
-                <main className="flex-1 p-6 lg:p-10">
+                <main className="flex-1 p-4 md:p-6 lg:p-10">
                     {children}
                 </main>
             </div>
