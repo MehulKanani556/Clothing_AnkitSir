@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { 
+import {
   MdDashboard,
   MdLayers,
   MdShoppingBag,
@@ -19,7 +19,7 @@ const AdminSidebar = () => {
     { name: 'Category', icon: <MdGridView size={20} />, path: '/admin/category' },
     { name: 'Sub Category', icon: <MdFolder size={20} />, path: '/admin/sub-category' },
     { name: 'Inside Sub Category', icon: <MdAccountTree size={20} />, path: '/admin/inside-sub-category' },
-    { name: 'Products', icon: <MdShoppingBag size={20} />, path: '/admin/products' },
+    { name: 'Products', icon: <MdShoppingBag size={20} />, path: '/admin/product' },
     { name: 'Customers', icon: <MdPeople size={20} />, path: '/admin/customers' },
     { name: 'Settings', icon: <MdSettings size={20} />, path: '/admin/settings' },
   ];
@@ -30,7 +30,7 @@ const AdminSidebar = () => {
       <div className="h-24 flex items-center px-8 border-b border-slate-50">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center shadow-lg shadow-black/10">
-             <span className="text-white font-black text-2xl tracking-tighter">eo</span>
+            <span className="text-white font-black text-2xl tracking-tighter">eo</span>
           </div>
           <div>
             <h1 className="font-extrabold text-2xl tracking-tighter leading-none">EO</h1>
@@ -46,11 +46,10 @@ const AdminSidebar = () => {
             key={item.name}
             to={item.path}
             end={item.path === '/admin'}
-            className={({ isActive }) => 
-              `flex items-center justify-between px-5 py-3.5 rounded-2xl transition-all duration-300 group ${
-                isActive 
-                  ? 'bg-black text-white font-semibold shadow-xl shadow-black/10' 
-                  : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+            className={({ isActive }) =>
+              `flex items-center justify-between px-5 py-3.5 rounded-2xl transition-all duration-300 group ${isActive
+                ? 'bg-black text-white font-semibold shadow-xl shadow-black/10'
+                : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
               }`
             }
           >

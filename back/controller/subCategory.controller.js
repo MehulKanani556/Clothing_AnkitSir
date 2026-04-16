@@ -8,7 +8,7 @@ import { uploadFile, deleteFileFromS3 } from "../middleware/imageupload.js";
 
 export const createSubCategory = async (req, res) => {
   try {
-    const { subCategoryName, categoryId, mainCategoryId } = req.body;
+    const { subCategoryName, categoryId, mainCategoryId, attributes } = req.body;
 
     if (!subCategoryName || !categoryId || !mainCategoryId) {
       return sendBadRequestResponse(res, "subCategoryName, categoryId, and mainCategoryId are required!!!")
@@ -47,7 +47,8 @@ export const createSubCategory = async (req, res) => {
       mainCategoryId,
       categoryId,
       subCategoryName,
-      subCategoryImage: imageUrl
+      subCategoryImage: imageUrl,
+      attributes: attributes ? JSON.parse(attributes) : []
     })
 
     return sendSuccessResponse(res, "SubCategory added successfully...", newSubCategory)
@@ -100,7 +101,7 @@ export const getSubCategoryById = async (req, res) => {
 export const updateSubCategoryById = async (req, res) => {
   try {
     const { id } = req.params;
-    const { subCategoryName, categoryId, mainCategoryId } = req.body;
+    const { subCategoryName, categoryId, mainCategoryId, attributes } = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return sendBadRequestResponse(res, "Invalid SubCategoryId!!!");
@@ -138,9 +139,20 @@ export const updateSubCategoryById = async (req, res) => {
       imageUrl = uploadResult.url;
     }
 
+    const updateData = {
+      subCategoryName,
+      categoryId,
+      mainCategoryId,
+      subCategoryImage: imageUrl
+    };
+
+    if (attributes) {
+      updateData.attributes = typeof attributes === 'string' ? JSON.parse(attributes) : attributes;
+    }
+
     const updatedSubCategory = await SubCategoryModel.findByIdAndUpdate(
       id,
-      { subCategoryName, categoryId, mainCategoryId, subCategoryImage: imageUrl },
+      updateData,
       { new: true, runValidators: true }
     );
 

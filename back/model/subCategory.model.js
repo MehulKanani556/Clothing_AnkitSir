@@ -22,7 +22,23 @@ const subCategorySchema = mongoose.Schema({
   subCategoryImage: {
     type: String,
     default: ""
-  }
+  },
+  attributes: [{
+    name: {
+      type: String,
+      required: true
+    },
+    type: {
+      type: String,
+      enum: ['size', 'color', 'material', 'style', 'other'],
+      default: 'other'
+    },
+    values: [String],
+    isRequired: {
+      type: Boolean,
+      default: false
+    }
+  }]
 }, { timestamps: true })
 
 subCategorySchema.pre('save', function (next) {

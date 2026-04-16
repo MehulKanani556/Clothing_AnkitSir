@@ -1,8 +1,5 @@
 import axios from "axios";
 import { BASE_URL } from "./BASE_URL";
-import { logoutUser } from "../redux/slice/auth.slice";
-
-const userId = localStorage.getItem("userId");
 
 // Create axios instance with default config
 const axiosInstance = axios.create({
@@ -24,91 +21,74 @@ const processQueue = (error, token = null) => {
   failedQueue = [];
 };
 
-// Request Interceptor
+// Request Interceptor — attach access token
 axiosInstance.interceptors.request.use(
-  async (config) => {
-    const token = localStorage.getItem("token");
+  (config) => {
+    const token = localStorage.getItem("accessToken");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => {
+  (error) => Promise.reject(error)
+);
+
+// Response Interceptor — auto-refresh on 401
+axiosInstance.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !originalRequest.url.includes("/auth/refresh-token")
+    ) {
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({
+            resolve: (token) => {
+              originalRequest.headers.Authorization = "Bearer " + token;
+              resolve(axiosInstance(originalRequest));
+            },
+            reject: (err) => reject(err),
+          });
+        });
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      try {
+        const response = await axios.post(
+          `${BASE_URL}/auth/refresh-token`,
+          {},
+          { withCredentials: true }
+        );
+
+        if (response.data?.accessToken) {
+          const newToken = response.data.accessToken;
+          localStorage.setItem("accessToken", newToken);
+          processQueue(null, newToken);
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          return axiosInstance(originalRequest);
+        }
+      } catch (refreshError) {
+        processQueue(refreshError, null);
+        // 401 = no token, 403 = token invalid/mismatched — both require re-login
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("userId");
+        localStorage.removeItem("role");
+        localStorage.removeItem("persist:root");
+        window.location.href = "/";
+        return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
+      }
+    }
+
     return Promise.reject(error);
   }
 );
-
-// Response Interceptor
-// axiosInstance.interceptors.response.use(
-//   (response) => response,
-//   async (error) => {
-//     const originalRequest = error.config;
-
-//     // Handle 401 errors and token refresh
-//     if (
-//       error.response?.status === 401 &&
-//       !originalRequest._retry &&
-//       !originalRequest.url.includes("/generateNewTokens")
-//     ) {
-//       if (isRefreshing) {
-//         // If refresh is in progress, queue the request
-//         return new Promise(function (resolve, reject) {
-//           failedQueue.push({
-//             resolve: (token) => {
-//               originalRequest.headers.Authorization = "Bearer " + token;
-//               resolve(axiosInstance(originalRequest));
-//             },
-//             reject: (err) => {
-//               reject(err);
-//             },
-//           });
-//         });
-//       }
-
-//       originalRequest._retry = true;
-//       isRefreshing = true;
-
-//       const refreshToken = localStorage.getItem("refreshToken");
-
-
-//       try {
-//         const response = await axios.post(
-//           `${BASE_URL}/generateNewTokens`,
-//           {},
-//           {
-//             headers: { Authorization: `Bearer ${refreshToken}` },
-//             withCredentials: true,
-//           }
-//         ); 
-
-//         if (response.data.success && response.data.accessToken) {
-//           localStorage.setItem("token", response.data.accessToken);
-//           localStorage.setItem("token", response.data.accessToken);
-//           localStorage.setItem("refreshToken", response.data.refreshToken);
-
-//           processQueue(null, response.data.accessToken);
-
-//           originalRequest.headers.Authorization = `Bearer ${response.data.accessToken}`;
-//           return axiosInstance(originalRequest);
-//         }
-//       } catch (refreshError) {
-//         processQueue(refreshError, null);
-
-//         const { store } = require("../redux/Store").configureStore();
-//         store.dispatch(logoutUser());
-//         // alert("Logout");
-//         localStorage.removeItem("token");
-//         localStorage.removeItem("userId");
-//         localStorage.removeItem("refreshToken");
-//         window.location.href = "/";
-//         return Promise.reject(refreshError);
-//       } finally {
-//         isRefreshing = false;
-//       }
-//     }
-
-//     return Promise.reject(error);
-//   }
-// );
 
 export default axiosInstance;

@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { MdClose, MdSave, MdCloudUpload, MdDelete } from 'react-icons/md';
+import { MdClose, MdSave, MdCloudUpload, MdDelete, MdAdd } from 'react-icons/md';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { useSelector } from 'react-redux';
 
 const CategoryForm = ({ initialValues, onSubmit, onCancel, isLoading }) => {
   const [preview, setPreview] = useState(null);
+  const [attributes, setAttributes] = useState(initialValues?.attributes || []);
   const { mainCategories } = useSelector((state) => state.category);
 
   useEffect(() => {
@@ -33,7 +34,7 @@ const CategoryForm = ({ initialValues, onSubmit, onCancel, isLoading }) => {
     }),
     enableReinitialize: true,
     onSubmit: (values) => {
-      onSubmit(values);
+      onSubmit({ ...values, attributes });
     },
   });
 
@@ -58,7 +59,7 @@ const CategoryForm = ({ initialValues, onSubmit, onCancel, isLoading }) => {
           </h3>
           <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-0.5">Admin Studio</p>
         </div>
-        <button 
+        <button
           onClick={onCancel}
           className="p-2.5 hover:bg-white rounded-2xl text-slate-400 hover:text-black transition-all border border-transparent hover:border-slate-200 hover:shadow-sm"
         >
@@ -76,7 +77,7 @@ const CategoryForm = ({ initialValues, onSubmit, onCancel, isLoading }) => {
                 <div className="relative w-full h-full group">
                   <img src={preview} alt="Preview" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
-                    <button 
+                    <button
                       type="button"
                       onClick={() => {
                         setPreview(null);
@@ -120,11 +121,10 @@ const CategoryForm = ({ initialValues, onSubmit, onCancel, isLoading }) => {
               name="categoryName"
               type="text"
               placeholder="e.g. T-Shirts"
-              className={`w-full px-5 py-3.5 rounded-2xl border transition-all outline-none text-sm font-medium ${
-                formik.touched.categoryName && formik.errors.categoryName
-                  ? 'border-red-300 focus:border-red-500 bg-red-50/10'
-                  : 'border-slate-200 focus:border-black focus:ring-4 focus:ring-black/5'
-              }`}
+              className={`w-full px-5 py-3.5 rounded-2xl border transition-all outline-none text-sm font-medium ${formik.touched.categoryName && formik.errors.categoryName
+                ? 'border-red-300 focus:border-red-500 bg-red-50/10'
+                : 'border-slate-200 focus:border-black focus:ring-4 focus:ring-black/5'
+                }`}
               {...formik.getFieldProps('categoryName')}
             />
             {formik.touched.categoryName && formik.errors.categoryName && (
@@ -139,11 +139,10 @@ const CategoryForm = ({ initialValues, onSubmit, onCancel, isLoading }) => {
             <select
               id="mainCategoryId"
               name="mainCategoryId"
-              className={`w-full px-5 py-3.5 rounded-2xl border transition-all outline-none text-sm font-medium ${
-                formik.touched.mainCategoryId && formik.errors.mainCategoryId
-                  ? 'border-red-300 focus:border-red-500 bg-red-50/10'
-                  : 'border-slate-200 focus:border-black focus:ring-4 focus:ring-black/5'
-              }`}
+              className={`w-full px-5 py-3.5 rounded-2xl border transition-all outline-none text-sm font-medium ${formik.touched.mainCategoryId && formik.errors.mainCategoryId
+                ? 'border-red-300 focus:border-red-500 bg-red-50/10'
+                : 'border-slate-200 focus:border-black focus:ring-4 focus:ring-black/5'
+                }`}
               {...formik.getFieldProps('mainCategoryId')}
             >
               <option value="">Select Main Category</option>
@@ -157,6 +156,110 @@ const CategoryForm = ({ initialValues, onSubmit, onCancel, isLoading }) => {
               <p className="text-xs font-bold text-red-500 ml-1 mt-1">{formik.errors.mainCategoryId}</p>
             )}
           </div>
+        </div>
+
+        {/* Attributes Section */}
+        <div className="space-y-3 pt-4 border-t border-slate-100">
+          <div className="flex items-center justify-between">
+            <div>
+              <label className="text-sm font-bold text-slate-700">Product Attributes</label>
+              <p className="text-xs text-slate-500 mt-0.5">Define size, material, or other variant options</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setAttributes([...attributes, { name: '', type: 'size', values: [], isRequired: false }])}
+              className="flex items-center gap-1 text-xs font-bold text-black hover:bg-slate-100 px-3 py-2 rounded-lg transition-all"
+            >
+              <MdAdd size={16} />
+              Add Attribute
+            </button>
+          </div>
+
+          {attributes.map((attr, index) => (
+            <div key={index} className="p-4 bg-slate-50 rounded-2xl space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-600">Attribute {index + 1}</span>
+                <button
+                  type="button"
+                  onClick={() => setAttributes(attributes.filter((_, i) => i !== index))}
+                  className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                >
+                  <MdDelete size={16} />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-slate-700 ml-1">Attribute Name</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Size, Material"
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 mt-1 focus:border-black focus:ring-2 focus:ring-black/5 transition-all outline-none text-sm font-medium"
+                    value={attr.name}
+                    onChange={(e) => {
+                      const newAttrs = [...attributes];
+                      newAttrs[index].name = e.target.value;
+                      setAttributes(newAttrs);
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-slate-700 ml-1">Type</label>
+                  <select
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 mt-1 focus:border-black focus:ring-2 focus:ring-black/5 transition-all outline-none text-sm font-medium"
+                    value={attr.type}
+                    onChange={(e) => {
+                      const newAttrs = [...attributes];
+                      newAttrs[index].type = e.target.value;
+                      setAttributes(newAttrs);
+                    }}
+                  >
+                    <option value="size">Size</option>
+                    <option value="color">Color</option>
+                    <option value="material">Material</option>
+                    <option value="style">Style</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-700 ml-1">Values (comma separated)</label>
+                <input
+                  type="text"
+                  placeholder="e.g. S, M, L, XL, XXL"
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 mt-1 focus:border-black focus:ring-2 focus:ring-black/5 transition-all outline-none text-sm font-medium"
+                  value={attr.values.join(', ')}
+                  onChange={(e) => {
+                    const newAttrs = [...attributes];
+                    newAttrs[index].values = e.target.value.split(',').map(v => v.trim()).filter(Boolean);
+                    setAttributes(newAttrs);
+                  }}
+                />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 rounded border-slate-300 text-black focus:ring-black"
+                  checked={attr.isRequired}
+                  onChange={(e) => {
+                    const newAttrs = [...attributes];
+                    newAttrs[index].isRequired = e.target.checked;
+                    setAttributes(newAttrs);
+                  }}
+                />
+                <label className="text-xs font-medium text-slate-700">Required field</label>
+              </div>
+            </div>
+          ))}
+
+          {attributes.length === 0 && (
+            <div className="text-center py-8 text-slate-400 text-sm">
+              No attributes added. Click "Add Attribute" to define product options.
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-4 pt-4">

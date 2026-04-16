@@ -120,8 +120,7 @@ router.get("/auth/me", UserAuth, AuthController.getUser);
 router.post("/auth/update-fcm", UserAuth, AuthController.updateFcmToken);
 
 // --- Main Category Routes ---
-// router.post("/main-category/create", UserAuth, adminAuth, upload.single("mainCategoryImage"), createMainCategory);
-router.post("/main-category/create", upload.single("mainCategoryImage"), createMainCategory);
+router.post("/main-category/create", UserAuth, adminAuth, upload.single("mainCategoryImage"), createMainCategory);
 router.get("/main-category/get-all", getAllMainCategory);
 router.get("/main-category/get-by-id/:id", getMainCategoryById);
 router.put("/main-category/update/:id", UserAuth, adminAuth, upload.single("mainCategoryImage"), updateMainCategoryById);

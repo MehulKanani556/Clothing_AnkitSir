@@ -15,6 +15,7 @@ const ProtectedRoute = ({ allowedRole, redirectTo = '/auth' }) => {
     if (!isAuthenticated) {
         return <Navigate to={redirectTo} replace />;
     }
+    console.log(user,allowedRole);
 
     if (allowedRole && user?.role !== allowedRole) {
         // Authenticated but wrong role → send to home

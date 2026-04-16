@@ -11,7 +11,7 @@ export const UserAuth = async (req, res, next) => {
             return sendErrorResponse(res, 500, 'Server configuration error');
         }
 
-        const token = req.cookies?.accessToken || req.header('Authorization')?.replace('Bearer ', '') || req.query.token;
+        const token = req.header('Authorization')?.replace('Bearer ', '') || req.cookies?.accessToken || req.query.token;
 
         if (!token) {
             return sendUnauthorizedResponse(res, "Access denied. No token provided.");

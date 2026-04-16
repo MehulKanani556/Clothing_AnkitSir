@@ -7,6 +7,11 @@ const productSchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
+  brand: {
+    type: String,
+    default: null,
+    trim: true,
+  },
   mainCategory: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "MainCategory",
@@ -67,11 +72,27 @@ const productSchema = new mongoose.Schema({
     description: { type: String, default: null },
     points: [{ type: String, default: [] }]
   },
+  material: {
+    type: String,
+    default: null,
+  },
+  careInstructions: {
+    type: String,
+    default: null,
+  },
+  countryOfOrigin: {
+    type: String,
+    default: null,
+  },
   view: { type: Number, default: 0 },
   sold: { type: Number, default: 0 },
   isActive: {
     type: Boolean,
     default: true,
+  },
+  isFeatured: {
+    type: Boolean,
+    default: false,
   },
 }, { timestamps: true });
 

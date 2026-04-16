@@ -15,7 +15,6 @@ export const createProduct = async (req, res) => {
       mainCategory,
       category,
       subCategory,
-      insideSubCategory,
       sizechart,
       badges,
       tags,
@@ -23,6 +22,9 @@ export const createProduct = async (req, res) => {
       sizeGuide,
       deliveryReturns
     } = req.body;
+
+    // Normalize optional ObjectId fields — empty string → null
+    const insideSubCategory = req.body.insideSubCategory || null;
 
     if (req.user.role !== "admin") {
       return sendForbiddenResponse(res, "Access denied. Only admin can create products!");
@@ -77,7 +79,7 @@ export const createProduct = async (req, res) => {
       mainCategory,
       category,
       subCategory,
-      insideSubCategory: insideSubCategory || null,
+      insideSubCategory,
       sizechart,
       badges: badges || [],
       tags: tags || [],
@@ -181,9 +183,17 @@ export const updateProduct = async (req, res) => {
       return sendForbiddenResponse(res, "Access denied. Only admin can update products!");
     }
 
+    // Strip empty string ObjectId fields to avoid cast errors
+    const objectIdFields = ['insideSubCategory', 'sizeGuide', 'mainCategory', 'category', 'subCategory'];
+    objectIdFields.forEach(field => {
+      if (updateData[field] === '' || updateData[field] === null) {
+        updateData[field] = null;
+      }
+    });
+
     if (updateData.name) {
       updateData.slug = slugify(updateData.name);
-      
+
       // Slug uniqueness check on update
       const existing = await productModel.findOne({ slug: updateData.slug, _id: { $ne: id } });
       if (existing) {
@@ -256,12 +266,12 @@ export const deleteProduct = async (req, res) => {
 
 export const searchProducts = async (req, res) => {
   try {
-    const { 
-      q, 
-      mainCategoryId, 
-      categoryId, 
-      subCategoryId, 
-      insideSubCategoryId 
+    const {
+      q,
+      mainCategoryId,
+      categoryId,
+      subCategoryId,
+      insideSubCategoryId
     } = req.query;
 
     const filter = { isActive: true };

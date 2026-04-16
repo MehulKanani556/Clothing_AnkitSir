@@ -1,6 +1,5 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { BASE_URL } from '../../utils/BASE_URL';
-import axios from 'axios';
+import axiosInstance from '../../utils/axiosInstance';
 
 const initialState = {
     mainCategories: [],
@@ -20,7 +19,7 @@ export const fetchMainCategories = createAsyncThunk(
     'category/fetchMainCategories',
     async (_, { rejectWithValue }) => {
         try {
-            const response = await axios.get(`${BASE_URL}/main-category/get-all`);
+            const response = await axiosInstance.get('/main-category/get-all');
             return response.data;
         } catch (error) {
             return handleErrors(error, rejectWithValue);
@@ -32,7 +31,7 @@ export const createMainCategory = createAsyncThunk(
     'category/createMainCategory',
     async (data, { rejectWithValue, dispatch }) => {
         try {
-            const response = await axios.post(`${BASE_URL}/main-category/create`, data);
+            const response = await axiosInstance.post('/main-category/create', data);
             dispatch(fetchMainCategories());
             return response.data;
         } catch (error) {
@@ -45,7 +44,7 @@ export const updateMainCategory = createAsyncThunk(
     'category/updateMainCategory',
     async ({ id, data }, { rejectWithValue, dispatch }) => {
         try {
-            const response = await axios.put(`${BASE_URL}/main-category/update/${id}`, data);
+            const response = await axiosInstance.put(`/main-category/update/${id}`, data);
             dispatch(fetchMainCategories());
             return response.data;
         } catch (error) {
@@ -58,7 +57,7 @@ export const deleteMainCategory = createAsyncThunk(
     'category/deleteMainCategory',
     async (id, { rejectWithValue, dispatch }) => {
         try {
-            const response = await axios.delete(`${BASE_URL}/main-category/delete/${id}`);
+            const response = await axiosInstance.delete(`/main-category/delete/${id}`);
             dispatch(fetchMainCategories());
             return response.data;
         } catch (error) {
@@ -72,7 +71,7 @@ export const fetchCategories = createAsyncThunk(
     'category/fetchCategories',
     async (_, { rejectWithValue }) => {
         try {
-            const response = await axios.get(`${BASE_URL}/category/get-all`);
+            const response = await axiosInstance.get('/category/get-all');
             return response.data;
         } catch (error) {
             return handleErrors(error, rejectWithValue);
@@ -84,7 +83,7 @@ export const createCategory = createAsyncThunk(
     'category/createCategory',
     async (data, { rejectWithValue, dispatch }) => {
         try {
-            const response = await axios.post(`${BASE_URL}/category/create`, data);
+            const response = await axiosInstance.post('/category/create', data);
             dispatch(fetchCategories());
             return response.data;
         } catch (error) {
@@ -97,7 +96,7 @@ export const updateCategory = createAsyncThunk(
     'category/updateCategory',
     async ({ id, data }, { rejectWithValue, dispatch }) => {
         try {
-            const response = await axios.put(`${BASE_URL}/category/update/${id}`, data);
+            const response = await axiosInstance.put(`/category/update/${id}`, data);
             dispatch(fetchCategories());
             return response.data;
         } catch (error) {
@@ -110,7 +109,7 @@ export const deleteCategory = createAsyncThunk(
     'category/deleteCategory',
     async (id, { rejectWithValue, dispatch }) => {
         try {
-            const response = await axios.delete(`${BASE_URL}/category/delete/${id}`);
+            const response = await axiosInstance.delete(`/category/delete/${id}`);
             dispatch(fetchCategories());
             return response.data;
         } catch (error) {
@@ -124,7 +123,7 @@ export const fetchSubCategories = createAsyncThunk(
     'category/fetchSubCategories',
     async (_, { rejectWithValue }) => {
         try {
-            const response = await axios.get(`${BASE_URL}/sub-category/get-all`);
+            const response = await axiosInstance.get('/sub-category/get-all');
             return response.data;
         } catch (error) {
             return handleErrors(error, rejectWithValue);
@@ -136,7 +135,7 @@ export const createSubCategory = createAsyncThunk(
     'category/createSubCategory',
     async (data, { rejectWithValue, dispatch }) => {
         try {
-            const response = await axios.post(`${BASE_URL}/sub-category/create`, data);
+            const response = await axiosInstance.post('/sub-category/create', data);
             dispatch(fetchSubCategories());
             return response.data;
         } catch (error) {
@@ -149,7 +148,7 @@ export const updateSubCategory = createAsyncThunk(
     'category/updateSubCategory',
     async ({ id, data }, { rejectWithValue, dispatch }) => {
         try {
-            const response = await axios.put(`${BASE_URL}/sub-category/update/${id}`, data);
+            const response = await axiosInstance.put(`/sub-category/update/${id}`, data);
             dispatch(fetchSubCategories());
             return response.data;
         } catch (error) {
@@ -162,7 +161,7 @@ export const deleteSubCategory = createAsyncThunk(
     'category/deleteSubCategory',
     async (id, { rejectWithValue, dispatch }) => {
         try {
-            const response = await axios.delete(`${BASE_URL}/sub-category/delete/${id}`);
+            const response = await axiosInstance.delete(`/sub-category/delete/${id}`);
             dispatch(fetchSubCategories());
             return response.data;
         } catch (error) {
@@ -176,7 +175,7 @@ export const fetchInsideSubCategories = createAsyncThunk(
     'category/fetchInsideSubCategories',
     async (_, { rejectWithValue }) => {
         try {
-            const response = await axios.get(`${BASE_URL}/inside-sub-category/get-all`);
+            const response = await axiosInstance.get('/inside-sub-category/get-all');
             return response.data;
         } catch (error) {
             return handleErrors(error, rejectWithValue);
@@ -188,7 +187,7 @@ export const createInsideSubCategory = createAsyncThunk(
     'category/createInsideSubCategory',
     async (data, { rejectWithValue, dispatch }) => {
         try {
-            const response = await axios.post(`${BASE_URL}/inside-sub-category/create`, data);
+            const response = await axiosInstance.post('/inside-sub-category/create', data);
             dispatch(fetchInsideSubCategories());
             return response.data;
         } catch (error) {
@@ -201,7 +200,7 @@ export const updateInsideSubCategory = createAsyncThunk(
     'category/updateInsideSubCategory',
     async ({ id, data }, { rejectWithValue, dispatch }) => {
         try {
-            const response = await axios.put(`${BASE_URL}/inside-sub-category/update/${id}`, data);
+            const response = await axiosInstance.put(`/inside-sub-category/update/${id}`, data);
             dispatch(fetchInsideSubCategories());
             return response.data;
         } catch (error) {
@@ -214,7 +213,7 @@ export const deleteInsideSubCategory = createAsyncThunk(
     'category/deleteInsideSubCategory',
     async (id, { rejectWithValue, dispatch }) => {
         try {
-            const response = await axios.delete(`${BASE_URL}/inside-sub-category/delete/${id}`);
+            const response = await axiosInstance.delete(`/inside-sub-category/delete/${id}`);
             dispatch(fetchInsideSubCategories());
             return response.data;
         } catch (error) {

@@ -4,6 +4,9 @@ import MainCategoryList from '../admin/pages/MainCategory/CategoryList';
 import CategoryList from '../admin/pages/Category/CategoryList';
 import SubCategoryList from '../admin/pages/SubCategory/SubCategoryList';
 import InsideSubCategoryList from '../admin/pages/InsideSubCategory/InsideSubCategoryList';
+import ProductList from '../admin/pages/Product/ProductList';
+import ProductForm from '../admin/pages/Product/ProductForm';
+import ProductView from '../admin/pages/Product/ProductView';
 import ProtectedRoute from './ProtectedRoute';
 
 const AdminRoutes = () => {
@@ -17,6 +20,10 @@ const AdminRoutes = () => {
                     <Route path="category" element={<CategoryList />} />
                     <Route path="sub-category" element={<SubCategoryList />} />
                     <Route path="inside-sub-category" element={<InsideSubCategoryList />} />
+                    <Route path="product" element={<ProductList />} />
+                    <Route path="product/create" element={<ProductForm />} />
+                    <Route path="product/edit/:id" element={<ProductForm />} />
+                    <Route path="product/view/:id" element={<ProductView />} />
                 </Route>
             </Route>
         </Routes>

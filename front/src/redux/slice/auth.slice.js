@@ -4,6 +4,20 @@ import axios from 'axios';
 import axiosInstance from '../../utils/axiosInstance';
 import toast from 'react-hot-toast';
 
+// Function to clear persisted storage
+const clearPersistedStorage = () => {
+    try {
+        // Clear redux-persist storage
+        localStorage.removeItem('persist:root');
+        // Clear auth tokens
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('userId');
+        localStorage.removeItem('role');
+    } catch (error) {
+        console.error('Error clearing persisted storage:', error);
+    }
+};
+
 const initialState = {
     user: null,
     isAuthenticated: false,
@@ -25,7 +39,7 @@ export const sendOtp = createAsyncThunk(
     'auth/sendOtp',
     async ({ mobileNo, role = 'user' }, { rejectWithValue }) => {
         try {
-            const response = await axios.post(`${BASE_URL}/auth/send-otp`, { mobileNo, role });
+            const response = await axios.post(`${BASE_URL}/auth/send-otp`, { mobileNo, role }, { withCredentials: true });
             return response.data;
         } catch (error) {
             return handleErrors(error, rejectWithValue);
@@ -38,9 +52,9 @@ export const verifyOtp = createAsyncThunk(
     'auth/verifyOtp',
     async ({ mobileNo, otp }, { rejectWithValue }) => {
         try {
-            const response = await axios.post(`${BASE_URL}/auth/verify-otp`, { mobileNo, otp });
+            const response = await axios.post(`${BASE_URL}/auth/verify-otp`, { mobileNo, otp }, { withCredentials: true });
             if (response.data?.user) {
-                localStorage.setItem('token', response.data.accessToken);
+                localStorage.setItem('accessToken', response.data.accessToken);
                 localStorage.setItem('userId', response.data.user._id);
                 localStorage.setItem('role', response.data.user.role);
             }
@@ -58,7 +72,7 @@ export const refreshAccessToken = createAsyncThunk(
         try {
             const response = await axios.post(`${BASE_URL}/auth/refresh-token`, {}, { withCredentials: true });
             if (response.data?.accessToken) {
-                localStorage.setItem('token', response.data.accessToken);
+                localStorage.setItem('accessToken', response.data.accessToken);
             }
             return response.data;
         } catch (error) {
@@ -72,7 +86,7 @@ export const getMe = createAsyncThunk(
     'auth/getMe',
     async (_, { rejectWithValue }) => {
         try {
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('accessToken');
             const response = await axios.get(`${BASE_URL}/auth/me`, {
                 headers: { Authorization: `Bearer ${token}` },
                 withCredentials: true,
@@ -136,9 +150,8 @@ export const authSlice = createSlice({
             state.error = null;
             state.message = null;
             state.otp = null;
-            localStorage.removeItem('token');
-            localStorage.removeItem('userId');
-            localStorage.removeItem('role');
+            // Clear all persisted storage
+            clearPersistedStorage();
         },
         clearMessage: (state) => {
             state.message = null;

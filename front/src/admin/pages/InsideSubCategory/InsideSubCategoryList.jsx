@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { 
-  fetchInsideSubCategories, 
-  createInsideSubCategory, 
-  updateInsideSubCategory, 
+import {
+  fetchInsideSubCategories,
+  createInsideSubCategory,
+  updateInsideSubCategory,
   deleteInsideSubCategory,
   fetchSubCategories
 } from '../../../redux/slice/category.slice';
-import { 
+import {
   MdAdd,
   MdEdit,
   MdDelete,
@@ -37,6 +37,9 @@ const InsideSubCategoryList = () => {
     if (values.insideSubCategoryImage) {
       formData.append('insideSubCategoryImage', values.insideSubCategoryImage);
     }
+    if (values.attributes) {
+      formData.append('attributes', JSON.stringify(values.attributes));
+    }
 
     dispatch(createInsideSubCategory(formData)).then((res) => {
       if (!res.error) setIsModalOpen(false);
@@ -49,6 +52,9 @@ const InsideSubCategoryList = () => {
     formData.append('subCategoryId', values.subCategoryId);
     if (values.insideSubCategoryImage) {
       formData.append('insideSubCategoryImage', values.insideSubCategoryImage);
+    }
+    if (values.attributes) {
+      formData.append('attributes', JSON.stringify(values.attributes));
     }
 
     dispatch(updateInsideSubCategory({ id: editingCategory._id, data: formData })).then((res) => {
@@ -65,7 +71,7 @@ const InsideSubCategoryList = () => {
     }
   };
 
-  const filteredCategories = insideSubCategories.filter(cat => 
+  const filteredCategories = insideSubCategories.filter(cat =>
     cat.insideSubCategoryName?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -77,7 +83,7 @@ const InsideSubCategoryList = () => {
           <h2 className="text-2xl font-bold text-slate-900">Inside Sub Categories</h2>
           <p className="text-slate-500 text-sm">Manage your detailed product categories here.</p>
         </div>
-        <button 
+        <button
           onClick={() => {
             setEditingCategory(null);
             setIsModalOpen(true);
@@ -92,29 +98,29 @@ const InsideSubCategoryList = () => {
       {/* Stats and Search */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-3 bg-white p-4 rounded-3xl border border-slate-200 flex flex-col md:flex-row gap-4 items-center shadow-sm">
-            <div className="relative flex-1 w-full">
-                <MdSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                <input 
-                    type="text" 
-                    placeholder="Search inside sub categories..."
-                    className="w-full pl-12 pr-4 py-2.5 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-black focus:ring-4 focus:ring-black/5 transition-all text-sm"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                />
-            </div>
-            <button className="flex items-center gap-2 px-6 py-2.5 text-slate-600 hover:bg-black hover:text-white rounded-2xl transition-all text-sm border border-slate-100 font-semibold group">
-                <MdFilterList size={16} className="group-hover:rotate-180 transition-transform duration-500" />
-                <span>Filters</span>
-            </button>
+          <div className="relative flex-1 w-full">
+            <MdSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <input
+              type="text"
+              placeholder="Search inside sub categories..."
+              className="w-full pl-12 pr-4 py-2.5 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-black focus:ring-4 focus:ring-black/5 transition-all text-sm"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <button className="flex items-center gap-2 px-6 py-2.5 text-slate-600 hover:bg-black hover:text-white rounded-2xl transition-all text-sm border border-slate-100 font-semibold group">
+            <MdFilterList size={16} className="group-hover:rotate-180 transition-transform duration-500" />
+            <span>Filters</span>
+          </button>
         </div>
         <div className="bg-black p-5 rounded-3xl border border-black flex items-center justify-between shadow-xl shadow-black/10">
-            <div>
-                <p className="text-white/50 text-[10px] font-bold uppercase tracking-widest">Total Categories</p>
-                <p className="text-3xl font-black text-white">{insideSubCategories.length}</p>
-            </div>
-            <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur-sm">
-                <MdLayers className="text-white" size={28} />
-            </div>
+          <div>
+            <p className="text-white/50 text-[10px] font-bold uppercase tracking-widest">Total Categories</p>
+            <p className="text-3xl font-black text-white">{insideSubCategories.length}</p>
+          </div>
+          <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+            <MdLayers className="text-white" size={28} />
+          </div>
         </div>
       </div>
 
@@ -135,16 +141,16 @@ const InsideSubCategoryList = () => {
             <tbody className="divide-y divide-slate-50">
               {loading && insideSubCategories.length === 0 ? (
                 <tr>
-                    <td colSpan="6" className="px-6 py-12 text-center text-slate-400 italic">
-                        <div className="flex flex-col items-center gap-2">
-                            <div className="w-8 h-8 border-4 border-black border-t-transparent rounded-full animate-spin"></div>
-                            <span>Loading inside sub categories...</span>
-                        </div>
-                    </td>
+                  <td colSpan="6" className="px-6 py-12 text-center text-slate-400 italic">
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="w-8 h-8 border-4 border-black border-t-transparent rounded-full animate-spin"></div>
+                      <span>Loading inside sub categories...</span>
+                    </div>
+                  </td>
                 </tr>
               ) : filteredCategories.length === 0 ? (
                 <tr>
-                    <td colSpan="6" className="px-6 py-12 text-center text-slate-400 italic">No inside sub categories found matching your search.</td>
+                  <td colSpan="6" className="px-6 py-12 text-center text-slate-400 italic">No inside sub categories found matching your search.</td>
                 </tr>
               ) : (
                 filteredCategories.map((category) => (
@@ -152,8 +158,8 @@ const InsideSubCategoryList = () => {
                     <td className="px-6 py-4">
                       <div className="w-12 h-12 rounded-xl bg-slate-100 overflow-hidden border border-slate-100 group-hover:border-black/10 transition-colors">
                         {category.insideSubCategoryImage ? (
-                          <img 
-                            src={category.insideSubCategoryImage.startsWith('http') ? category.insideSubCategoryImage : `http://localhost:8000/${category.insideSubCategoryImage}`} 
+                          <img
+                            src={category.insideSubCategoryImage.startsWith('http') ? category.insideSubCategoryImage : `http://localhost:8000/${category.insideSubCategoryImage}`}
                             alt={category.insideSubCategoryName}
                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                             onError={(e) => { e.target.src = 'https://ui-avatars.com/api/?name=' + category.insideSubCategoryName }}
@@ -183,23 +189,23 @@ const InsideSubCategoryList = () => {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button 
-                            onClick={() => {
-                                setEditingCategory(category);
-                                setIsModalOpen(true);
-                            }}
-                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        <button
+                          onClick={() => {
+                            setEditingCategory(category);
+                            setIsModalOpen(true);
+                          }}
+                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                         >
                           <MdEdit size={18} />
                         </button>
-                        <button 
-                            onClick={() => handleDelete(category._id)}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        <button
+                          onClick={() => handleDelete(category._id)}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                         >
                           <MdDelete size={18} />
                         </button>
                         <button className="p-2 text-slate-400 hover:bg-slate-100 rounded-lg transition-colors">
-                            <MdMoreVert size={18} />
+                          <MdMoreVert size={18} />
                         </button>
                       </div>
                     </td>
@@ -217,7 +223,7 @@ const InsideSubCategoryList = () => {
           <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-0" onClick={() => setIsModalOpen(false)}></div>
           <div className="relative z-10 w-full flex justify-center py-4 md:py-10">
             <div className="animate-in zoom-in-95 duration-200 w-full max-w-xl">
-              <InsideSubCategoryForm 
+              <InsideSubCategoryForm
                 initialValues={editingCategory}
                 onSubmit={editingCategory ? handleUpdate : handleCreate}
                 onCancel={() => {

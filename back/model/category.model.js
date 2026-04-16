@@ -18,7 +18,23 @@ const categorySchema = new mongoose.Schema({
   categoryImage: {
     type: String,
     default: ""
-  }
+  },
+  attributes: [{
+    name: {
+      type: String,
+      required: true
+    },
+    type: {
+      type: String,
+      enum: ['size', 'color', 'material', 'style', 'other'],
+      default: 'other'
+    },
+    values: [String],
+    isRequired: {
+      type: Boolean,
+      default: false
+    }
+  }]
 }, { timestamps: true })
 
 categorySchema.pre('save', function (next) {

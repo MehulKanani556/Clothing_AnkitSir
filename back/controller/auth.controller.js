@@ -188,10 +188,10 @@ export class AuthController {
 
       const user = await UserModel.findById(decoded.id);
 
-      if (!user || user.refreshToken !== refreshToken) {
+      if (!user) {
         return res.status(403).json({
           success: false,
-          message: "Invalid refresh token!"
+          message: "User not found!"
         });
       }
 

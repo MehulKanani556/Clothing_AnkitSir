@@ -305,12 +305,11 @@ export default function Header() {
                     <>
                         {/* Invisible bridge to prevent menu from closing */}
                         <div
-                            className="hidden lg:block absolute top-[64px] left-0 w-full h-[20px] z-40"
+                            className="hidden lg:block absolute top-[80px] left-0 w-full h-[10px] z-40"
                             onMouseEnter={() => setHoveredCategory(hoveredCategory)}
-                            onMouseLeave={() => setHoveredCategory(null)}
                         />
                         <div
-                            className="hidden lg:block absolute top-[90px] left-0 w-full bg-white text-dark z-50"
+                            className="hidden lg:block absolute top-[90px] left-0 w-full bg-white text-dark z-50 shadow-lg"
                             onMouseEnter={() => setHoveredCategory(hoveredCategory)}
                             onMouseLeave={() => setHoveredCategory(null)}
                         >

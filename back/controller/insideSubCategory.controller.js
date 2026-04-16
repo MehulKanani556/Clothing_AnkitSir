@@ -9,7 +9,7 @@ import { uploadFile, deleteFileFromS3 } from "../middleware/imageupload.js";
 
 export const createInsideSubCategory = async (req, res) => {
   try {
-    const { insideSubCategoryName, subCategoryId, categoryId, mainCategoryId } = req.body;
+    const { insideSubCategoryName, subCategoryId, categoryId, mainCategoryId, attributes } = req.body;
 
     if (!insideSubCategoryName || !subCategoryId || !categoryId || !mainCategoryId) {
       return sendBadRequestResponse(res, "insideSubCategoryName, subCategoryId, categoryId, and mainCategoryId are required!!!")
@@ -58,7 +58,8 @@ export const createInsideSubCategory = async (req, res) => {
       categoryId,
       subCategoryId,
       insideSubCategoryName,
-      insideSubCategoryImage: imageUrl
+      insideSubCategoryImage: imageUrl,
+      attributes: attributes ? JSON.parse(attributes) : []
     })
 
     return sendSuccessResponse(res, "InsideSubCategory added successfully...", newInsideSubCategory)
@@ -113,7 +114,7 @@ export const getInsideSubCategoryById = async (req, res) => {
 export const updateInsideSubCategoryById = async (req, res) => {
   try {
     const { id } = req.params;
-    const { insideSubCategoryName, subCategoryId, categoryId, mainCategoryId } = req.body;
+    const { insideSubCategoryName, subCategoryId, categoryId, mainCategoryId, attributes } = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return sendBadRequestResponse(res, "Invalid InsideSubCategoryId!!!");
@@ -160,9 +161,21 @@ export const updateInsideSubCategoryById = async (req, res) => {
       imageUrl = uploadResult.url;
     }
 
+    const updateData = {
+      insideSubCategoryName,
+      subCategoryId,
+      categoryId,
+      mainCategoryId,
+      insideSubCategoryImage: imageUrl
+    };
+
+    if (attributes) {
+      updateData.attributes = typeof attributes === 'string' ? JSON.parse(attributes) : attributes;
+    }
+
     const updatedInsideSubCategory = await InsideSubCategoryModel.findByIdAndUpdate(
       id,
-      { insideSubCategoryName, subCategoryId, categoryId, mainCategoryId, insideSubCategoryImage: imageUrl },
+      updateData,
       { new: true, runValidators: true }
     );
 
