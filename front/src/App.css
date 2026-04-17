@@ -1,12 +1,13 @@
-
-@media screen and (max-width: 1441px ) and (min-width: 1024px) {
-  h2.custom-heading{
+@media screen and (max-width: 1441px) and (min-width: 1024px) {
+  h2.custom-heading {
     font-size: 40px !important;
   }
-  p.custom-heading{
+
+  p.custom-heading {
     font-size: 16px !important;
   }
-  button.custom-heading{
+
+  button.custom-heading {
     font-size: 14px !important;
   }
 }

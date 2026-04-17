@@ -29,7 +29,80 @@ export default function Header() {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [isScrolled, setIsScrolled] = useState(false);
+    const [megaMenuVisible, setMegaMenuVisible] = useState(false);
+
+    // Mobile menu navigation state
+    const [menuStack, setMenuStack] = useState([]); // [{type: 'main'|'category', id: string, name: string}]
     const debounceTimer = useRef(null);
+    const megaMenuTimer = useRef(null);
+    const navRef = useRef(null);
+    const headerRef = useRef(null);
+
+    // Dynamically detect current input type — updates instantly when user switches
+    // between mouse and touch without needing a page refresh
+    const [isTouchDevice, setIsTouchDevice] = useState(
+        () => typeof window !== 'undefined' && window.matchMedia('(hover: none) and (pointer: coarse)').matches
+    );
+
+    useEffect(() => {
+        const mouseQuery = window.matchMedia('(hover: hover) and (pointer: fine)');
+        const touchQuery = window.matchMedia('(hover: none) and (pointer: coarse)');
+
+        const update = () => {
+            setIsTouchDevice(touchQuery.matches);
+            if (mouseQuery.matches) closeMegaMenu();
+        };
+
+        mouseQuery.addEventListener('change', update);
+        touchQuery.addEventListener('change', update);
+        return () => {
+            mouseQuery.removeEventListener('change', update);
+            touchQuery.removeEventListener('change', update);
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // Open mega menu with animation
+    const openMegaMenu = useCallback((categoryId) => {
+        clearTimeout(megaMenuTimer.current);
+        setHoveredCategory(categoryId);
+        // Small RAF delay so the element mounts before we trigger the visible class
+        requestAnimationFrame(() => setMegaMenuVisible(true));
+    }, []);
+    // Close mega menu — fade out first, then unmount
+    const closeMegaMenu = useCallback(() => {
+        setMegaMenuVisible(false);
+        megaMenuTimer.current = setTimeout(() => setHoveredCategory(null), 300);
+    }, []);
+
+    // Touch: first tap opens menu, second tap on same category navigates
+    const handleNavTouchOrClick = useCallback((e, categoryId) => {
+        if (!isTouchDevice) return; // mouse devices use onMouseEnter/Leave
+        if (hoveredCategory === categoryId) {
+            // Already open — let the link navigate naturally (don't prevent default)
+            closeMegaMenu();
+            return;
+        }
+        // First tap — open the mega menu, block navigation
+        e.preventDefault();
+        openMegaMenu(categoryId);
+    }, [isTouchDevice, hoveredCategory, openMegaMenu, closeMegaMenu]);
+
+    // Close mega menu when tapping outside the entire header (touch devices)
+    useEffect(() => {
+        if (!isTouchDevice) return;
+        const handleOutside = (e) => {
+            if (headerRef.current && !headerRef.current.contains(e.target)) {
+                closeMegaMenu();
+            }
+        };
+        document.addEventListener('touchstart', handleOutside);
+        document.addEventListener('mousedown', handleOutside);
+        return () => {
+            document.removeEventListener('touchstart', handleOutside);
+            document.removeEventListener('mousedown', handleOutside);
+        };
+    }, [isTouchDevice, closeMegaMenu]);
     const dispatch = useDispatch();
     const location = useLocation();
     const navigate = useNavigate();
@@ -41,13 +114,10 @@ export default function Header() {
     const isHomePage = location.pathname === '/';
 
     useEffect(() => {
-        if (isAccountOpen) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = '';
-        }
+        const isLocked = isAccountOpen || isMenuOpen;
+        document.body.style.overflow = isLocked ? 'hidden' : '';
         return () => { document.body.style.overflow = ''; };
-    }, [isAccountOpen]);
+    }, [isAccountOpen, isMenuOpen]);
 
     const handleLogout = () => {
         dispatch(logout());
@@ -108,12 +178,45 @@ export default function Header() {
         const handleResize = () => {
             if (window.innerWidth >= 1024) {
                 setIsMenuOpen(false);
+                setMenuStack([]);
             }
         };
 
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
+
+    const resetMobileMenu = () => {
+        setIsMenuOpen(false);
+        setMenuStack([]);
+    };
+
+    const handleMenuBack = () => {
+        setMenuStack(prev => prev.slice(0, -1));
+    };
+
+    const handleMainCategoryClick = (category) => {
+        const subCats = getCategoriesForMainCategory(category._id);
+        if (subCats.length > 0) {
+            setMenuStack([{ type: 'main', id: category._id, name: category.mainCategoryName }]);
+        } else {
+            navigate(`/collection/${category.slug || category.mainCategoryName?.toLowerCase().replace(' ', '-')}`);
+            setIsMenuOpen(false);
+        }
+    };
+
+    const handleCategoryClick = (category, mainCategory) => {
+        const subSubCats = getSubCategoriesForCategory(category._id);
+        if (subSubCats.length > 0) {
+            setMenuStack([
+                { type: 'main', id: mainCategory.id, name: mainCategory.name },
+                { type: 'category', id: category._id, name: category.categoryName }
+            ]);
+        } else {
+            navigate(`/collection/${mainCategory.name.toLowerCase()}/${category.slug}`);
+            setIsMenuOpen(false);
+        }
+    };
 
     // Get categories and subcategories for a specific main category
     const getCategoriesForMainCategory = (mainCategoryId) => {
@@ -156,7 +259,7 @@ export default function Header() {
     return (
         <>
             {/* Main Header Container - Fixed at top */}
-            <div className={`${isHomePage ? "fixed" : "sticky"} top-0 left-0 w-full z-50 transition-shadow duration-300`}>
+            <div ref={headerRef} className={`${isHomePage ? "fixed" : "sticky"} top-0 left-0 w-full z-50 transition-shadow duration-300`}>
                 {/* Promo Bar */}
                 <div className={`hidden md:block border-b transition-colors duration-300 ${isScrolled || hoveredCategory ? 'bg-primary border-primary/10' : 'bg-primary border-white/5'}`}>
                     <p className='text-white text-center text-[10px] sm:text-xs py-2 font-medium tracking-[0.25em] opacity-80 uppercase'>
@@ -164,39 +267,40 @@ export default function Header() {
                     </p>
                 </div>
                 {/* Header Content */}
-                <header className={`transition-colors duration-300 ${isHomePage
-                    ? (isScrolled || hoveredCategory ? 'bg-white text-dark border-b border-border' : 'bg-transparent text-white')
+                <header className={`transition-all duration-300 ${isHomePage
+                    ? (isScrolled || hoveredCategory || isMenuOpen ? 'bg-white text-dark border-b border-border' : 'bg-transparent text-white')
                     : 'bg-white text-dark border-b border-border'
                     }`}>
                     <div className="mx-auto px-4 lg:px-10">
-                        <div className="flex items-center h-20 relative">
+                        <div className="flex items-center h-[clamp(60px,8vw,80px)] relative transition-all duration-300">
 
                             {/* Left: Mobile Menu & Desktop Nav */}
-                            <div className="flex items-center w-1/4 lg:w-auto lg:flex-1">
+                            <div ref={navRef} className="flex items-center w-1/4 lg:w-auto lg:flex-1">
                                 <button
                                     onClick={() => setIsMenuOpen(!isMenuOpen)}
-                                    className="lg:hidden p-2 -ml-2 hover:opacity-70 transition-opacity z-[70] relative"
+                                    className={`lg:hidden p-2 -ml-2 hover:opacity-70 transition-all z-[70] relative ${isHomePage ? (isScrolled || hoveredCategory || isMenuOpen ? 'text-dark' : 'text-white') : 'text-dark'}`}
                                     aria-label="Toggle Menu"
                                 >
                                     {isMenuOpen ? (
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                                        <IoClose className="text-2xl" />
                                     ) : (
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" x2="20" y1="12" y2="12" /><line x1="4" x2="20" y1="6" y2="6" /><line x1="4" x2="20" y1="18" y2="18" /></svg>
                                     )}
                                 </button>
 
-                                <nav className="hidden lg:flex items-center space-x-10">
+                                <nav className="hidden lg:flex items-center space-x-[clamp(1rem,2vw,2.5rem)] transition-all">
                                     {(mainCategories && mainCategories.length > 0) ? (
                                         mainCategories.map((category) => (
                                             <div
                                                 key={category._id}
                                                 className="relative group"
-                                                onMouseEnter={() => setHoveredCategory(category._id)}
-                                                onMouseLeave={() => setHoveredCategory(null)}
+                                                onMouseEnter={() => !isTouchDevice && openMegaMenu(category._id)}
+                                                onMouseLeave={() => !isTouchDevice && closeMegaMenu()}
                                             >
                                                 <Link
                                                     to={`/collection/${category.slug || category.mainCategoryName?.toLowerCase().replace(' ', '-')}`}
-                                                    className={`text-base font-medium text-nowrap transition-all duration-300 relative uppercase ${hoveredCategory === category._id
+                                                    onClick={(e) => handleNavTouchOrClick(e, category._id)}
+                                                    className={`text-[clamp(0.875rem,1.1vw,1rem)] font-medium text-nowrap transition-all duration-300 relative uppercase ${hoveredCategory === category._id
                                                         ? 'opacity-100'
                                                         : 'opacity-60 hover:opacity-100'
                                                         } ${isHomePage
@@ -215,7 +319,7 @@ export default function Header() {
                                         ))
                                     ) : (
                                         ['SHOP', 'MEN', 'WOMEN', 'LUX CARE'].map((item) => (
-                                            <Link key={item} to="#" className={`text-base font-medium uppercase transition-colors opacity-60 hover:opacity-100 ${isHomePage
+                                            <Link key={item} to="#" className={`text-[clamp(0.875rem,1.1vw,1rem)] font-medium uppercase transition-colors opacity-60 hover:opacity-100 ${isHomePage
                                                 ? (isScrolled || hoveredCategory ? 'text-dark' : 'text-white')
                                                 : 'text-dark'
                                                 }`}>{item}</Link>
@@ -228,8 +332,8 @@ export default function Header() {
                             <div className="flex-1 flex justify-center z-[60]">
                                 <Link to="/" className="hover:opacity-80 transition-opacity duration-300 outline-none">
                                     <EoLogo
-                                        className={`h-8 w-auto transition-all duration-300 ${isHomePage
-                                            ? (isScrolled || hoveredCategory ? '[&_path]:fill-primary' : '[&_path]:fill-white')
+                                        className={`h-[clamp(1.5rem,4vw,2rem)] w-auto transition-all duration-300 ${isHomePage
+                                            ? (isScrolled || hoveredCategory || isMenuOpen ? '[&_path]:fill-primary' : '[&_path]:fill-white')
                                             : '[&_path]:fill-primary'
                                             }`}
                                     />
@@ -237,46 +341,45 @@ export default function Header() {
                             </div>
 
                             {/* Right: Icons */}
-                            <div className="flex items-center justify-end w-1/4 lg:w-auto lg:flex-1 space-x-1 sm:space-x-2 md:space-x-4">
+                            <div className="flex items-center justify-end w-1/4 lg:w-auto lg:flex-1 space-x-0 xs:space-x-1 sm:space-x-[clamp(0.25rem,1.5vw,1rem)] transition-all">
                                 <button
                                     onClick={() => setIsSearchOpen(true)}
-                                    className={`p-2 rounded-full transition-all duration-300 opacity-70 hover:opacity-100 ${isHomePage
-                                        ? (isScrolled || hoveredCategory ? 'hover:bg-mainBG text-dark' : 'hover:bg-white/5 text-white')
+                                    className={`p-1.5 rounded-full transition-all duration-300 opacity-70 hover:opacity-100 ${isHomePage
+                                        ? (isScrolled || hoveredCategory || isMenuOpen ? 'hover:bg-mainBG text-dark' : 'hover:bg-white/5 text-white')
                                         : 'hover:bg-mainBG text-dark'
                                         }`}
                                 >
-                                    <LuSearch className='text-2xl' />
+                                    <LuSearch className='text-[clamp(1.1rem,2.5vw,1.4rem)]' />
                                 </button>
-                                <button className={`hidden xs:block p-2 rounded-full transition-all duration-300 opacity-70 hover:opacity-100 ${isHomePage
-                                    ? (isScrolled || hoveredCategory ? 'hover:bg-mainBG text-dark' : 'hover:bg-white/5 text-white')
+                                <button className={`p-1.5 lg:block hidden rounded-full transition-all duration-300 opacity-70 hover:opacity-100 ${isHomePage
+                                    ? (isScrolled || hoveredCategory || isMenuOpen ? 'hover:bg-mainBG text-dark' : 'hover:bg-white/5 text-white')
                                     : 'hover:bg-mainBG text-dark'
                                     }`}>
-                                    <FaRegHeart className='text-2xl' />
+                                    <FaRegHeart className='text-[clamp(1.1rem,2.5vw,1.4rem)]' />
                                 </button>
-                                <button className={`p-2 rounded-full transition-all duration-300 opacity-70 hover:opacity-100 relative ${isHomePage
-                                    ? (isScrolled || hoveredCategory ? 'hover:bg-mainBG text-dark' : 'hover:bg-white/5 text-white')
+                                <button className={`p-1.5 rounded-full transition-all duration-300 opacity-70 hover:opacity-100 relative ${isHomePage
+                                    ? (isScrolled || hoveredCategory || isMenuOpen ? 'hover:bg-mainBG text-dark' : 'hover:bg-white/5 text-white')
                                     : 'hover:bg-mainBG text-dark'
                                     }`}>
-                                    <HiOutlineShoppingBag className='text-2xl' />
+                                    <HiOutlineShoppingBag className='text-[clamp(1.1rem,2.5vw,1.4rem)]' />
                                 </button>
                                 {user ? (
                                     <button
                                         onClick={() => setIsAccountOpen(true)}
-                                        className={`flex gap-2 items-center ${isHomePage
-                                            ? (isScrolled || hoveredCategory ? 'text-dark' : 'text-white')
+                                        className={`flex items-center ${isHomePage
+                                            ? (isScrolled || hoveredCategory || isMenuOpen ? 'text-dark' : 'text-white')
                                             : 'text-dark'
                                             }`}>
-                                        <div className="h-8 w-8 bg-primary uppercase rounded-full flex items-center justify-center font-bold text-white">
+                                        <div className="h-7 w-7 xs:h-8 xs:w-8 bg-primary uppercase rounded-full flex items-center justify-center font-bold text-white text-[10px] transition-all flex-shrink-0">
                                             {user?.firstName?.slice(0, 1) || 'U'}
                                         </div>
-                                        <span className='capitalize font-medium tracking-wide'>{user?.firstName}</span>
                                     </button>
                                 ) : (
-                                    <Link to="/auth" className={`hidden sm:block p-2 rounded-full transition-all duration-300 opacity-70 hover:opacity-100 ${isHomePage
-                                        ? (isScrolled || hoveredCategory ? 'hover:bg-mainBG text-dark' : 'hover:bg-white/5 text-white')
+                                    <Link to="/auth" className={`p-1.5 rounded-full transition-all duration-300 opacity-70 hover:opacity-100 ${isHomePage
+                                        ? (isScrolled || hoveredCategory || isMenuOpen ? 'hover:bg-mainBG text-dark' : 'hover:bg-white/5 text-white')
                                         : 'hover:bg-mainBG text-dark'
                                         }`}>
-                                        <CgProfile className='text-2xl' />
+                                        <CgProfile className='text-[clamp(1.1rem,2.5vw,1.4rem)]' />
                                     </Link>
                                 )}
                             </div>
@@ -286,39 +389,87 @@ export default function Header() {
 
                 {/* Mobile Navigation Menu Overflow */}
                 <div
-                    className={`fixed inset-0 top-[80px] md:top-[100px] bg-black lg:hidden transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] z-[40] ${isMenuOpen ? 'opacity-100 translate-y-0 visibility-visible shadow-2xl' : 'opacity-0 -translate-y-4 visibility-hidden pointer-events-none'
+                    className={`fixed inset-x-0 bottom-0 top-[60px] md:top-[95px] bg-black lg:hidden transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] z-[40] ${isMenuOpen ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-4 pointer-events-none'
                         }`}
-                    style={{ height: 'calc(100vh - 80px)' }}
                 >
-                    <div className="flex flex-col h-full overflow-y-auto px-10 py-12">
-                        <nav className="flex flex-col space-y-5">
-                            {mainCategories && mainCategories.map((category, index) => (
-                                <Link
-                                    key={category._id}
-                                    to={`/collection/${category.slug || category.mainCategoryName?.toLowerCase().replace(' ', '-')}`}
-                                    onClick={() => setIsMenuOpen(false)}
-                                    className={`text-lg font-semibold tracking-[0.2em] transform transition-all duration-500 text-white hover:text-gray-400 uppercase ${isMenuOpen ? 'translate-x-0 opacity-100' : 'translate-x-10 opacity-0'
-                                        }`}
-                                    style={{ transitionDelay: `${index * 75}ms` }}
-                                >
-                                    {category.mainCategoryName}
-                                </Link>
-                            ))}
-                        </nav>
-
-                        <div className={`mt-10 pt-10 border-t border-white/10 flex flex-col space-y-5 transition-all duration-700 delay-300 ${isMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-                            }`}>
-                            <Link to="/account" className="text-xs font-semibold tracking-[0.15em] text-white/50 hover:text-white transition-colors uppercase">Account</Link>
-                            <Link to="/wishlist" className="text-xs font-semibold tracking-[0.15em] text-white/50 hover:text-white transition-colors uppercase">Wishlist</Link>
-                            <Link to="/support" className="text-xs font-semibold tracking-[0.15em] text-white/50 hover:text-white transition-colors uppercase">Customer Care</Link>
-
-                            <div className="pt-6 flex space-x-4">
-                                {['IG', 'FB', 'TW'].map((social) => (
-                                    <div key={social} className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center opacity-40 hover:opacity-100 hover:border-white/30 cursor-pointer transition-all">
-                                        <span className="text-[9px] font-bold tracking-tighter">{social}</span>
+                    <div className="flex flex-col h-full overflow-hidden border-none outline-none">
+                        <div className="overflow-y-auto h-full px-6 py-8 relative border-none scrollbar-hide">
+                            {/* Level 0: Main Categories */}
+                            <div className={`transition-all duration-500 flex flex-col space-y-4 ${menuStack.length === 0 ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0 absolute inset-y-0 left-0 w-full px-6 py-8 pointer-events-none'
+                                }`}>
+                                {mainCategories && mainCategories.map((category, index) => (
+                                    <div
+                                        key={category._id}
+                                        onClick={() => handleMainCategoryClick(category)}
+                                        className={`flex items-center justify-between text-[clamp(1.1rem,4vw,1.5rem)] font-semibold tracking-[0.1em] text-white hover:text-white/70 uppercase cursor-pointer transition-all duration-500 ${isMenuOpen ? 'translate-x-0 opacity-100' : 'translate-x-10 opacity-0'
+                                            }`}
+                                        style={{ transitionDelay: `${index * 50}ms` }}
+                                    >
+                                        <span>{category.mainCategoryName}</span>
+                                        {getCategoriesForMainCategory(category._id).length > 0 && (
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                        )}
                                     </div>
                                 ))}
                             </div>
+
+                            {/* Level 1: Categories */}
+                            <div className={`transition-all h-full duration-500  flex-col space-y-4 absolute inset-y-0 left-0 w-full px-6 py-8 flex ${menuStack.length === 1 && menuStack[0].type === 'main' ? 'translate-x-0 opacity-100 ' : 'translate-x-full hidden opacity-0 pointer-events-none'
+                                }`}>
+                                {menuStack.length > 0 && (
+                                    <button onClick={handleMenuBack} className="flex items-center gap-2 text-white/50 mb-6 uppercase text-xs font-bold tracking-widest outline-none">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                                        Back to {menuStack[0].type === 'main' ? 'Menu' : menuStack[0].name}
+                                    </button>
+                                )}
+                                {menuStack.length > 0 && getCategoriesForMainCategory(menuStack[0].id).map((category, index) => (
+                                    <div
+                                        key={category._id}
+                                        onClick={() => handleCategoryClick(category, menuStack[0])}
+                                        className="flex items-center justify-between text-[clamp(1rem,3.5vw,1.25rem)] font-medium tracking-[0.05em] text-white/90 hover:text-white uppercase cursor-pointer"
+                                    >
+                                        <span>{category.categoryName}</span>
+                                        {getSubCategoriesForCategory(category._id).length > 0 && (
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Level 2: Subcategories */}
+                            <div className={`transition-all h-full duration-500 flex  flex-col space-y-4 absolute inset-y-0 left-0 w-full px-6 py-8 ${menuStack.length === 2 && menuStack[1].type === 'category' ? 'translate-x-0 opacity-100' : 'translate-x-[200%] hidden opacity-0 pointer-events-none'
+                                }`}>
+                                {menuStack.length > 1 && (
+                                    <button onClick={handleMenuBack} className="flex items-center gap-2 text-white/50 mb-6 uppercase text-xs font-bold tracking-widest outline-none">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                                        Back to {menuStack[0].name}
+                                    </button>
+                                )}
+                                {menuStack.length > 1 && getSubCategoriesForCategory(menuStack[1].id).map((subCat) => {
+                                    const mainSlug = menuStack[0].name.toLowerCase().replace(' ', '-');
+                                    const catSlug = menuStack[1].name.toLowerCase().replace(' ', '-');
+                                    return (
+                                        <Link
+                                            key={subCat._id}
+                                            to={`/collection/${mainSlug}/${catSlug}/${subCat.slug}`}
+                                            onClick={() => resetMobileMenu()}
+                                            className="flex items-center justify-between text-[clamp(0.875rem,3vw,1.1rem)] font-normal text-white/80 hover:text-white uppercase"
+                                        >
+                                            {subCat.subCategoryName}
+                                        </Link>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Mobile Menu Footer */}
+                        <div className={`px-10 pb-12 pt-6 flex flex-col mt-10 border-t-2 border-white/10 space-y-6 bg-black transition-all duration-500 delay-100 border-none outline-none ${isMenuOpen ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
+                            }`}>
+                            {/* Horizontal Line as per design */}
+                            <div className="w-full h-px bg-white/10" />
+                            <Link to="/account" onClick={() => resetMobileMenu()} className="text-[13px] font-semibold tracking-[0.1em] text-[#ADB5BD] hover:text-white uppercase transition-colors">Account</Link>
+                            <Link to="/wishlist" onClick={() => resetMobileMenu()} className="text-[13px] font-semibold tracking-[0.1em] text-[#ADB5BD] hover:text-white uppercase transition-colors">Wishlist</Link>
+                            <Link to="/support" onClick={() => resetMobileMenu()} className="text-[13px] font-semibold tracking-[0.1em] text-[#ADB5BD] hover:text-white uppercase transition-colors">Customer Care</Link>
                         </div>
                     </div>
                 </div>
@@ -326,15 +477,18 @@ export default function Header() {
                 {/* Mega Menu Dropdown */}
                 {hoveredCategory && (
                     <>
-                        {/* Invisible bridge to prevent menu from closing */}
+                        {/* Invisible bridge to prevent menu from closing on mouse */}
                         <div
                             className="hidden lg:block absolute top-[80px] left-0 w-full h-[10px] z-40"
-                            onMouseEnter={() => setHoveredCategory(hoveredCategory)}
+                            onMouseEnter={() => !isTouchDevice && openMegaMenu(hoveredCategory)}
                         />
                         <div
-                            className="hidden lg:block absolute top-[90px] left-0 w-full bg-white text-dark z-50 shadow-lg"
-                            onMouseEnter={() => setHoveredCategory(hoveredCategory)}
-                            onMouseLeave={() => setHoveredCategory(null)}
+                            className={`hidden lg:block absolute top-[90px] left-0 w-full bg-white text-dark z-50 shadow-lg
+                                transition-[opacity,transform] duration-300 ease-out
+                                ${megaMenuVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-3'}
+                            `}
+                            onMouseEnter={() => !isTouchDevice && openMegaMenu(hoveredCategory)}
+                            onMouseLeave={() => !isTouchDevice && closeMegaMenu()}
                         >
                             {mainCategories.map((mainCategory) => {
                                 if (mainCategory._id !== hoveredCategory) return null;
