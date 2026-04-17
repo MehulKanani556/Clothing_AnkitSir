@@ -95,7 +95,6 @@ export default function AccountLayout({ children }) {
 
                     {/* Modal Content */}
                     <div className="relative bg-white w-full max-w-md p-6 animate-in fade-in zoom-in duration-300">
-
                         <div className="flex justify-between items-center mb-3">
                             <h3 className="text-2xl font-bold text-dark ">Log out?</h3>
                             {/* Close button */}

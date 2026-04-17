@@ -935,31 +935,32 @@ export default function Header() {
                     />
 
                     {/* Modal Content */}
-                    <div className="relative bg-white w-full max-w-[440px] p-10 shadow-2xl animate-in fade-in zoom-in duration-300">
-                        {/* Close button */}
-                        <button
-                            onClick={cancelLogout}
-                            className="absolute top-6 right-6 text-lightText hover:text-dark transition-colors"
-                        >
-                            <IoClose size={28} />
-                        </button>
+                    <div className="relative bg-white w-full max-w-md p-6 animate-in fade-in zoom-in duration-300">
+                        <div className="flex justify-between items-center mb-3">
+                            <h3 className="text-2xl font-bold text-dark ">Log out?</h3>
+                            {/* Close button */}
+                            <button
+                                onClick={cancelLogout}
+                                className="absolute top-6 right-6 text-lightText hover:text-dark transition-colors"
+                            >
+                                <IoClose size={28} />
+                            </button>
+                        </div>
 
-                        <h3 className="text-[32px] font-bold text-dark mb-6">Log out?</h3>
-
-                        <p className="text-xl font-medium text-lightText mb-12 leading-relaxed">
+                        <p className="text-base font-medium text-lightText mb-6 leading-relaxed">
                             Are you sure you want to log out of your account?
                         </p>
 
                         <div className="flex gap-5">
                             <button
                                 onClick={cancelLogout}
-                                className="flex-1 bg-white border border-border text-dark text-base font-bold py-5 uppercase tracking-widest hover:bg-gray-50 transition-colors"
+                                className="flex-1 bg-white border border-border text-dark text-sm font-semibold py-3 uppercase tracking-widest hover:bg-gray-50 transition-colors"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={confirmLogout}
-                                className="flex-1 bg-primary text-white text-base font-bold py-5 uppercase tracking-widest hover:bg-primary/90 transition-colors"
+                                className="flex-1 bg-primary text-white text-sm font-semibold py-3 uppercase tracking-widest hover:bg-primary/90 transition-colors"
                             >
                                 Log Out
                             </button>
@@ -967,100 +968,100 @@ export default function Header() {
                     </div>
                 </div>
             )}
- 
-             {/* Notification Sidebar */}
-             <div
-                 className={`fixed top-0 right-0 h-full w-full md:w-[450px] bg-white z-[110] shadow-2xl flex flex-col transition-transform duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] ${isNotificationsOpen ? 'translate-x-0' : 'translate-x-full'}`}
-             >
-                 <div className="flex items-center justify-between px-8 py-6 border-b border-border">
-                     <div className="flex items-center gap-3">
-                         <span className="text-2xl font-black text-dark tracking-tighter uppercase">Notifications</span>
-                         {unreadCount > 0 && (
-                             <span className="bg-primary/10 text-primary text-xs font-bold px-2 py-0.5 rounded">
-                                 {unreadCount} NEW
-                             </span>
-                         )}
-                     </div>
-                     <button onClick={() => setIsNotificationsOpen(false)} className="p-2 hover:bg-mainBG rounded-full transition-colors">
-                         <IoClose size={24} />
-                     </button>
-                 </div>
- 
-                 <div className="flex-1 overflow-y-auto scrollbar-hide">
-                     {notifications.length > 0 ? (
-                         <div className="divide-y divide-border/40">
-                             <div className="p-4 flex justify-between bg-mainBG/30">
-                                 <button onClick={() => dispatch(markAllAsRead())} className="text-[10px] font-bold text-primary uppercase tracking-widest hover:underline">Mark all as read</button>
-                                 <button className="text-[10px] font-bold text-lightText/60 uppercase tracking-widest hover:underline">Clear all</button>
-                             </div>
-                             {notifications.map((notification) => (
-                                 <div
-                                     key={notification._id}
-                                     className={`p-6 transition-colors relative group/noti ${!notification.isRead ? 'bg-primary/5' : 'hover:bg-mainBG'}`}
-                                     onClick={() => dispatch(markAsRead(notification._id))}
-                                 >
-                                     <div className="flex items-start gap-4">
-                                         <div className={`mt-1 w-2 h-2 rounded-full shrink-0 ${notification.isRead ? 'bg-transparent' : 'bg-primary pulse-small'}`} />
-                                         <div className="flex-1 min-w-0">
-                                             <div className="flex justify-between items-start mb-1">
-                                                 <h4 className="text-sm font-bold text-dark truncate pr-4">{notification.title}</h4>
-                                                 <span className="text-[10px] text-lightText/40 font-medium whitespace-nowrap">
-                                                     {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
-                                                 </span>
-                                             </div>
-                                             <p className="text-sm text-lightText leading-relaxed mb-3 line-clamp-2">{notification.message}</p>
-                                             {notification.metadata?.orderId && (
-                                                 <Link
-                                                     to={`/orders`}
-                                                     onClick={() => setIsNotificationsOpen(false)}
-                                                     className="inline-flex items-center gap-1 text-[10px] font-bold text-primary uppercase tracking-widest hover:gap-2 transition-all"
-                                                 >
-                                                     View Order Details <HiArrowUpRight />
-                                                 </Link>
-                                             )}
-                                         </div>
-                                         <button
-                                             onClick={(e) => {
-                                                 e.stopPropagation();
-                                                 dispatch(deleteNotification(notification._id));
-                                             }}
-                                             className="opacity-0 group-hover/noti:opacity-100 p-2 text-lightText hover:text-red-500 transition-all"
-                                         >
-                                             <IoClose size={16} />
-                                         </button>
-                                     </div>
-                                 </div>
-                             ))}
-                         </div>
-                     ) : (
-                         <div className="h-full flex flex-col items-center justify-center p-12 text-center">
-                             <div className="w-20 h-20 bg-mainBG rounded-full flex items-center justify-center mb-6">
-                                 <HiOutlineBell className="text-4xl text-lightText/30" />
-                             </div>
-                             <h4 className="text-xl font-bold text-dark mb-2">No new notifications</h4>
-                             <p className="text-sm text-lightText/60 leading-relaxed">We'll notify you when something important happens, like order updates or exclusive offers.</p>
-                         </div>
-                     )}
-                 </div>
- 
-                 <div className="p-8 border-t border-border bg-mainBG/20">
-                     <button
-                         onClick={() => setIsNotificationsOpen(false)}
-                         className="w-full py-4 bg-dark text-white text-xs font-bold tracking-[0.2em] uppercase hover:bg-primary transition-colors shadow-lg"
-                     >
-                         Close Panel
-                     </button>
-                 </div>
-             </div>
- 
-             {/* Notification Backdrop */}
-             {isNotificationsOpen && (
-                 <div
-                     className="fixed inset-0 z-[105] bg-black/40 backdrop-blur-sm animate-in fade-in duration-300"
-                     onClick={() => setIsNotificationsOpen(false)}
-                 />
-             )}
-         </>
+
+            {/* Notification Sidebar */}
+            <div
+                className={`fixed top-0 right-0 h-full w-full md:w-[450px] bg-white z-[110] shadow-2xl flex flex-col transition-transform duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] ${isNotificationsOpen ? 'translate-x-0' : 'translate-x-full'}`}
+            >
+                <div className="flex items-center justify-between px-8 py-6 border-b border-border">
+                    <div className="flex items-center gap-3">
+                        <span className="text-2xl font-black text-dark tracking-tighter uppercase">Notifications</span>
+                        {unreadCount > 0 && (
+                            <span className="bg-primary/10 text-primary text-xs font-bold px-2 py-0.5 rounded">
+                                {unreadCount} NEW
+                            </span>
+                        )}
+                    </div>
+                    <button onClick={() => setIsNotificationsOpen(false)} className="p-2 hover:bg-mainBG rounded-full transition-colors">
+                        <IoClose size={24} />
+                    </button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto scrollbar-hide">
+                    {notifications.length > 0 ? (
+                        <div className="divide-y divide-border/40">
+                            <div className="p-4 flex justify-between bg-mainBG/30">
+                                <button onClick={() => dispatch(markAllAsRead())} className="text-[10px] font-bold text-primary uppercase tracking-widest hover:underline">Mark all as read</button>
+                                <button className="text-[10px] font-bold text-lightText/60 uppercase tracking-widest hover:underline">Clear all</button>
+                            </div>
+                            {notifications.map((notification) => (
+                                <div
+                                    key={notification._id}
+                                    className={`p-6 transition-colors relative group/noti ${!notification.isRead ? 'bg-primary/5' : 'hover:bg-mainBG'}`}
+                                    onClick={() => dispatch(markAsRead(notification._id))}
+                                >
+                                    <div className="flex items-start gap-4">
+                                        <div className={`mt-1 w-2 h-2 rounded-full shrink-0 ${notification.isRead ? 'bg-transparent' : 'bg-primary pulse-small'}`} />
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex justify-between items-start mb-1">
+                                                <h4 className="text-sm font-bold text-dark truncate pr-4">{notification.title}</h4>
+                                                <span className="text-[10px] text-lightText/40 font-medium whitespace-nowrap">
+                                                    {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
+                                                </span>
+                                            </div>
+                                            <p className="text-sm text-lightText leading-relaxed mb-3 line-clamp-2">{notification.message}</p>
+                                            {notification.metadata?.orderId && (
+                                                <Link
+                                                    to={`/orders`}
+                                                    onClick={() => setIsNotificationsOpen(false)}
+                                                    className="inline-flex items-center gap-1 text-[10px] font-bold text-primary uppercase tracking-widest hover:gap-2 transition-all"
+                                                >
+                                                    View Order Details <HiArrowUpRight />
+                                                </Link>
+                                            )}
+                                        </div>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                dispatch(deleteNotification(notification._id));
+                                            }}
+                                            className="opacity-0 group-hover/noti:opacity-100 p-2 text-lightText hover:text-red-500 transition-all"
+                                        >
+                                            <IoClose size={16} />
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="h-full flex flex-col items-center justify-center p-12 text-center">
+                            <div className="w-20 h-20 bg-mainBG rounded-full flex items-center justify-center mb-6">
+                                <HiOutlineBell className="text-4xl text-lightText/30" />
+                            </div>
+                            <h4 className="text-xl font-bold text-dark mb-2">No new notifications</h4>
+                            <p className="text-sm text-lightText/60 leading-relaxed">We'll notify you when something important happens, like order updates or exclusive offers.</p>
+                        </div>
+                    )}
+                </div>
+
+                <div className="p-8 border-t border-border bg-mainBG/20">
+                    <button
+                        onClick={() => setIsNotificationsOpen(false)}
+                        className="w-full py-4 bg-dark text-white text-xs font-bold tracking-[0.2em] uppercase hover:bg-primary transition-colors shadow-lg"
+                    >
+                        Close Panel
+                    </button>
+                </div>
+            </div>
+
+            {/* Notification Backdrop */}
+            {isNotificationsOpen && (
+                <div
+                    className="fixed inset-0 z-[105] bg-black/40 backdrop-blur-sm animate-in fade-in duration-300"
+                    onClick={() => setIsNotificationsOpen(false)}
+                />
+            )}
+        </>
     )
 }
 
