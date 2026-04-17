@@ -492,3 +492,67 @@ export const verifyEmailOtpController = async (req, res) => {
         return sendErrorResponse(res, 500, "Error verifying email OTP", e.message);
     }
 };
+
+export const addRecentlyViewedController = async (req, res) => {
+    try {
+        const id = req.user?.id || req.user?._id;
+        const { productId } = req.body;
+
+        if (!productId) return sendBadRequestResponse(res, "Product ID is required!");
+
+        // If guest user, just return success (frontend can handle localStorage if needed)
+        if (!id) {
+            return sendSuccessResponse(res, "Guest mode: Product view recorded (not saved to DB)");
+        }
+
+        const user = await UserModel.findById(id);
+        if (!user) {
+            // If user token was invalid or user deleted, but we reached here
+            return sendSuccessResponse(res, "User not found, session might be invalid");
+        }
+
+        // Remove if already exists to move it to the front
+        user.recentlyViewed = user.recentlyViewed.filter(
+            item => item.productId.toString() !== productId.toString()
+        );
+
+        // Add to the front
+        user.recentlyViewed.unshift({ productId, viewedAt: new Date() });
+
+        // Limit to 20
+        if (user.recentlyViewed.length > 20) {
+            user.recentlyViewed = user.recentlyViewed.slice(0, 20);
+        }
+
+        await user.save();
+        return sendSuccessResponse(res, "Product added to recently viewed", user.recentlyViewed);
+    } catch (error) {
+        return sendErrorResponse(res, 500, "Error adding recently viewed product", error.message);
+    }
+};
+
+export const getRecentlyViewedController = async (req, res) => {
+    try {
+        const id = req.user?.id || req.user?._id;
+        
+        if (!id) {
+            return sendSuccessResponse(res, "Guest mode: no history", []);
+        }
+
+        const user = await UserModel.findById(id).populate({
+            path: "recentlyViewed.productId",
+            populate: { path: "variants" } // Populate variants if needed for images/price
+        });
+
+        if (!user) return sendSuccessResponse(res, "User not found", []);
+
+        // Filter out any null products (in case a product was deleted)
+        const products = user.recentlyViewed
+            .filter(item => item.productId)
+            .map(item => item.productId);
+
+        return sendSuccessResponse(res, "Recently viewed products fetched successfully", products);
+    } catch (error) {
+        return sendErrorResponse(res, 500, "Error fetching recently viewed products", error.message);
+    }
+};

@@ -40,7 +40,9 @@ import {
   getProductBySlug,
   updateProduct,
   deleteProduct,
-  searchProducts
+  searchProducts,
+  getProductsByCategory,
+  getFilterOptions
 } from "../controller/product.controller.js";
 import {
   createProductVariant,
@@ -107,7 +109,9 @@ import {
   selectCardController,
   updateProfileController,
   sendEmailOtpController,
-  verifyEmailOtpController
+  verifyEmailOtpController,
+  addRecentlyViewedController,
+  getRecentlyViewedController
 } from "../controller/user.controller.js";
 import {
   getMyNotifications,
@@ -170,6 +174,8 @@ router.delete("/inside-sub-category/delete/:id", UserAuth, adminAuth, deleteInsi
 router.post("/product/create", UserAuth, adminAuth, createProduct);
 router.get("/product/get-all", getAllProducts);
 router.get("/product/search", searchProducts);
+router.get("/product/by-category", getProductsByCategory);
+router.get("/product/filter-options", getFilterOptions);
 router.get("/product/get-by-id/:id", getProductById);
 router.get("/product/get-by-slug/:slug", getProductBySlug);
 router.put("/product/update/:id", UserAuth, adminAuth, updateProduct);
@@ -252,6 +258,9 @@ router.get("/notifications/my", UserAuth, getMyNotifications);
 router.put("/notifications/mark-read/:id", UserAuth, markAsRead);
 router.put("/notifications/mark-all-read", UserAuth, markAllAsRead);
 router.delete("/notifications/delete/:id", UserAuth, deleteNotification);
+// --- Recently Viewed Products ---
+router.post("/user/recently-viewed/add", OptionalUserAuth, addRecentlyViewedController);
+router.get("/user/recently-viewed/my", OptionalUserAuth, getRecentlyViewedController);
 
 //aws
 router.get("/list", async (req, res) => {

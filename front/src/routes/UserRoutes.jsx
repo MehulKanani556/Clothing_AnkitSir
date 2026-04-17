@@ -5,6 +5,7 @@ import Auth from '../components/Auth';
 import ProductDetails from '../pages/ProductDetails';
 import Support from '../pages/Support';
 import SupportDetail from '../pages/SupportDetail';
+import CollectionPage from '../pages/CollectionPage';
 import ProtectedRoute from './ProtectedRoute';
 import Profile from '../pages/account/Profile';
 import Orders from '../pages/account/Orders';
@@ -22,6 +23,12 @@ const UserRoutes = () => {
             <Route path="/product" element={<ProductDetails />} />
             <Route path="/support" element={<Layout><Support /></Layout>} />
             <Route path="/support/:id" element={<Layout><SupportDetail /></Layout>} />
+            <Route path="/product/:slug" element={<ProductDetails />} />
+
+            {/* Collection routes — driven by header category slugs */}
+            <Route path="/collection/:mainCategorySlug" element={<CollectionPage />} />
+            <Route path="/collection/:mainCategorySlug/:categorySlug" element={<CollectionPage />} />
+            <Route path="/collection/:mainCategorySlug/:categorySlug/:subCategorySlug" element={<CollectionPage />} />
 
             {/* Protected user-only routes */}
             <Route element={<ProtectedRoute />}>

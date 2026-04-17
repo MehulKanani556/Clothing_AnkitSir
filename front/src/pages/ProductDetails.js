@@ -1,4 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchProductBySlug, addRecentlyViewed } from '../redux/slice/product.slice';
 import { IoHeartOutline, IoShareSocialOutline, IoChevronUp, IoChevronDown } from "react-icons/io5";
 import { SlArrowLeft, SlArrowRight } from "react-icons/sl";
 import Header from '../components/Header';
@@ -168,6 +171,10 @@ const SIGNATURE_PRODUCTS = [
 ];
 
 const ProductDetails = () => {
+    const { slug } = useParams();
+    const dispatch = useDispatch();
+    const { currentProduct, loading } = useSelector(state => state.product);
+
     const [colorSidebarOpen, setColorSidebarOpen] = useState(false);
     const [sizeSidebarOpen, setSizeSidebarOpen] = useState(false);
     const [productInfoOpen, setProductInfoOpen] = useState(false);
@@ -177,6 +184,18 @@ const ProductDetails = () => {
     const [selectedSize, setSelectedSize] = useState(null);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const sliderRef = useRef(null);
+
+    useEffect(() => {
+        if (slug) {
+            dispatch(fetchProductBySlug(slug));
+        }
+    }, [dispatch, slug]);
+
+    useEffect(() => {
+        if (currentProduct?._id) {
+            dispatch(addRecentlyViewed(currentProduct._id));
+        }
+    }, [dispatch, currentProduct]);
 
     const handleSelectVariant = (variant) => {
         setSelectedVariant(variant);

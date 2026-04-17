@@ -11,12 +11,6 @@ export const UserAddressSchema = new mongoose.Schema({
   zipcode: { type: String, default: null },
   addressType: { type: String, enum: ['Home', 'Office', 'Other'], default: 'Home' },
   phone: { type: String, trim: true, default: null },
-  recentlyViewed: [
-    {
-      productId: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
-      viewedAt: { type: Date, default: Date.now },
-    },
-  ],
 });
 
 const UserSchema = new mongoose.Schema({
@@ -84,6 +78,12 @@ const UserSchema = new mongoose.Schema({
       tokenHash: String, // Identification for revocation
       isCurrent: { type: Boolean, default: false }
     }
+  ],
+  recentlyViewed: [
+    {
+      productId: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
+      viewedAt: { type: Date, default: Date.now },
+    },
   ],
 }, { timestamps: true });
 

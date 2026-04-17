@@ -5,6 +5,10 @@ const initialState = {
     products: [],
     currentProduct: null,
     variants: [],
+    collectionProducts: [],
+    pagination: null,
+    filterOptions: null,
+    recentlyViewed: [],
     loading: false,
     error: null,
 };
@@ -13,6 +17,41 @@ const handleErrors = (error, rejectWithValue) => {
     const errorMessage = error.response?.data?.message || 'An error occurred';
     return rejectWithValue(error.response?.data || { message: errorMessage });
 };
+
+export const fetchFilterOptions = createAsyncThunk(
+    'product/fetchFilterOptions',
+    async ({ mainCategorySlug, categorySlug, subCategorySlug } = {}, { rejectWithValue }) => {
+        try {
+            const params = new URLSearchParams();
+            if (mainCategorySlug) params.append('mainCategorySlug', mainCategorySlug);
+            if (categorySlug) params.append('categorySlug', categorySlug);
+            if (subCategorySlug) params.append('subCategorySlug', subCategorySlug);
+            const response = await axiosInstance.get(`/product/filter-options?${params.toString()}`);
+            return response.data;
+        } catch (error) {
+            return handleErrors(error, rejectWithValue);
+        }
+    }
+);
+
+export const fetchProductsByCategory = createAsyncThunk(
+    'product/fetchProductsByCategory',
+    async ({ mainCategorySlug, categorySlug, subCategorySlug, page = 1, limit = 12, sort = 'newest' } = {}, { rejectWithValue }) => {
+        try {
+            const params = new URLSearchParams();
+            if (mainCategorySlug) params.append('mainCategorySlug', mainCategorySlug);
+            if (categorySlug) params.append('categorySlug', categorySlug);
+            if (subCategorySlug) params.append('subCategorySlug', subCategorySlug);
+            params.append('page', page);
+            params.append('limit', limit);
+            params.append('sort', sort);
+            const response = await axiosInstance.get(`/product/by-category?${params.toString()}`);
+            return response.data;
+        } catch (error) {
+            return handleErrors(error, rejectWithValue);
+        }
+    }
+);
 
 export const fetchProducts = createAsyncThunk(
     'product/fetchProducts',
@@ -31,6 +70,18 @@ export const fetchProductById = createAsyncThunk(
     async (id, { rejectWithValue }) => {
         try {
             const response = await axiosInstance.get(`/product/get-by-id/${id}`);
+            return response.data;
+        } catch (error) {
+            return handleErrors(error, rejectWithValue);
+        }
+    }
+);
+
+export const fetchProductBySlug = createAsyncThunk(
+    'product/fetchProductBySlug',
+    async (slug, { rejectWithValue }) => {
+        try {
+            const response = await axiosInstance.get(`/product/get-by-slug/${slug}`);
             return response.data;
         } catch (error) {
             return handleErrors(error, rejectWithValue);
@@ -134,6 +185,31 @@ export const deleteProductVariant = createAsyncThunk(
     }
 );
 
+export const addRecentlyViewed = createAsyncThunk(
+    'product/addRecentlyViewed',
+    async (productId, { rejectWithValue }) => {
+        try {
+            const response = await axiosInstance.post('/user/recently-viewed/add', { productId });
+            return response.data;
+        } catch (error) {
+            // If user is not logged in, we can handle it in the component or here by using localStorage
+            return handleErrors(error, rejectWithValue);
+        }
+    }
+);
+
+export const fetchRecentlyViewed = createAsyncThunk(
+    'product/fetchRecentlyViewed',
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await axiosInstance.get('/user/recently-viewed/my');
+            return response.data;
+        } catch (error) {
+            return handleErrors(error, rejectWithValue);
+        }
+    }
+);
+
 export const productSlice = createSlice({
     name: 'product',
     initialState,
@@ -147,6 +223,22 @@ export const productSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
+            .addCase(fetchProductsByCategory.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchProductsByCategory.fulfilled, (state, action) => {
+                state.loading = false;
+                state.collectionProducts = action.payload?.result?.products || action.payload?.data?.products || [];
+                state.pagination = action.payload?.result?.pagination || action.payload?.data?.pagination || null;
+            })
+            .addCase(fetchProductsByCategory.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload?.message || "Failed to fetch products";
+            })
+            .addCase(fetchFilterOptions.fulfilled, (state, action) => {
+                state.filterOptions = action.payload?.result || action.payload?.data || null;
+            })
             .addCase(fetchProducts.pending, (state) => {
                 state.loading = true;
                 state.error = null;
@@ -168,6 +260,17 @@ export const productSlice = createSlice({
                 state.currentProduct = action.payload?.result || action.payload?.data || null;
             })
             .addCase(fetchProductById.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload?.message;
+            })
+            .addCase(fetchProductBySlug.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(fetchProductBySlug.fulfilled, (state, action) => {
+                state.loading = false;
+                state.currentProduct = action.payload?.result || action.payload?.data || null;
+            })
+            .addCase(fetchProductBySlug.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload?.message;
             })
@@ -233,6 +336,16 @@ export const productSlice = createSlice({
             })
             .addCase(deleteProductVariant.fulfilled, (state, action) => {
                 state.variants = state.variants.filter((v) => v._id !== action.payload);
+            })
+            .addCase(fetchRecentlyViewed.fulfilled, (state, action) => {
+                state.recentlyViewed = action.payload?.result || action.payload?.data || [];
+            })
+            .addCase(addRecentlyViewed.fulfilled, (state, action) => {
+                // We might not need to update state here if we fetch recently viewed products 
+                // separately, but let's keep it consistent.
+                // The backend returns the list of recently viewed objects (productId, viewedAt)
+                // but we need the actual product objects for the UI.
+                // So fetchRecentlyViewed is more useful.
             });
     },
 });

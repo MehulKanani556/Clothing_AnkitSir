@@ -158,6 +158,14 @@ export default function Header() {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
+    // Close all menus when location changes
+    useEffect(() => {
+        closeMegaMenu();
+        setIsMenuOpen(false);
+        setMenuStack([]);
+        setIsAccountOpen(false);
+    }, [location.pathname, closeMegaMenu]);
+
     useEffect(() => {
         if (isSearchOpen) {
             dispatch(fetchPopularSearches());
@@ -424,7 +432,7 @@ export default function Header() {
 
                 {/* Mobile Navigation Menu Overflow */}
                 <div
-                    className={`fixed inset-x-0 bottom-0 top-[60px] md:top-[95px] bg-black lg:hidden transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] z-[40] ${isMenuOpen ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-4 pointer-events-none'
+                    className={`fixed inset-x-0 bottom-0 top-[60px] md:top-[95px] bg-dark lg:hidden transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] z-[40] ${isMenuOpen ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-4 pointer-events-none'
                         }`}
                 >
                     <div className="flex flex-col h-full overflow-hidden border-none outline-none">
@@ -498,7 +506,7 @@ export default function Header() {
                         </div>
 
                         {/* Mobile Menu Footer */}
-                        <div className={`px-10 pb-12 pt-6 flex flex-col mt-10 border-t-2 border-white/10 space-y-6 bg-black transition-all duration-500 delay-100 border-none outline-none ${isMenuOpen ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
+                        <div className={`px-10 pb-12 pt-6 flex flex-col mt-10 border-t-2 border-white/10 space-y-6 bg-dark transition-all duration-500 delay-100 border-none outline-none ${isMenuOpen ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
                             }`}>
                             {/* Horizontal Line as per design */}
                             <div className="w-full h-px bg-white/10" />
@@ -570,6 +578,7 @@ export default function Header() {
                                                                                 <li key={subCat._id} className="w-full">
                                                                                     <Link
                                                                                         to={`/collection/${mainCategory.slug}/${category.slug}/${subCat.slug}`}
+                                                                                        onClick={closeMegaMenu}
                                                                                         className="block w-full transition-colors duration-200 hover:text-gold"
                                                                                         style={{
                                                                                             fontFamily: 'Urbanist, sans-serif',
@@ -618,6 +627,7 @@ export default function Header() {
                                                     {/* CTA Buttons */}
                                                     <Link
                                                         to={menuContent.featuredLink}
+                                                        onClick={closeMegaMenu}
                                                         className="flex flex-row items-center gap-3 hover:opacity-70 transition-opacity"
                                                     >
                                                         <span
@@ -639,6 +649,7 @@ export default function Header() {
                                                     <Link
                                                         to={`${menuContent.featuredLink}/new-arrivals`}
                                                         className="flex flex-row items-center gap-3 hover:opacity-70 transition-opacity"
+                                                        onClick={closeMegaMenu}
                                                     >
                                                         <span
                                                             style={{
