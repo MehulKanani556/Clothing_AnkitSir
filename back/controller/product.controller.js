@@ -287,6 +287,214 @@ export const deleteProduct = async (req, res) => {
   }
 };
 
+// GET /product/filter-options?mainCategorySlug=&categorySlug=&subCategorySlug=
+// Returns available colors, sizes, materials, sub-categories with counts for the filter panel
+export const getFilterOptions = async (req, res) => {
+  try {
+    const { mainCategorySlug, categorySlug, subCategorySlug } = req.query;
+
+    const filter = { isActive: true };
+
+    if (mainCategorySlug) {
+      const mainCat = await MainCategoryModel.findOne({ slug: mainCategorySlug });
+      if (mainCat) filter.mainCategory = mainCat._id;
+    }
+    if (categorySlug) {
+      const cat = await CategoryModel.findOne({ slug: categorySlug });
+      if (cat) filter.category = cat._id;
+    }
+    if (subCategorySlug) {
+      const subCat = await SubCategoryModel.findOne({ slug: subCategorySlug });
+      if (subCat) filter.subCategory = subCat._id;
+    }
+
+    const products = await productModel.find(filter, "_id material variants").populate("variants", "color colorCode options stock isActive");
+
+    // Aggregate filter options
+    const colorMap = {};
+    const sizeMap = {};
+    const materialMap = {};
+    let inStockCount = 0;
+    let outOfStockCount = 0;
+
+    for (const product of products) {
+      // Material
+      if (product.material) {
+        materialMap[product.material] = (materialMap[product.material] || 0) + 1;
+      }
+
+      let productHasStock = false;
+      for (const variant of (product.variants || [])) {
+        if (!variant.isActive) continue;
+
+        // Color
+        const colorKey = variant.color;
+        if (colorKey) {
+          if (!colorMap[colorKey]) colorMap[colorKey] = { count: 0, colorCode: variant.colorCode };
+          colorMap[colorKey].count++;
+        }
+
+        // Sizes
+        if (variant.options?.length > 0) {
+          for (const opt of variant.options) {
+            sizeMap[opt.size] = (sizeMap[opt.size] || 0) + 1;
+            if (opt.stock > 0) productHasStock = true;
+          }
+        } else if (variant.stock > 0) {
+          productHasStock = true;
+        }
+      }
+
+      if (productHasStock) inStockCount++;
+      else outOfStockCount++;
+    }
+
+    const colors = Object.entries(colorMap).map(([name, data]) => ({ name, colorCode: data.colorCode, count: data.count }))
+      .sort((a, b) => b.count - a.count);
+    const sizes = Object.entries(sizeMap).map(([name, count]) => ({ name, count }))
+      .sort((a, b) => {
+        const order = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
+        const ai = order.indexOf(a.name), bi = order.indexOf(b.name);
+        if (ai !== -1 && bi !== -1) return ai - bi;
+        if (ai !== -1) return -1;
+        if (bi !== -1) return 1;
+        return a.name.localeCompare(b.name);
+      });
+    const materials = Object.entries(materialMap).map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count);
+
+    return sendSuccessResponse(res, "Filter options fetched successfully!", {
+      availability: { inStock: inStockCount, outOfStock: outOfStockCount },
+      colors,
+      sizes,
+      materials,
+      total: products.length,
+    });
+  } catch (error) {
+    return ThrowError(res, 500, error.message);
+  }
+};
+
+// GET /product/by-category?mainCategorySlug=&categorySlug=&subCategorySlug=&page=1&limit=12&sort=newest
+export const getProductsByCategory = async (req, res) => {
+  try {
+    const { mainCategorySlug, categorySlug, subCategorySlug, page = 1, limit = 12, sort = "newest",
+      colors, sizes, materials, availability } = req.query;
+
+    const filter = { isActive: true };
+
+    if (mainCategorySlug) {
+      const mainCat = await MainCategoryModel.findOne({ slug: mainCategorySlug });
+      if (!mainCat) return sendNotFoundResponse(res, "Main category not found!");
+      filter.mainCategory = mainCat._id;
+    }
+
+    if (categorySlug) {
+      const cat = await CategoryModel.findOne({ slug: categorySlug });
+      if (!cat) return sendNotFoundResponse(res, "Category not found!");
+      filter.category = cat._id;
+    }
+
+    if (subCategorySlug) {
+      const subCat = await SubCategoryModel.findOne({ slug: subCategorySlug });
+      if (!subCat) return sendNotFoundResponse(res, "Sub category not found!");
+      filter.subCategory = subCat._id;
+    }
+
+    // Material filter
+    if (materials) {
+      const materialList = materials.split(',').map(m => m.trim()).filter(Boolean);
+      if (materialList.length) filter.material = { $in: materialList };
+    }
+
+    const sortMap = {
+      newest: { createdAt: -1 },
+      oldest: { createdAt: 1 },
+      popular: { view: -1 },
+      bestseller: { sold: -1 },
+    };
+    const sortQuery = sortMap[sort] || sortMap.newest;
+
+    // Color / size / availability filters require variant-level filtering
+    const colorList = colors ? colors.split(',').map(c => c.trim()).filter(Boolean) : [];
+    const sizeList = sizes ? sizes.split(',').map(s => s.trim()).filter(Boolean) : [];
+    const availabilityFilter = availability; // 'inStock' | 'outOfStock' | undefined
+
+    let productIds = null;
+    if (colorList.length || sizeList.length || availabilityFilter) {
+      const variantFilter = {};
+      if (colorList.length) variantFilter.color = { $in: colorList };
+      if (sizeList.length) variantFilter['options.size'] = { $in: sizeList };
+
+      const matchingVariants = await ProductVariant.find(variantFilter, 'productId stock options');
+
+      // Availability filter
+      let filteredVariants = matchingVariants;
+      if (availabilityFilter === 'inStock') {
+        filteredVariants = matchingVariants.filter(v => {
+          if (v.options?.length > 0) return v.options.some(o => o.stock > 0);
+          return (v.stock || 0) > 0;
+        });
+      } else if (availabilityFilter === 'outOfStock') {
+        filteredVariants = matchingVariants.filter(v => {
+          if (v.options?.length > 0) return v.options.every(o => (o.stock || 0) === 0);
+          return (v.stock || 0) === 0;
+        });
+      }
+
+      productIds = [...new Set(filteredVariants.map(v => v.productId.toString()))];
+      if (productIds.length === 0) {
+        return sendSuccessResponse(res, "Products fetched successfully!", {
+          products: [],
+          pagination: { total: 0, page: parseInt(page), limit: parseInt(limit), totalPages: 0 },
+        });
+      }
+      filter._id = { $in: productIds };
+    } else if (availabilityFilter) {
+      // availability only, no color/size filter
+      const allVariants = await ProductVariant.find({}, 'productId stock options');
+      let filteredVariants = allVariants;
+      if (availabilityFilter === 'inStock') {
+        filteredVariants = allVariants.filter(v => {
+          if (v.options?.length > 0) return v.options.some(o => o.stock > 0);
+          return (v.stock || 0) > 0;
+        });
+      } else if (availabilityFilter === 'outOfStock') {
+        filteredVariants = allVariants.filter(v => {
+          if (v.options?.length > 0) return v.options.every(o => (o.stock || 0) === 0);
+          return (v.stock || 0) === 0;
+        });
+      }
+      const ids = [...new Set(filteredVariants.map(v => v.productId.toString()))];
+      filter._id = { $in: ids };
+    }
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const total = await productModel.countDocuments(filter);
+
+    const products = await productModel.find(filter)
+      .populate("mainCategory", "mainCategoryName slug")
+      .populate("category", "categoryName slug")
+      .populate("subCategory", "subCategoryName slug")
+      .populate("variants")
+      .sort(sortQuery)
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    return sendSuccessResponse(res, "Products fetched successfully!", {
+      products,
+      pagination: {
+        total,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        totalPages: Math.ceil(total / parseInt(limit)),
+      },
+    });
+  } catch (error) {
+    return ThrowError(res, 500, error.message);
+  }
+};
+
 export const searchProducts = async (req, res) => {
   try {
     const {

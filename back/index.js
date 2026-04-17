@@ -7,6 +7,8 @@ import IndexRoute from './routes/index.routes.js';
 import cors from 'cors'
 import cookieParser from 'cookie-parser';
 import { initCron } from './cron/index.js';
+import { createServer } from 'http';
+import { initSocket } from './utils/socket.js';
 
 //connect DB
 const DB_URL = process.env.DB_URL
@@ -57,10 +59,6 @@ app.get("/health", async (req, res) => {
     timestamp: new Date(),
   });
 });
-
-
-import { createServer } from 'http';
-import { initSocket } from './utils/socket.js';
  
  //apis
  app.use("/api", IndexRoute)
