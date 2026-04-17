@@ -109,7 +109,7 @@ export default function Settings() {
 
     return (
         <AccountLayout>
-            <div className="max-w-2xl pb-20">
+            <div className="max-w-2xl">
                 {/* Page title */}
                 <h1 className="text-3xl font-bold text-dark mb-6">Settings</h1>
 
