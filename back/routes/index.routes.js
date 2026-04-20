@@ -131,6 +131,8 @@ import {
   getTrendingProducts
 } from "../controller/search.controller.js";
 import { sendResponse, sendSuccessResponse } from "../utils/Response.utils.js";
+import { addContact, addSupport, deleteContact, deleteSupport, getAllContact, getAllSupport, getContactById, getSupportById } from "../controller/contact.controller.js";
+import { deleteNewsLetter, getAllNewsLetter, newsLetterController } from "../controller/newsLetter.controller.js";
 
 const router = express.Router();
 
@@ -274,6 +276,21 @@ router.get("/user/recently-viewed/my", OptionalUserAuth, getRecentlyViewedContro
 // --- Wishlist Routes ---
 router.post("/user/wishlist/toggle", UserAuth, toggleWishlist);
 router.get("/user/wishlist/my", UserAuth, getWishlistController);
+
+
+router.post("/contact/add", addContact);
+router.get("/contact/get-all", getAllContact);
+router.get("/contact/get-by-id/:id", getContactById);
+router.delete("/contact/delete/:id", deleteContact);
+
+router.post("/support/add", addSupport);
+router.get("/support/get-all", getAllSupport);
+router.get("/support/get-by-id/:id", getSupportById);
+router.delete("/support/delete/:id", deleteSupport);
+
+router.post("/newsletter/add", newsLetterController);
+router.get("/newsletter/get-all", getAllNewsLetter);
+router.delete("/newsletter/delete/:id", deleteNewsLetter);
 
 //aws
 router.get("/list", async (req, res) => {
