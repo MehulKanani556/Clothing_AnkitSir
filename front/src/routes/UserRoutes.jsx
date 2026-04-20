@@ -15,6 +15,7 @@ import OrderDetail from '../pages/account/OrderDetail';
 import Address from '../pages/account/Address';
 import PaymentsCard from '../pages/account/PaymentsCard';
 import Settings from '../pages/account/Settings';
+import Contact from '../pages/contact';
 
 const UserRoutes = () => {
     return (
@@ -28,6 +29,7 @@ const UserRoutes = () => {
             <Route path="/support" element={<Layout><Support /></Layout>} />
             <Route path="/support/:id" element={<Layout><SupportDetail /></Layout>} />
             <Route path="/product/:slug" element={<Layout><ProductDetails /></Layout>} />
+            <Route path="/contact" element={<Layout><Contact /></Layout>} />
 
             {/* Collection routes — driven by header category slugs */}
             <Route path="/collection/:mainCategorySlug" element={<CollectionPage />} />
