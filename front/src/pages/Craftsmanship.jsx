@@ -1,208 +1,244 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
+import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
 import c1 from '../assets/images/craft1.webp'
 import c2 from '../assets/images/craft2.webp'
+import c21 from '../assets/images/craft21.webp'
+import c22 from '../assets/images/craft22.webp'
 import c3 from '../assets/images/craft3.webp'
 import c4 from '../assets/images/craft4.webp'
 import c5 from '../assets/images/craft5.webp'
+
+// Helper component for animated images in the scroll section (Swaps as user scrolls)
+const StepImage = ({ step, index, totalSteps, scrollYProgress }) => {
+  const stepStart = index / totalSteps;
+  const stepEnd = (index + 1) / totalSteps;
+  
+  // Create smooth fade triggers
+  let opacityRange = [stepStart, stepStart + 0.05, stepEnd - 0.05, stepEnd];
+  let opacityValues = [0, 1, 1, 0];
+
+  // Specific logic for the first and last steps to stay visible
+  if (index === 0) {
+    opacityRange = [0, 0.01, stepEnd - 0.05, stepEnd];
+    opacityValues = [1, 1, 1, 0];
+  }
+  if (index === totalSteps - 1) {
+    opacityRange[2] = 0.99;
+    opacityRange[3] = 1;
+    opacityValues[3] = 1;
+  }
+
+  const opacity = useTransform(scrollYProgress, opacityRange, opacityValues);
+  const scale = useTransform(scrollYProgress, [stepStart, stepEnd], [1.05, 1]);
+
+  return (
+    <motion.img
+      src={step.image}
+      alt={step.subtitle}
+      className="absolute inset-0 w-full h-full object-cover"
+      style={{ opacity, scale }}
+    />
+  );
+};
+
+// Helper component for stacking text blocks
+const StepContent = ({ step, index, totalSteps, scrollYProgress }) => {
+  const stepStart = index / totalSteps;
+  
+  // Fix: Ensure range has a minimum difference [start, start + 0.01] to avoid math errors
+  const start = index === 0 ? 0 : stepStart;
+  const end = index === 0 ? 0.05 : stepStart + 0.05;
+
+  // Stacking logic: Items fade in and then persist
+  const opacity = useTransform(scrollYProgress, [start, end], [index === 0 ? 1 : 0, 1]);
+  const y = useTransform(scrollYProgress, [start, end], [index === 0 ? 0 : 40, 0]);
+
+  return (
+    <motion.div
+      className="flex flex-col mb-12 last:mb-0"
+      style={{ opacity, y }}
+    >
+      <h4 className="text-xl md:text-3xl font-bold text-primary mb-3">
+        {step.subtitle}
+      </h4>
+      <p className="text-sm md:text-lg text-gray-500 font-medium leading-relaxed max-w-sm">
+        {step.description}
+      </p>
+    </motion.div>
+  );
+};
+
+const CraftsmanshipSection = ({ sectionTitle, steps, imageLeft = true }) => {
+  const containerRef = useRef(null);
+  
+  // Use window scroll by default (best for SEO and performance)
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end end"]
+  });
+
+  // Calculate snap behavior through CSS classes on sections
+  return (
+    <div ref={containerRef} className="relative h-[400vh]">
+      {/* Invisible snap markers */}
+      <div className="absolute inset-0 pointer-events-none z-0">
+        {[...Array(steps.length)].map((_, i) => (
+          <div key={i} className="h-screen w-full snap-start" />
+        ))}
+      </div>
+
+      {/* Sticky viewport content */}
+      <div className="sticky top-0 h-screen w-full flex items-center overflow-hidden bg-white z-10 px-6 md:px-12">
+        <div className="max-w-7xl mx-auto w-full pt-16 md:pt-0">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-24 items-center">
+            
+            {/* Image section */}
+            <div className={`relative aspect-[4/5] md:aspect-[3/4] w-full overflow-hidden rounded-sm shadow-2xl z-20 ${imageLeft ? 'order-1' : 'md:order-2 order-1'}`}>
+              {steps.map((step, index) => (
+                <StepImage 
+                  key={index} 
+                  step={step} 
+                  index={index} 
+                  totalSteps={steps.length} 
+                  scrollYProgress={scrollYProgress} 
+                />
+              ))}
+            </div>
+
+            {/* Content section */}
+            <div className={`flex flex-col z-20 ${imageLeft ? 'order-2' : 'md:order-1 order-2'}`}>
+                <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold text-gray-200 uppercase tracking-tighter mb-10 leading-none">
+                    THE ART OF<br/>{sectionTitle}.
+                </h2>
+                
+                <div className="flex flex-col relative">
+                    {steps.map((step, index) => (
+                    <StepContent 
+                        key={index} 
+                        step={step} 
+                        index={index} 
+                        totalSteps={steps.length} 
+                        scrollYProgress={scrollYProgress} 
+                    />
+                    ))}
+                </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const Craftsmanship = () => {
+  // Inject snap-scroll behavior into the main body for this page only
+  useEffect(() => {
+    document.body.style.scrollSnapType = 'y mandatory';
+    document.documentElement.style.scrollSnapType = 'y mandatory';
+    return () => {
+      document.body.style.scrollSnapType = '';
+      document.documentElement.style.scrollSnapType = '';
+    };
+  }, []);
+
   return (
     <div className="bg-white">
-      {/* Hero Section - The Anatomy of Luxury */}
-      <section className="relative md:px-28">
-        {/* Header Text */}
+      {/* Hero Section */}
+      <section className="relative md:px-28 h-screen snap-start flex flex-col justify-center">
         <div className="py-5 md:py-10 px-4">
-          <h1 className="text-3xl md:text-4xl lg:text-5xl text-primary font-semibold mb-4">
-            The Anatomy of Luxury
+          <h1 className="text-3xl md:text-5xl lg:text-7xl text-primary font-bold mb-6 tracking-tighter">
+            The Anatomy <br/> of Luxury
           </h1>
-          <p className="text-sm md:text-base text-primary   ">
-            An inside look at the meticulous craftsmanship behind every EO creation.
-          </p>
-          <p className="text-sm md:text-base text-lightText ">
-            At EO, we don't believe in mass production. We believe in the slow, deliberate process of creation. From the first sketch to the final polish, every step is a testament to our commitment to excellence.
+          <p className="text-sm md:text-xl text-primary font-medium max-w-xl border-l-2 border-gold pl-6 mt-6">
+            An inside look at the meticulous craftsmanship behind every EO creation. At EO, we believe in the slow, deliberate process of excellence.
           </p>
         </div>
 
-        {/* Hero Image */}
-        <div className="w-full mx-auto px-4 mb-16">
-          <div className="relative w-full aspect-[16/9] md:aspect-[21/9] overflow-hidden">
+        <div className="w-full mx-auto px-4 mt-12 bg-gray-50 p-4">
+          <div className="relative w-full aspect-[16/9] md:aspect-[21/9] overflow-hidden rounded-sm shadow-lg">
             <img
               src={c1}
               alt="Artisan at work"
               className="w-full h-full object-cover"
-              onError={(e) => {
-                e.target.src = c1;
-              }}
             />
           </div>
         </div>
       </section>
 
-      {/* The Artisan's Way Section */}
-      <section className="bg-white  py-10 ">
-        <div className="mx-auto px-4 md:px-8">
-          <div className="text-center ">
-
-            <h3 className="text-xs md:text-lg font-semibold text-mainText mb-3 uppercase">
-              craft & process
+      {/* Intro Section */}
+      <section className="bg-white h-screen snap-start flex items-center justify-center">
+        <div className="mx-auto px-4 md:px-8 text-center max-w-4xl">
+            <h3 className="text-xs md:text-sm font-bold text-gold mb-6 uppercase tracking-[0.4em]">
+              Heritage & Horizon
             </h3>
-
-            <h2 className="text-2xl md:text-3xl lg:text-5xl text-primary font-bold  mb-3 uppercase">
-              The Artisan's Way
+            <h2 className="text-3xl md:text-6xl font-bold text-primary mb-8 uppercase leading-tight select-none">
+              The Artisan's <br className="hidden md:block"/> Way
             </h2>
-            <p className="text-sm md:text-base text-gray-300 mb-4">
-              An immersive journey behind the curtain of EO. Discover the meticulous artistry, heritage techniques, and scientific precision that define our signature collections.
+            <p className="text-base md:text-xl text-gray-500 font-medium leading-relaxed max-w-2xl mx-auto italic">
+              "Discover the meticulous artistry, heritage techniques, and scientific precision that define our signature collections—from the first stitch to the final maceration."
             </p>
-
-          </div>
         </div>
       </section>
 
-      {/* The Art of Tailoring Section */}
-      <section className="py-8">
-        <div className="max-w-7xl mx-auto px-4 md:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 ">
-            {/* Image */}
-            <div className="order-2 md:order-1">
-              <div className="relative w-full aspect-[4/5] overflow-hidden">
-                <img
-                  src={c2}
-                  alt="Colorful fabric rolls"
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    e.target.src = 'https://images.unsplash.com/photo-1618220179428-22790b461013?w=800&q=80';
-                  }}
-                />
-              </div>
-            </div>
+      {/* Tailoring */}
+      <CraftsmanshipSection
+        sectionTitle="Tailoring"
+        imageLeft={true}
+        steps={[
+          {
+            subtitle: "Fabric Curation",
+            description: "We source only the finest natural fibers—Italian silks and Grade-A wool—ensuring a drape that feels like a second skin.",
+            image: c2
+          },
+          {
+            subtitle: "Precision Cutting",
+            description: "Every pattern is hand-cut by master tailors. We respect the grain of the fabric to ensure the garment never loses its shape.",
+            image: c21
+          },
+          {
+            subtitle: "The Finishing Stitch",
+            description: "Our signature 'Heritage Finish' involves hand-rolled hems and reinforced seams for longevity that lasts generations.",
+            image: c22
+          }
+        ]}
+      />
 
-            {/* Content */}
-            <div className="order-1 md:order-2 space-y-6">
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-lightText">
-                THE ART OF<br className='hiden md:block' />TAILORING.
-              </h2>
-              <h2 className="text-base md:text-3xl font-semibold text-dark">
-                Fabric Curation
-              </h2>
+      {/* Leather */}
+      <CraftsmanshipSection
+        sectionTitle="Leather"
+        imageLeft={false}
+        steps={[
+          {
+            subtitle: "Selection",
+            description: "We use only top-tier full-grain leathers that develop a beautiful patina over decades of use.",
+            image: c3
+          },
+          {
+            subtitle: "Saddle Stitching",
+            description: "Traditional two-needle saddle stitching creates seams that are virtually indestructible and aesthetically superior.",
+            image: c3
+          },
+          {
+            subtitle: "Expert Finishing",
+            description: "Every raw edge is repeatedly sanded and polished with natural beeswax for a glass-like finish.",
+            image: c3
+          }
+        ]}
+      />
 
-              <p className="text-xs md:text-sm  text-lightText ">
-                We source only the finest natural fibers—Italian silks, Egyptian cottons, and Grade-A wool—ensuring a drape that feels like a second skin.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Sculpted in Leather Section */}
-      <section className="py-8 ">
-        <div className="max-w-7xl mx-auto px-4 md:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 ">
-            {/* Content */}
-            <div className="space-y-6">
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-lightText">
-                SCULPTED IN<br className='hiden md:block' />LEATHER.
-              </h2>
-              <h2 className="text-base md:text-3xl font-semibold text-dark">
-                Selection
-              </h2>
-              <p className="text-xs md:text-sm  text-lightText ">
-                Only 5% of hides meet our criteria for 'Sovereign' quality. We use full-grain leathers that develop a beautiful patina over time.
-              </p>
-            </div>
-
-            {/* Image */}
-            <div className="relative w-full aspect-[4/5] overflow-hidden">
-              <img
-                src={c3}
-                alt="Premium leather texture"
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  e.target.src = 'https://images.unsplash.com/photo-1627384113743-6bd5a479fffd?w=800&q=80';
-                }}
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Purity Meets Performance Section */}
-      <section className="py-8 ">
-        <div className="max-w-7xl mx-auto px-4 md:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 ">
-            {/* Image */}
-            <div className="order-2 md:order-1">
-              <div className="relative w-full aspect-[4/5] overflow-hidden">
-                <img
-                  src={c4}
-                  alt="Natural plant materials"
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    e.target.src = 'https://images.unsplash.com/photo-1616401784845-180882ba9ba8?w=800&q=80';
-                  }}
-                />
-              </div>
-            </div>
-
-            {/* Content */}
-            <div className="order-1 md:order-2 space-y-6">
-              <div className="space-y-6">
-                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-lightText">
-                  Purity Meets<br className='hiden md:block' />Performance.
-                </h2>
-                <h2 className="text-base md:text-3xl font-semibold text-dark">
-                  Botanical Sourcing
-                </h2>
-                <p className="text-xs md:text-sm  text-lightText ">
-                  We blend rare floral extracts with advanced dermatological science. Every ingredient is chosen for its efficacy and skin-health benefits.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* The Soul of the Scent Section */}
-      <section className="py-8 ">
-        <div className="max-w-7xl mx-auto px-4 md:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 ">
-            {/* Content */}
-            <div className="space-y-6">
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-lightText">
-                The Soul of the<br className='hiden md:block' />Scent.
-              </h2>
-              <h2 className="text-base md:text-3xl font-semibold text-dark">
-                The Extraction
-              </h2>
-              <p className="text-xs md:text-sm  text-lightText ">
-                Using traditional steam distillation, we extract the purest essences from rare woods, spices, and blooms.
-              </p>
-            </div>
-
-            {/* Image */}
-            <div className="relative w-full aspect-[4/5] overflow-hidden">
-              <img
-                src={c5}
-                alt="Natural wood texture"
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  e.target.src = 'https://images.unsplash.com/photo-1585009350919-c2671a8a9b6f?w=800&q=80';
-                }}
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Bottom CTA Section */}
-      <section className="bg-primary text-white py-16 md:py-20">
-        <div className="max-w-4xl mx-auto px-4 md:px-8 text-center">
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-light tracking-wide mb-6">
-            Experience the Difference
+      {/* Bottom CTA */}
+      <section className="bg-primary text-white h-screen snap-start flex items-center justify-center overflow-hidden relative">
+        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent" />
+        <div className="max-w-4xl mx-auto px-4 text-center z-10">
+          <h2 className="text-4xl md:text-7xl font-bold mb-10 tracking-tighter uppercase">
+            Experience <br/> The Difference
           </h2>
-          <p className="text-sm md:text-base text-gray-200 leading-relaxed mb-8">
-            Discover how our commitment to craftsmanship creates pieces that transcend trends and stand the test of time.
+          <p className="text-sm md:text-xl text-gray-300 font-light mb-12 max-w-xl mx-auto tracking-wide">
+            Discover pieces that transcend trends and celebrate the timeless soul of artisan creation.
           </p>
-          <button className="bg-white text-primary px-8 py-3 text-sm md:text-base font-medium tracking-wide hover:bg-gray-100 transition-colors duration-300">
-            EXPLORE COLLECTION
+          <button className="bg-white text-primary px-12 py-5 text-sm md:text-base font-bold tracking-widest hover:bg-gold hover:text-white transition-all duration-500 uppercase rounded-full">
+            EXPLORE THE CRAFT
           </button>
         </div>
       </section>
