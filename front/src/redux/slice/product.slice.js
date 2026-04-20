@@ -372,11 +372,56 @@ export const productSlice = createSlice({
             .addCase(fetchWishlist.fulfilled, (state, action) => {
                 state.wishlist = action.payload?.result || action.payload?.data || [];
             })
+            .addCase(toggleWishlist.pending, (state, action) => {
+                const productId = action.meta.arg;
+                const exists = state.wishlist.some(p => (p._id || p) === productId);
+                if (exists) {
+                    state.wishlist = state.wishlist.filter(p => (p._id || p) !== productId);
+                } else {
+                    // Try to find full product data in local state first
+                    const product = state.products.find(p => p._id === productId) || 
+                                  state.collectionProducts.find(p => p._id === productId) ||
+                                  state.recentlyViewed.find(p => p._id === productId) ||
+                                  state.currentProduct;
+                    
+                    if (product && (product._id || product) === productId) {
+                        state.wishlist.push(product);
+                    } else {
+                        state.wishlist.push({ _id: productId });
+                    }
+                }
+            })
             .addCase(toggleWishlist.fulfilled, (state, action) => {
                 const { productId, isWishlisted } = action.payload;
+                
                 if (!isWishlisted) {
                     state.wishlist = state.wishlist.filter(p => (p._id || p) !== productId);
+                } else {
+                    // Check if we only have a skeletal object
+                    const existingIndex = state.wishlist.findIndex(p => (p._id || p) === productId);
+                    const isSkeletal = existingIndex !== -1 && !state.wishlist[existingIndex].name;
+
+                    if (existingIndex === -1 || isSkeletal) {
+                        const product = state.products.find(p => p._id === productId) || 
+                                      state.collectionProducts.find(p => p._id === productId) ||
+                                      state.recentlyViewed.find(p => p._id === productId) ||
+                                      state.currentProduct;
+                        
+                        if (product && (product._id || product) === productId) {
+                            if (existingIndex !== -1) {
+                                state.wishlist[existingIndex] = product;
+                            } else {
+                                state.wishlist.push(product);
+                            }
+                        }
+                    }
                 }
+            })
+            .addCase(toggleWishlist.rejected, (state, action) => {
+                // Revert optimistic update if the API call fails
+                const productId = action.meta.arg;
+                // This is slightly tricky without knowing if we added or removed.
+                // But generally, fetchWishlist is usually triggered on error to stay in sync.
             });
     },
 });

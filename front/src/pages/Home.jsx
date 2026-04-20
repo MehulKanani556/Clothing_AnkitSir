@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchMainCategories } from '../redux/slice/category.slice';
 import { fetchProducts } from '../redux/slice/product.slice';
+import WishlistButton from '../components/WishlistButton';
 import { HiOutlineArrowUpRight } from "react-icons/hi2";
 import bgImage from '../assets/images/BG.webp';
 import manCate from '../assets/images/mancate.webp'
@@ -373,6 +374,7 @@ export default function Home() {
                                     }`}
                             >
                                 <div className="relative mb-4 overflow-hidden flex items-center justify-center aspect-square">
+                                    <WishlistButton productId={product._id} />
                                     <img
                                         src={getProductImage(product)}
                                         alt={product.name}
@@ -570,6 +572,7 @@ export default function Home() {
                                     }`}
                             >
                                 <div className="relative mb-4 overflow-hidden flex items-center justify-center aspect-square">
+                                    <WishlistButton productId={product._id} />
                                     <img
                                         src={getProductImage(product)}
                                         alt={product.name}
@@ -712,6 +715,7 @@ export default function Home() {
                                     }`}
                             >
                                 <div className="relative mb-4 overflow-hidden flex items-center justify-center aspect-square">
+                                    <WishlistButton productId={product._id} />
                                     <img
                                         src={getProductImage(product)}
                                         alt={product.name}
@@ -933,6 +937,7 @@ export default function Home() {
                                     }`}
                             >
                                 <div className="relative mb-4 overflow-hidden flex items-center justify-center aspect-square">
+                                    <WishlistButton productId={product._id} />
                                     <img
                                         src={getProductImage(product)}
                                         alt={product.name}
@@ -1154,6 +1159,7 @@ export default function Home() {
                                     }`}
                             >
                                 <div className="relative mb-4 overflow-hidden flex items-center justify-center aspect-square">
+                                    <WishlistButton productId={product._id} />
                                     <img
                                         src={getProductImage(product)}
                                         alt={product.name}

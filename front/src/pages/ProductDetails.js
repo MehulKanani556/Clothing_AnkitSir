@@ -2,8 +2,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchProductBySlug, addRecentlyViewed } from '../redux/slice/product.slice';
-import { IoHeartOutline, IoHeart, IoShareSocialOutline, IoChevronUp, IoChevronDown } from "react-icons/io5";
+import { IoShareSocialOutline, IoChevronUp, IoChevronDown } from "react-icons/io5";
 import { fetchProductById, fetchVariantsByProductId, clearCurrentProduct, fetchProducts, toggleWishlist, fetchWishlist } from '../redux/slice/product.slice';
+import WishlistButton from '../components/WishlistButton';
 import { SlArrowLeft, SlArrowRight } from "react-icons/sl";
 import Header from '../components/Header';
 import ColorSidebar, { COLOR_VARIANTS } from '../components/ColorSidebar';
@@ -439,16 +440,12 @@ const ProductDetails = () => {
                                 <span>{currentProduct?.category?.categoryName || "Back"}</span>
                             </button>
                             <div className="flex items-center gap-6">
-                                <button 
-                                    onClick={handleWishlistToggle}
+                                <WishlistButton 
+                                    productId={currentProduct._id} 
                                     className="text-dark/80 hover:text-dark hover:scale-110 transition-all outline-none"
-                                >
-                                    {isWishlisted ? (
-                                        <IoHeart size={22} className="text-red-500" />
-                                    ) : (
-                                        <IoHeartOutline size={22} />
-                                    )}
-                                </button>
+                                    activeColor="text-[#14372F]"
+                                    inactiveColor="text-dark/80"
+                                />
                                 <button className="text-dark/80 hover:text-dark hover:scale-110 transition-all outline-none">
                                     <IoShareSocialOutline size={22} />
                                 </button>

@@ -1,15 +1,16 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchProductsByCategory, fetchFilterOptions, fetchRecentlyViewed } from '../redux/slice/product.slice';
+import { fetchProductsByCategory, fetchFilterOptions, fetchRecentlyViewed, fetchWishlist, toggleWishlist } from '../redux/slice/product.slice';
 import { fetchMainCategories, fetchCategories, fetchSubCategories } from '../redux/slice/category.slice';
 import Layout from '../components/Layout';
-import { IoClose, IoHeartOutline } from 'react-icons/io5';
+import { IoClose } from 'react-icons/io5';
+import WishlistButton from '../components/WishlistButton';
 
 // ── Skeleton card ─────────────────────────────────────────────────
 const SkeletonCard = () => (
     <div className="flex flex-col bg-white animate-pulse">
-        <div className="aspect-[3/4] bg-gray-100 w-full" />
+        <div className="h-[450px] bg-gray-100 w-full" />
         <div className="px-4 py-4 flex flex-col gap-2">
             <div className="h-4 bg-gray-100 rounded w-3/4 mx-auto" />
             <div className="h-4 bg-gray-100 rounded w-1/3 mx-auto" />
@@ -19,6 +20,18 @@ const SkeletonCard = () => (
 
 // ── Product Card ──────────────────────────────────────────────────
 const ProductCard = ({ product }) => {
+    const dispatch = useDispatch();
+    const { wishlist } = useSelector((state) => state.product);
+    const { isAuthenticated } = useSelector((state) => state.auth);
+    const isWishlisted = wishlist.some(item => (item._id || item) === product._id);
+
+    const handleWishlistToggle = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!isAuthenticated) return;
+        dispatch(toggleWishlist(product._id));
+    };
+
     const defaultVariant = product.variants?.find(v => v.isDefault) || product.variants?.[0];
     const image1 = defaultVariant?.images?.[0] || null;
     const image2 = defaultVariant?.images?.[1] || image1; // fallback to image1 if no second image
@@ -39,9 +52,9 @@ const ProductCard = ({ product }) => {
     return (
         <Link
             to={`/product/${product.slug}`}
-            className="group flex flex-col bg-white border border-border hover:bg-mainBG transition-all duration-700 hover:border-border"
+            className="group flex flex-col bg-white hover:bg-mainBG transition-all duration-700 hover:border-border"
         >
-            <div className="relative overflow-hidden bg-white aspect-[3/4]">
+            <div className="relative overflow-hidden bg-white h-[450px]">
                 {/* Image 1 (Initial) */}
                 <div className={`w-full h-full transition-all  group-hover:bg-mainBG duration-1000 ${image2 && image1 !== image2 ? 'group-hover:opacity-0' : ''}`}>
                     {image1 ? (
@@ -52,7 +65,7 @@ const ProductCard = ({ product }) => {
                         />
                     ) : (
                         <div className="w-full h-full flex items-center justify-center text-lightText bg-[#F8F9FA]">
-                             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1"><rect x="3" y="3" width="18" height="18" rx="2" /></svg>
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1"><rect x="3" y="3" width="18" height="18" rx="2" /></svg>
                         </div>
                     )}
                 </div>
@@ -76,15 +89,10 @@ const ProductCard = ({ product }) => {
                 )}
 
                 {/* Wishlist Icon - Hidden initially */}
-                <button 
-                    onClick={(e) => { e.preventDefault(); }}
-                    className="absolute top-5 right-5 text-[#6C757D] hover:text-dark transition-all duration-500 opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0"
-                >
-                    <IoHeartOutline size={22} strokeWidth={1} />
-                </button>
+                <WishlistButton productId={product._id} />
             </div>
 
-            <div className="px-5 py-6 flex flex-col gap-1.5 flex-shrink-0 bg-transparent transition-colors duration-700">
+            <div className="px-5 py-4 flex flex-col gap-1 flex-shrink-0 bg-transparent transition-colors duration-700">
                 <p className="font-medium text-[15px] leading-[22px] text-dark text-center tracking-tight truncate px-2">{product.name}</p>
                 {price && (
                     <p className="font-medium text-[14px] leading-[20px] text-[#495057] text-center opacity-90">{price}</p>
@@ -358,6 +366,7 @@ export default function CollectionPage() {
 
     const { collectionProducts, pagination, loading, filterOptions, recentlyViewed } = useSelector(s => s.product);
     const { mainCategories, categories, subCategories } = useSelector(s => s.category);
+    const { isAuthenticated } = useSelector(s => s.auth);
 
     const [sort, setSort] = useState('newest');
     const [page, setPage] = useState(1);
@@ -419,7 +428,10 @@ export default function CollectionPage() {
         if (!categories.length) dispatch(fetchCategories());
         if (!subCategories.length) dispatch(fetchSubCategories());
         dispatch(fetchRecentlyViewed());
-    }, [dispatch, mainCategories.length, categories.length, subCategories.length]);
+        if (isAuthenticated) {
+            dispatch(fetchWishlist());
+        }
+    }, [dispatch, mainCategories.length, categories.length, subCategories.length, isAuthenticated]);
 
     useEffect(() => {
         setPage(1);
@@ -550,9 +562,9 @@ export default function CollectionPage() {
 
                 {/* ── Product Grid ── */}
                 {loading ? (
-                    <div className="grid grid-cols-2 md:grid-cols-4">
+                    <div className="grid grid-cols-2 lg:grid-cols-4">
                         {Array.from({ length: LIMIT }).map((_, i) => (
-                            <div key={i} className={`border-border border-b ${i % 4 !== 3 ? 'border-r' : ''}`}>
+                            <div key={i} className={`border-border border-b border-r last:border-r-0 ${i % 2 === 1 ? 'lg:border-r' : ''} ${i % 4 === 3 ? 'lg:border-r-0' : ''}`}>
                                 <SkeletonCard />
                             </div>
                         ))}
@@ -573,10 +585,10 @@ export default function CollectionPage() {
                             </button>
                         )}
                     </div>
-                 ) : (
+                ) : (
                     <>
                         <CollectionGrid products={collectionProducts} />
-                        
+
                         {/* Progress and Load More Section */}
                         <div className="flex flex-col items-center justify-center py-20 gap-6 border-t border-border bg-white">
                             <span className="text-[12px] font-medium uppercase tracking-[0.2em] text-lightText">
@@ -586,7 +598,7 @@ export default function CollectionPage() {
                                 SHOW {Math.min(24, (pagination?.total || 100) - collectionProducts.length)} MORE
                             </button>
                         </div>
-                        
+
                         <Pagination pagination={pagination} onPageChange={handlePageChange} />
                     </>
                 )}
@@ -610,6 +622,9 @@ export default function CollectionPage() {
 
 // ── Collection Grid ───────────────────────────────────────────────
 function CollectionGrid({ products }) {
+    const dispatch = useDispatch();
+    const { wishlist } = useSelector((state) => state.product);
+    const { isAuthenticated } = useSelector((state) => state.auth);
     if (!products.length) return null;
 
     const rows = [];
@@ -628,14 +643,14 @@ function CollectionGrid({ products }) {
                 if (row.isFeatureRow && row.products.length >= 3) {
                     const [large, ...smalls] = row.products;
                     return (
-                        <div key={idx} className="flex border-b border-[#E9ECEF]">
-                            {/* Large card — left half */}
-                            <div className="w-1/2 border-r border-[#E9ECEF]">
+                        <div key={idx} className="flex flex-col md:flex-row border-b border-[#E9ECEF]">
+                            {/* Large card — left side (full width on mobile, half on desktop) */}
+                            <div className="w-full md:w-1/2 border-b md:border-b-0 md:border-r border-[#E9ECEF]">
                                 <Link
                                     to={`/product/${large.slug}`}
                                     className="group flex flex-col h-full bg-white hover:shadow-lg transition-shadow duration-300"
                                 >
-                                    <div className="relative overflow-hidden bg-[#F8F9FA]" style={{ minHeight: '600px' }}>
+                                    <div className="relative overflow-hidden bg-[#F8F9FA] h-[450px] md:h-full">
                                         {large.variants?.[0]?.images?.[0] ? (
                                             <img
                                                 src={large.variants[0].images[0]}
@@ -652,21 +667,23 @@ function CollectionGrid({ products }) {
                                                 {large.badge}
                                             </span>
                                         )}
+                                        {/* Wishlist Icon for large card */}
+                                        <WishlistButton productId={large._id} />
                                     </div>
                                     <div className="px-4 py-[14px] flex-shrink-0">
                                         <p className="font-semibold text-[15px] leading-[22px] text-[#1B1B1B] text-center truncate">{large.name}</p>
                                     </div>
                                 </Link>
                             </div>
-                            {/* Right: 2×2 grid */}
-                            <div className="w-1/2 grid grid-cols-2">
+                            {/* Right side: 2×2 grid (full width on mobile, half on desktop) */}
+                            <div className="w-full md:w-1/2 grid grid-cols-2">
                                 {smalls.slice(0, 4).map((product, si) => (
                                     <div key={product._id} className={`border-[#E9ECEF] ${si % 2 === 0 ? 'border-r' : ''} ${si < 2 ? 'border-b' : ''}`}>
                                         <ProductCard product={product} />
                                     </div>
                                 ))}
                                 {smalls.length < 4 && Array.from({ length: 4 - smalls.length }).map((_, ei) => (
-                                    <div key={`fe-${ei}`} className="bg-[#1B1B1B] aspect-[3/4]" />
+                                    <div key={`fe-${ei}`} className="bg-[#1B1B1B] h-[450px]" />
                                 ))}
                             </div>
                         </div>
@@ -676,13 +693,16 @@ function CollectionGrid({ products }) {
                 return (
                     <div key={idx} className="grid grid-cols-2 md:grid-cols-4 border-b border-border">
                         {row.products.map((product, pi) => (
-                            <div key={product._id} className={`border-border ${pi < 3 ? 'border-r' : ''}`}>
+                            <div key={product._id} className={`border-border border-r last:border-r-0 ${pi % 2 === 1 ? 'md:border-r' : ''} ${pi % 4 === 3 ? 'md:border-r-0' : ''}`}>
                                 <ProductCard product={product} />
                             </div>
                         ))}
-                        {row.products.length < 4 && Array.from({ length: 4 - row.products.length }).map((_, ei) => (
-                            <div key={`re-${ei}`} className="bg-dark aspect-[3/4] md:aspect-auto" />
-                        ))}
+                        {row.products.length < 4 && Array.from({ length: 4 - row.products.length }).map((_, ei) => {
+                            const pi = row.products.length + ei;
+                            return (
+                                <div key={`re-${ei}`} className={`h-[450px] border-border border-r last:border-r-0 ${pi % 2 === 1 ? 'md:border-r' : ''} ${pi % 4 === 3 ? 'md:border-r-0' : ''}`} />
+                            );
+                        })}
                     </div>
                 );
             })}
@@ -710,13 +730,16 @@ function NewFormsSection({ products }) {
             </div>
             <div className="w-full grid grid-cols-2 md:grid-cols-4 border-t border-border">
                 {featured.map((product, pi) => (
-                    <div key={product._id} className={`border-border border-b ${pi < 3 ? 'border-r' : ''}`}>
+                    <div key={product._id} className={`border-border border-b border-r last:border-r-0 ${pi % 2 === 1 ? 'md:border-r' : ''} ${pi % 4 === 3 ? 'md:border-r-0' : ''}`}>
                         <ProductCard product={product} />
                     </div>
                 ))}
-                {featured.length < 4 && Array.from({ length: 4 - featured.length }).map((_, ei) => (
-                    <div key={`nf-${ei}`} className="bg-[#1B1B1B] aspect-[3/4]" />
-                ))}
+                {featured.length < 4 && Array.from({ length: 4 - featured.length }).map((_, ei) => {
+                    const pi = featured.length + ei;
+                    return (
+                        <div key={`nf-${ei}`} className={`bg-[#1B1B1B] h-[450px] border-border border-b border-r last:border-r-0 ${pi % 2 === 1 ? 'md:border-r' : ''} ${pi % 4 === 3 ? 'md:border-r-0' : ''}`} />
+                    );
+                })}
             </div>
         </section>
     );

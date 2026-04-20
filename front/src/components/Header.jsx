@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchMainCategories, fetchCategories, fetchSubCategories } from '../redux/slice/category.slice';
 import { logoutUser } from '../redux/slice/auth.slice';
 import { logSearch, fetchPopularSearches, fetchRecentSearches, fetchTrendingProducts, searchProducts, clearSearchResults } from '../redux/slice/search.slice';
+import { fetchWishlist } from '../redux/slice/product.slice';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { HiArrowUpRight, HiOutlineBell } from 'react-icons/hi2';
 import { ReactComponent as EoLogo } from '../assets/images/eo.svg';
@@ -114,7 +115,7 @@ export default function Header() {
     const { popularSearches, recentSearches, trendingProducts, searchResults, searchLoading } = useSelector((state) => state.search);
     const { notifications, unreadCount, loading: notificationsLoading } = useSelector((state) => state.notification);
     const { wishlist } = useSelector((state) => state.product);
-    const { fetchWishlist } = require('../redux/slice/product.slice');
+
 
     useEffect(() => {
         if (isAuthenticated) {
