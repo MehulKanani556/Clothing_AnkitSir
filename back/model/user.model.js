@@ -85,9 +85,6 @@ const UserSchema = new mongoose.Schema({
       viewedAt: { type: Date, default: Date.now },
     },
   ],
-  wishlist: [
-    { type: mongoose.Schema.Types.ObjectId, ref: "Product" }
-  ],
   isUserDeleted: {
     type: Boolean,
     default: false

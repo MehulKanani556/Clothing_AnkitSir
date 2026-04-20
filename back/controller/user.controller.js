@@ -557,52 +557,6 @@ export const getRecentlyViewedController = async (req, res) => {
     }
 };
 
-export const toggleWishlist = async (req, res) => {
-    try {
-        const id = req.user?.id || req.user?._id;
-        const { productId } = req.body;
-
-        if (!productId) return sendBadRequestResponse(res, "Product ID is required!");
-
-        const user = await UserModel.findById(id);
-        if (!user) return sendNotFoundResponse(res, "User not found");
-
-        const isWishlisted = user.wishlist.some(id => id.toString() === productId.toString());
-
-        if (isWishlisted) {
-            user.wishlist = user.wishlist.filter(id => id.toString() !== productId.toString());
-            await user.save();
-            return sendSuccessResponse(res, "Product removed from wishlist", { isWishlisted: false, wishlistCount: user.wishlist.length });
-        } else {
-            user.wishlist.push(productId);
-            await user.save();
-            return sendSuccessResponse(res, "Product added to wishlist", { isWishlisted: true, wishlistCount: user.wishlist.length });
-        }
-    } catch (error) {
-        return sendErrorResponse(res, 500, "Error toggling wishlist", error.message);
-    }
-};
-
-export const getWishlistController = async (req, res) => {
-    try {
-        const id = req.user?.id || req.user?._id;
-        if (!id) return sendSuccessResponse(res, "Guest mode: no wishlist", []);
-
-        const user = await UserModel.findById(id).populate({
-            path: "wishlist",
-            populate: { path: "variants" }
-        });
-
-        if (!user) return sendSuccessResponse(res, "User not found", []);
-
-        const products = user.wishlist.filter(p => p !== null);
-
-        return sendSuccessResponse(res, "Wishlist items fetched successfully", products);
-    } catch (error) {
-        return sendErrorResponse(res, 500, "Error fetching wishlist", error.message);
-    }
-};
-
 export const requestAccountDeletionController = async (req, res) => {
     try {
         const id = req.user.id || req.user._id;

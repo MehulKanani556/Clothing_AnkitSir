@@ -58,7 +58,6 @@ import {
   createSizeGuide,
   getAllSizeGuides,
   getSizeGuideById,
-  updateSizeGuide,
   deleteSizeGuide,
   updateProductSizeGuide,
   getProductSizeGuide
@@ -98,8 +97,6 @@ import {
   confirmStripePaymentController
 } from "../controller/payment.controller.js";
 import {
-  toggleWishlist,
-  getWishlistController,
   updateProfileController,
   sendEmailOtpController,
   verifyEmailOtpController,
@@ -133,6 +130,7 @@ import {
 import { sendResponse, sendSuccessResponse } from "../utils/Response.utils.js";
 import { addContact, addSupport, deleteContact, deleteSupport, getAllContact, getAllSupport, getContactById, getSupportById } from "../controller/contact.controller.js";
 import { deleteNewsLetter, getAllNewsLetter, newsLetterController } from "../controller/newsLetter.controller.js";
+import { getWishlist, toggleWishlist } from "../controller/wishlist.controller.js";
 
 const router = express.Router();
 
@@ -273,10 +271,6 @@ router.delete("/notifications/delete/:id", UserAuth, deleteNotification);
 router.post("/user/recently-viewed/add", OptionalUserAuth, addRecentlyViewedController);
 router.get("/user/recently-viewed/my", OptionalUserAuth, getRecentlyViewedController);
 
-// --- Wishlist Routes ---
-router.post("/user/wishlist/toggle", UserAuth, toggleWishlist);
-router.get("/user/wishlist/my", UserAuth, getWishlistController);
-
 
 router.post("/contact/add", addContact);
 router.get("/contact/get-all", getAllContact);
@@ -291,6 +285,9 @@ router.delete("/support/delete/:id", deleteSupport);
 router.post("/newsletter/add", newsLetterController);
 router.get("/newsletter/get-all", getAllNewsLetter);
 router.delete("/newsletter/delete/:id", deleteNewsLetter);
+
+router.post("/user/wishlist/toggle", UserAuth, toggleWishlist)
+router.get("/user/wishlist/my", UserAuth, getWishlist)
 
 //aws
 router.get("/list", async (req, res) => {
