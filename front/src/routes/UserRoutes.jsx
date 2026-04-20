@@ -7,6 +7,7 @@ import Wishlist from '../pages/Wishlist';
 import Support from '../pages/Support';
 import SupportDetail from '../pages/SupportDetail';
 import CollectionPage from '../pages/CollectionPage';
+import Craftsmanship from '../pages/Craftsmanship';
 import ProtectedRoute from './ProtectedRoute';
 import Profile from '../pages/account/Profile';
 import Orders from '../pages/account/Orders';
@@ -23,6 +24,7 @@ const UserRoutes = () => {
             <Route path="/auth" element={<Auth />} />
             <Route path="/product" element={<ProductDetails />} />
             <Route path="/wishlist" element={<Layout><Wishlist /></Layout>} />
+            <Route path="/craftsmanship" element={<Layout><Craftsmanship /></Layout>} />
             <Route path="/support" element={<Layout><Support /></Layout>} />
             <Route path="/support/:id" element={<Layout><SupportDetail /></Layout>} />
             <Route path="/product/:slug" element={<Layout><ProductDetails /></Layout>} />

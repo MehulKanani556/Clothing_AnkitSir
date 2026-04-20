@@ -11,3 +11,42 @@
     font-size: 14px !important;
   }
 }
+
+/* Smooth Scroll Snap Styles */
+.snap-y {
+  scroll-snap-type: y mandatory;
+}
+
+.snap-start {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+/* Custom scrollbar styling */
+.snap-y::-webkit-scrollbar {
+  width: 6px;
+}
+
+.snap-y::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.snap-y::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.snap-y::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Ensure smooth transitions on mobile */
+@media (max-width: 768px) {
+  .snap-y {
+    scroll-snap-type: y proximity;
+  }
+  
+  .snap-start {
+    scroll-snap-stop: normal;
+  }
+}
