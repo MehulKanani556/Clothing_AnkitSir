@@ -684,7 +684,6 @@ export const finalizeAccountDeletionController = async (req, res) => {
         // Finalize deletion
         user.isUserDeleted = true;
         user.deletedAt = new Date();
-        user.deletionOtpVerified = false; // Reset for security
         user.refreshToken = null;
         user.sessions = [];
 
