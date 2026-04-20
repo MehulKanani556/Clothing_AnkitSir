@@ -235,27 +235,28 @@ export default function Header() {
         setMenuStack(prev => prev.slice(0, -1));
     };
 
-    const handleMainCategoryClick = (category) => {
-        const subCats = getCategoriesForMainCategory(category._id);
-        if (subCats.length > 0) {
-            setMenuStack([{ type: 'main', id: category._id, name: category.mainCategoryName }]);
-        } else {
-            navigate(`/collection/${category.slug || category.mainCategoryName?.toLowerCase().replace(' ', '-')}`);
-            setIsMenuOpen(false);
-        }
+    const handleMainCategoryNavigate = (category) => {
+        const slug = category.slug || category.mainCategoryName?.toLowerCase().replace(/\s+/g, '-');
+        navigate(`/collection/${slug}`);
+        setIsMenuOpen(false);
     };
 
-    const handleCategoryClick = (category, mainCategory) => {
-        const subSubCats = getSubCategoriesForCategory(category._id);
-        if (subSubCats.length > 0) {
-            setMenuStack([
-                { type: 'main', id: mainCategory.id, name: mainCategory.name },
-                { type: 'category', id: category._id, name: category.categoryName }
-            ]);
-        } else {
-            navigate(`/collection/${mainCategory.name.toLowerCase()}/${category.slug}`);
-            setIsMenuOpen(false);
-        }
+    const handleOpenSubCategories = (category) => {
+        setMenuStack([{ type: 'main', id: category._id, name: category.mainCategoryName }]);
+    };
+
+    const handleCategoryNavigate = (category, mainCategory) => {
+        const mainSlug = mainCategory.name?.toLowerCase().replace(/\s+/g, '-');
+        const catSlug = category.slug || category.categoryName?.toLowerCase().replace(/\s+/g, '-');
+        navigate(`/collection/${mainSlug}/${catSlug}`);
+        setIsMenuOpen(false);
+    };
+
+    const handleOpenSubSubCategories = (category, mainCategory) => {
+        setMenuStack([
+            { type: 'main', id: mainCategory.id, name: mainCategory.name },
+            { type: 'category', id: category._id, name: category.categoryName }
+        ]);
     };
 
     // Get categories and subcategories for a specific main category
@@ -465,14 +466,23 @@ export default function Header() {
                                 {mainCategories && mainCategories.map((category, index) => (
                                     <div
                                         key={category._id}
-                                        onClick={() => handleMainCategoryClick(category)}
-                                        className={`flex items-center justify-between text-[clamp(1.1rem,4vw,1.5rem)] font-semibold tracking-[0.1em] text-white hover:text-white/70 uppercase cursor-pointer transition-all duration-500 ${isMenuOpen ? 'translate-x-0 opacity-100' : 'translate-x-10 opacity-0'
+                                        className={`flex items-center justify-between text-[clamp(1.1rem,4vw,1.5rem)] font-semibold tracking-[0.1em] text-white hover:text-white/70 uppercase transition-all duration-500 ${isMenuOpen ? 'translate-x-0 opacity-100' : 'translate-x-10 opacity-0'
                                             }`}
                                         style={{ transitionDelay: `${index * 50}ms` }}
                                     >
-                                        <span>{category.mainCategoryName}</span>
+                                        <span 
+                                            className="cursor-pointer flex-1 py-1"
+                                            onClick={() => handleMainCategoryNavigate(category)}
+                                        >
+                                            {category.mainCategoryName}
+                                        </span>
                                         {getCategoriesForMainCategory(category._id).length > 0 && (
-                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                            <div 
+                                                className="cursor-pointer p-2 -mr-2"
+                                                onClick={() => handleOpenSubCategories(category)}
+                                            >
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                            </div>
                                         )}
                                     </div>
                                 ))}
@@ -490,12 +500,21 @@ export default function Header() {
                                 {menuStack.length > 0 && getCategoriesForMainCategory(menuStack[0].id).map((category, index) => (
                                     <div
                                         key={category._id}
-                                        onClick={() => handleCategoryClick(category, menuStack[0])}
-                                        className="flex items-center justify-between text-[clamp(1rem,3.5vw,1.25rem)] font-medium tracking-[0.05em] text-white/90 hover:text-white uppercase cursor-pointer"
+                                        className="flex items-center justify-between text-[clamp(1rem,3.5vw,1.25rem)] font-medium tracking-[0.05em] text-white/90 hover:text-white uppercase"
                                     >
-                                        <span>{category.categoryName}</span>
+                                        <span 
+                                            className="cursor-pointer flex-1 py-1"
+                                            onClick={() => handleCategoryNavigate(category, menuStack[0])}
+                                        >
+                                            {category.categoryName}
+                                        </span>
                                         {getSubCategoriesForCategory(category._id).length > 0 && (
-                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                            <div 
+                                                className="cursor-pointer p-2 -mr-2"
+                                                onClick={() => handleOpenSubSubCategories(category, menuStack[0])}
+                                            >
+                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                            </div>
                                         )}
                                     </div>
                                 ))}

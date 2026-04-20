@@ -153,106 +153,115 @@ const Pagination = ({ pagination, onPageChange }) => {
 const FilterSection = ({ title, children, defaultOpen = false }) => {
     const [open, setOpen] = useState(defaultOpen);
     return (
-        <div className="border-b border-border">
+        <div className="border-b border-[#F1F3F5]">
             <button
                 onClick={() => setOpen(o => !o)}
-                className="w-full flex items-center justify-between py-5 px-6 text-left"
+                className="w-full flex items-center justify-between py-6 px-8 text-left group"
             >
-                <span className="text-[13px] font-extrabold uppercase tracking-widest text-dark">{title}</span>
-                {open ? (
-                    <svg width="14" height="2" viewBox="0 0 14 2" fill="none"><rect width="14" height="2" fill="dark" /></svg>
-                ) : (
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                        <rect x="6" width="2" height="14" fill="dark" />
-                        <rect y="6" width="14" height="2" fill="dark" />
-                    </svg>
-                )}
+                <span className="text-[12px] font-extrabold uppercase tracking-[0.3em] text-[#1B1B1B]">{title}</span>
+                <span className="text-[#1B1B1B] transition-transform duration-300">
+                    {open ? (
+                        <svg width="12" height="2" viewBox="0 0 12 2" fill="none"><path d="M0 1H12" stroke="currentColor" strokeWidth="1.2"/></svg>
+                    ) : (
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                            <path d="M0 6H12M6 0V12" stroke="currentColor" strokeWidth="1.2"/>
+                        </svg>
+                    )}
+                </span>
             </button>
-            {open && <div className="px-6 pb-5">{children}</div>}
+            <div className={`overflow-hidden transition-all duration-300 ${open ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                <div className="px-8 pb-8">{children}</div>
+            </div>
         </div>
     );
 };
 
 // ── Filter Sidebar ────────────────────────────────────────────────
 const FilterSidebar = ({ open, onClose, filterOptions, activeFilters, onFilterChange, onClearAll }) => {
+    const [showAllCategories, setShowAllCategories] = useState(false);
     const activeCount = Object.values(activeFilters).flat().filter(Boolean).length;
+
+    const renderItem = (type, item, isActive) => (
+        <label
+            key={item.name || item.key}
+            onClick={() => onFilterChange(type, item.name || item.key)}
+            className="flex items-center cursor-pointer group py-0.5"
+        >
+            <div className="w-4 flex items-center justify-center flex-shrink-0">
+                {isActive && (
+                    <svg width="11" height="9" viewBox="0 0 11 9" fill="none">
+                        <path d="M1 4.5L4 7.5L10 1" stroke="#1B1B1B" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                )}
+            </div>
+            <span className={`text-[14px] leading-tight transition-colors ${isActive ? 'text-primary font-bold' : 'text-[#495057] group-hover:text-primary'}`}>
+                {item.label || item.name}
+            </span>
+            {item.count !== undefined && <sup className="text-[10px] text-[#ADB5BD] ml-0.5 font-medium">{item.count}</sup>}
+        </label>
+    );
 
     return (
         <>
             {/* Backdrop */}
             <div
-                className={`fixed inset-0 bg-black/40 z-40 transition-opacity duration-300 ${open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+                className={`fixed inset-0 bg-black/40 backdrop-blur-[2px] z-50 transition-opacity duration-500 ${open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
                 onClick={onClose}
             />
 
             {/* Drawer */}
             <div
-                className={`fixed top-0 right-0 h-full w-full max-w-[420px] bg-white z-50 flex flex-col shadow-2xl transition-transform duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] ${open ? 'translate-x-0' : 'translate-x-full'}`}
+                className={`fixed top-0 right-0 h-full w-full max-w-[450px] bg-white z-50 flex flex-col shadow-[-20px_0_60px_-15px_rgba(0,0,0,0.1)] transition-transform duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] ${open ? 'translate-x-0' : 'translate-x-full'}`}
             >
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-5 border-b border-border flex-shrink-0">
-                    <h2 className="text-[18px] font-bold text-dark">
-                        Filters {activeCount > 0 && <sup className="text-primary font-extrabold ml-0.5">{activeCount}</sup>}
+                <div className="flex items-center justify-between px-8 py-7 border-b border-[#F1F3F5] flex-shrink-0">
+                    <h2 className="text-[20px] font-bold text-dark tracking-tight">
+                        Filters {activeCount > 0 && <sup className="text-[13px] font-medium text-[#ADB5BD] ml-1">{activeCount}</sup>}
                     </h2>
-                    <button onClick={onClose} className="p-1 hover:opacity-60 transition-opacity">
-                        <IoClose size={22} />
+                    <button onClick={onClose} className="p-2 -mr-2 hover:opacity-100 opacity-60 transition-all hover:rotate-90">
+                        <IoClose size={26} />
                     </button>
                 </div>
 
                 {/* Scrollable content */}
-                <div className="flex-1 overflow-y-auto">
+                <div className="flex-1 overflow-y-auto scrollbar-hide">
                     {/* AVAILABILITY */}
                     <FilterSection title="Availability" defaultOpen={true}>
-                        <div className="flex flex-col gap-3">
+                        <div className="flex flex-col gap-4">
                             {[
                                 { key: 'inStock', label: 'In stock', count: filterOptions?.availability?.inStock },
                                 { key: 'outOfStock', label: 'Out of stock', count: filterOptions?.availability?.outOfStock },
-                            ].map(item => (
-                                <label key={item.key} className="flex items-center gap-3 cursor-pointer group">
-                                    <div
-                                        onClick={() => onFilterChange('availability', item.key)}
-                                        className={`w-4 h-4 border flex items-center justify-center flex-shrink-0 cursor-pointer transition-colors ${activeFilters.availability === item.key ? 'bg-primary border-primary' : 'border-lightText group-hover:border-primary'}`}
-                                    >
-                                        {activeFilters.availability === item.key && (
-                                            <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-                                                <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                            </svg>
-                                        )}
-                                    </div>
-                                    <span className="text-[14px] text-[#343A40]">{item.label}</span>
-                                    {item.count !== undefined && (
-                                        <span className="text-[12px] text-lightText ml-auto">{item.count}</span>
-                                    )}
-                                </label>
-                            ))}
+                            ].map(item => renderItem('availability', item, activeFilters.availability === item.key))}
                         </div>
                     </FilterSection>
 
                     {/* COLOR */}
                     {filterOptions?.colors?.length > 0 && (
                         <FilterSection title="Color" defaultOpen={true}>
-                            <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+                            <div className="grid grid-cols-2 gap-x-8 gap-y-4">
                                 {filterOptions.colors.map(color => {
                                     const isActive = activeFilters.colors?.includes(color.name);
                                     return (
                                         <label
                                             key={color.name}
                                             onClick={() => onFilterChange('colors', color.name)}
-                                            className="flex items-center gap-2.5 cursor-pointer group"
+                                            className="flex items-center cursor-pointer group"
                                         >
-                                            {/* Color swatch */}
-                                            <div
-                                                className="w-4 h-4 rounded-full border border-border flex-shrink-0 relative"
-                                                style={{ backgroundColor: color.colorCode || color.name.toLowerCase() }}
-                                            >
+                                            <div className="w-4 flex items-center justify-center flex-shrink-0">
                                                 {isActive && (
-                                                    <div className="absolute inset-0 rounded-full ring-2 ring-offset-1 ring-primary" />
+                                                    <svg width="11" height="9" viewBox="0 0 11 9" fill="none">
+                                                        <path d="M1 4.5L4 7.5L10 1" stroke="#1B1B1B" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                                    </svg>
                                                 )}
                                             </div>
-                                            <span className={`text-[14px] transition-colors ${isActive ? 'text-primary font-semibold' : 'text-[#343A40] group-hover:text-primary'}`}>
+                                            <div
+                                                className={`w-5 h-5 flex-shrink-0 border border-border relative`}
+                                                style={{ backgroundColor: color.colorCode || color.name.toLowerCase() }}
+                                            />
+                                            <span className={`text-[14px] transition-colors pl-2 text-[#495057] group-hover:text-primary ${isActive ? 'text-primary font-bold' : ''}`}>
                                                 {color.name}
                                             </span>
-                                            <span className="text-[12px] text-lightText ml-auto">{color.count}</span>
+                                            {color.count !== undefined && <sup className="text-[10px] text-[#ADB5BD] ml-0.5 font-medium">{color.count}</sup>}
                                         </label>
                                     );
                                 })}
@@ -260,96 +269,49 @@ const FilterSidebar = ({ open, onClose, filterOptions, activeFilters, onFilterCh
                         </FilterSection>
                     )}
 
-                    {/* CATEGORY (sub-categories) */}
+                    {/* CATEGORY */}
                     {filterOptions?.categories?.length > 0 && (
-                        <FilterSection title="Category">
-                            <div className="grid grid-cols-2 gap-x-6 gap-y-3">
-                                {filterOptions.categories.map(cat => {
-                                    const isActive = activeFilters.categories?.includes(cat.name);
-                                    return (
-                                        <label
-                                            key={cat.name}
-                                            onClick={() => onFilterChange('categories', cat.name)}
-                                            className="flex items-center gap-2 cursor-pointer group"
-                                        >
-                                            {isActive && (
-                                                <svg width="10" height="8" viewBox="0 0 10 8" fill="none" className="flex-shrink-0">
-                                                    <path d="M1 4L3.5 6.5L9 1" stroke="#14372F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                                </svg>
-                                            )}
-                                            <span className={`text-[14px] transition-colors ${isActive ? 'text-primary font-semibold' : 'text-[#343A40] group-hover:text-primary'}`}>
-                                                {cat.name}
-                                            </span>
-                                            <span className="text-[12px] text-lightText ml-auto">{cat.count}</span>
-                                        </label>
-                                    );
-                                })}
+                        <FilterSection title="Category" defaultOpen={true}>
+                            <div className="grid grid-cols-1 gap-y-4">
+                                {(showAllCategories ? filterOptions.categories : filterOptions.categories.slice(0, 6)).map(cat => 
+                                    renderItem('categories', cat, activeFilters.categories?.includes(cat.name))
+                                )}
                             </div>
+                            {filterOptions.categories.length > 6 && (
+                                <button 
+                                    onClick={() => setShowAllCategories(!showAllCategories)}
+                                    className="mt-6 text-[14px] text-[#A6AEB6] hover:text-primary underline underline-offset-8 decoration-1 decoration-[#A6AEB6]/40 block text-left"
+                                >
+                                    {showAllCategories ? 'Show less' : 'Show more'}
+                                </button>
+                            )}
                         </FilterSection>
                     )}
 
                     {/* SIZE */}
                     {filterOptions?.sizes?.length > 0 && (
-                        <FilterSection title="Size">
-                            <div className="grid grid-cols-2 gap-x-6 gap-y-3">
-                                {filterOptions.sizes.map(size => {
-                                    const isActive = activeFilters.sizes?.includes(size.name);
-                                    return (
-                                        <label
-                                            key={size.name}
-                                            onClick={() => onFilterChange('sizes', size.name)}
-                                            className="flex items-center gap-2 cursor-pointer group"
-                                        >
-                                            {isActive && (
-                                                <svg width="10" height="8" viewBox="0 0 10 8" fill="none" className="flex-shrink-0">
-                                                    <path d="M1 4L3.5 6.5L9 1" stroke="#14372F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                                </svg>
-                                            )}
-                                            <span className={`text-[14px] transition-colors ${isActive ? 'text-primary font-semibold' : 'text-[#343A40] group-hover:text-primary'}`}>
-                                                {size.name}
-                                            </span>
-                                            <span className="text-[12px] text-lightText ml-auto">{size.count}</span>
-                                        </label>
-                                    );
-                                })}
+                        <FilterSection title="Size" defaultOpen={true}>
+                            <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+                                {filterOptions.sizes.map(size => renderItem('sizes', size, activeFilters.sizes?.includes(size.name)))}
                             </div>
                         </FilterSection>
                     )}
 
                     {/* MATERIAL */}
                     {filterOptions?.materials?.length > 0 && (
-                        <FilterSection title="Material">
-                            <div className="grid grid-cols-2 gap-x-6 gap-y-3">
-                                {filterOptions.materials.map(mat => {
-                                    const isActive = activeFilters.materials?.includes(mat.name);
-                                    return (
-                                        <label
-                                            key={mat.name}
-                                            onClick={() => onFilterChange('materials', mat.name)}
-                                            className="flex items-center gap-2 cursor-pointer group"
-                                        >
-                                            {isActive && (
-                                                <svg width="10" height="8" viewBox="0 0 10 8" fill="none" className="flex-shrink-0">
-                                                    <path d="M1 4L3.5 6.5L9 1" stroke="#14372F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                                </svg>
-                                            )}
-                                            <span className={`text-[14px] transition-colors ${isActive ? 'text-primary font-semibold' : 'text-[#343A40] group-hover:text-primary'}`}>
-                                                {mat.name}
-                                            </span>
-                                            <span className="text-[12px] text-lightText ml-auto">{mat.count}</span>
-                                        </label>
-                                    );
-                                })}
+                        <FilterSection title="Material" defaultOpen={true}>
+                            <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+                                {filterOptions.materials.map(mat => renderItem('materials', mat, activeFilters.materials?.includes(mat.name)))}
                             </div>
                         </FilterSection>
                     )}
                 </div>
 
                 {/* Footer: Clear All */}
-                <div className="flex-shrink-0 border-t border-border">
+                <div className="flex-shrink-0 py-8 bg-white text-center border-t border-[#F1F3F5]">
                     <button
                         onClick={onClearAll}
-                        className="w-full py-4 text-[14px] font-bold uppercase tracking-widest text-lightText hover:text-dark bg-mainBG hover:bg-border transition-colors"
+                        className="text-[13px] font-extrabold uppercase tracking-[0.3em] text-[#ADB5BD] hover:text-dark transition-colors"
                     >
                         Clear All
                     </button>
@@ -413,6 +375,7 @@ export default function CollectionPage() {
             colors: activeFilters.colors.join(','),
             sizes: activeFilters.sizes.join(','),
             materials: activeFilters.materials.join(','),
+            categories: activeFilters.categories.join(','),
             availability: activeFilters.availability || undefined,
         }));
     }, [dispatch, mainCategorySlug, categorySlug, subCategorySlug, page, sort, activeFilters]);
@@ -532,12 +495,9 @@ export default function CollectionPage() {
                                 onClick={() => setFilterOpen(true)}
                                 className="flex items-center gap-1.5 text-[13px] font-extrabold uppercase tracking-widest text-primary hover:text-primary/80 transition-colors"
                             >
-                                <svg width="16" height="12" viewBox="0 0 16 12" fill="none">
-                                    <path d="M0 1h16M3 6h10M6 11h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                                </svg>
                                 Filters
                                 {activeFilterCount > 0 && (
-                                    <span className="text-primary">{activeFilterCount}</span>
+                                    <span className="text-lightText">{activeFilterCount}</span>
                                 )}
                             </button>
 

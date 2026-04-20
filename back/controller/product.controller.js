@@ -308,9 +308,30 @@ export const getFilterOptions = async (req, res) => {
       if (subCat) filter.subCategory = subCat._id;
     }
 
-    const products = await productModel.find(filter, "_id material variants").populate("variants", "color colorCode options stock isActive");
+    // 1. Fetch labels from DB MODELS (Full list)
+    let categoryMap = {}; 
+    if (mainCategorySlug) {
+      const mc = await MainCategoryModel.findOne({ slug: mainCategorySlug });
+      if (mc) {
+        const dbCats = await CategoryModel.find({ mainCategoryId: mc._id });
+        for (const c of dbCats) {
+          const [dbSubs, dbInsides] = await Promise.all([
+            SubCategoryModel.find({ categoryId: c._id }),
+            InsideSubCategoryModel.find({ categoryId: c._id })
+          ]);
+          dbSubs.forEach(s => { if (s.subCategoryName) categoryMap[s.subCategoryName] = 0; });
+          dbInsides.forEach(i => { if (i.insideSubCategoryName) categoryMap[i.insideSubCategoryName] = 0; });
+        }
+      }
+    }
 
-    // Aggregate filter options
+    // 2. Aggregate counts from NARROW contextual products
+    const products = await productModel.find(filter, "_id material variants category subCategory insideSubCategory")
+      .populate("variants", "color colorCode options stock isActive")
+      .populate("category", "categoryName")
+      .populate("subCategory", "subCategoryName")
+      .populate("insideSubCategory", "insideSubCategoryName");
+
     const colorMap = {};
     const sizeMap = {};
     const materialMap = {};
@@ -322,6 +343,13 @@ export const getFilterOptions = async (req, res) => {
       if (product.material) {
         materialMap[product.material] = (materialMap[product.material] || 0) + 1;
       }
+
+      // Flat Category Counting
+      const iName = product.insideSubCategory?.insideSubCategoryName;
+      const sName = product.subCategory?.subCategoryName;
+      
+      if (iName && categoryMap[iName] !== undefined) categoryMap[iName]++;
+      if (sName && categoryMap[sName] !== undefined) categoryMap[sName]++;
 
       let productHasStock = false;
       for (const variant of (product.variants || [])) {
@@ -363,11 +391,15 @@ export const getFilterOptions = async (req, res) => {
     const materials = Object.entries(materialMap).map(([name, count]) => ({ name, count }))
       .sort((a, b) => b.count - a.count);
 
+    const categories = Object.entries(categoryMap).map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count);
+
     return sendSuccessResponse(res, "Filter options fetched successfully!", {
       availability: { inStock: inStockCount, outOfStock: outOfStockCount },
       colors,
       sizes,
       materials,
+      categories,
       total: products.length,
     });
   } catch (error) {
@@ -379,7 +411,7 @@ export const getFilterOptions = async (req, res) => {
 export const getProductsByCategory = async (req, res) => {
   try {
     const { mainCategorySlug, categorySlug, subCategorySlug, page = 1, limit = 12, sort = "newest",
-      colors, sizes, materials, availability } = req.query;
+      colors, sizes, materials, categories, availability } = req.query;
 
     const filter = { isActive: true };
 
@@ -405,6 +437,34 @@ export const getProductsByCategory = async (req, res) => {
     if (materials) {
       const materialList = materials.split(',').map(m => m.trim()).filter(Boolean);
       if (materialList.length) filter.material = { $in: materialList };
+    }
+
+    // Category/SubCategory/InsideSubCategory filter (from sidebar)
+    if (categories) {
+      const categoryNames = categories.split(',').map(c => c.trim()).filter(Boolean);
+      if (categoryNames.length) {
+        // Collect IDs from all three levels of category hierarchy
+        const [insides, subs, cats] = await Promise.all([
+          InsideSubCategoryModel.find({ insideSubCategoryName: { $in: categoryNames } }),
+          SubCategoryModel.find({ subCategoryName: { $in: categoryNames } }),
+          CategoryModel.find({ categoryName: { $in: categoryNames } })
+        ]);
+
+        const matchingIds = [
+          ...insides.map(i => i._id),
+          ...subs.map(s => s._id),
+          ...cats.map(c => c._id)
+        ];
+
+        if (matchingIds.length) {
+          // Match any level of the hierarchy
+          filter.$or = [
+            { category: { $in: matchingIds } },
+            { subCategory: { $in: matchingIds } },
+            { insideSubCategory: { $in: matchingIds } }
+          ];
+        }
+      }
     }
 
     const sortMap = {
