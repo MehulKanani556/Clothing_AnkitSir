@@ -16,15 +16,15 @@ const shopLinks = [
 const aboutLinks = [
     { label: 'The House', to: '/about/the-house' },
     { label: 'Philosophy', to: '/about/philosophy' },
-    { label: 'Craft & Process', to: '/about/craft-and-process' },
+    { label: 'Craft & Process', to: '/craftsmanship' },
     { label: 'Journal', to: '/about/journal' },
 ];
 
 const serviceLinks = [
-    { label: 'Contact', to: '/services/contact' },
-    { label: 'Delivery & Returns', to: '/services/delivery-returns' },
-    { label: 'Lookbook', to: '/services/lookbook' },
-    { label: 'Care Guide', to: '/services/care-guide' },
+    { label: 'Contact', to: '/contact' },
+    { label: 'Delivery & Returns', to: '/delivery-returns' },
+    { label: 'Lookbook', to: '/lookbook' },
+    { label: 'Care Guide', to: '/care-guide' },
 ];
 
 function FooterCol({ title, links }) {

@@ -138,7 +138,7 @@ export default function Contact() {
                 </section>
 
                 {/* Section 4: Send a Message */}
-                <section className="mt-6 pt-6 md:pt-8 border-t border-border pb-24 md:pb-32">
+                <section className="mt-6 pt-6 md:pt-8 border-t border-border">
                     <h3 className="text-sm md:text-base font-semibold text-primary mb-1">
                         4. Send a Message
                     </h3>
