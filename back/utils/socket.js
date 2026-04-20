@@ -6,7 +6,7 @@ export const initSocket = (server) => {
     io = new Server(server, {
         cors: {
             origin: ['http://localhost:3000', 'http://localhost:3001'],
-            methods: ['GET', 'POST'],
+            methods: ['GET', 'POST', 'DELETE', 'PUT', 'PATCH', 'OPTIONS', 'HEAD',],
             credentials: true
         }
     });
@@ -21,7 +21,7 @@ export const initSocket = (server) => {
                 // Join user room
                 socket.join(userIdStr);
                 console.log(`📡 Socket ${socket.id} joined userId room: ${userIdStr}`);
-                
+
                 // Also join a specific session room if tokenHash provided
                 if (tokenHash) {
                     const sessionRoom = `${userIdStr}-${tokenHash}`;
@@ -70,3 +70,12 @@ export const sendLogoutAllDevices = (userId) => {
         io.to(userIdStr).emit('logout-all-devices');
     }
 };
+
+export const sendNewLoginAlert = (userId, newSessionData) => {
+    if (io && userId) {
+        const userIdStr = userId.toString();
+        // Emit to user room so all existing sessions/tabs get it
+        io.to(userIdStr).emit('new-login-detected', newSessionData);
+    }
+};
+

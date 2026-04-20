@@ -141,8 +141,8 @@ router.post("/auth/refresh-token", AuthController.refreshAccessToken);
 router.get("/auth/me", UserAuth, AuthController.getUser);
 router.get("/auth/sessions", UserAuth, AuthController.getSessions);
 router.delete("/auth/session/revoke/:sessionId", UserAuth, AuthController.revokeSession);
-router.post("/auth/logout", UserAuth, AuthController.logout);
-router.post("/auth/logout-all", UserAuth, AuthController.logoutAllDevices);
+router.post("/auth/logout", OptionalUserAuth, AuthController.logout);
+router.post("/auth/logout-all", OptionalUserAuth, AuthController.logoutAllDevices);
 router.patch("/auth/update-fcm-token", UserAuth, AuthController.updateFcmToken);
 
 // --- Main Category Routes ---

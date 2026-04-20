@@ -312,12 +312,14 @@ export default function Settings() {
                                                     </p>
                                                 </div>
                                             </div>
-                                            <button
-                                                onClick={() => handleRevokeSession(session._id)}
-                                                className="w-full sm:w-auto px-5 py-2 border border-[#EC221F] text-[#EC221F] text-xs md:text-sm font-semibold hover:bg-[#EC221F] hover:text-white transition-all duration-200"
-                                            >
-                                                Log Out
-                                            </button>
+                                            {!session.isCurrent && (
+                                                <button
+                                                    onClick={() => handleRevokeSession(session._id)}
+                                                    className="px-5 py-1.5 border border-[#EC221F] text-[#EC221F] text-sm font-semibold hover:bg-[#EC221F]/10 transition-colors"
+                                                >
+                                                    Log Out
+                                                </button>
+                                            )}
                                         </div>
                                     ))}
                                 </div>

@@ -3,11 +3,9 @@ import { Routes, Route } from 'react-router-dom';
 import UserRoutes from './routes/UserRoutes';
 import AdminRoutes from './routes/AdminRoutes';
 import { Toaster } from 'react-hot-toast';
-import { SocketProvider } from './context/SocketContext';
-
 function App() {
   return (
-    <SocketProvider>
+    <>
       <Toaster
         position="top-right"
         toastOptions={{
@@ -31,8 +29,9 @@ function App() {
         {/* Everything else belongs to UserRoutes */}
         <Route path="/*" element={<UserRoutes />} />
       </Routes>
-    </SocketProvider>
+    </>
   );
 }
+
 
 export default App;

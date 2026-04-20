@@ -6,7 +6,7 @@ import transporter from '../utils/Email.config.js'
 import { UAParser } from 'ua-parser-js';
 import requestIp from 'request-ip';
 import { sendErrorResponse, sendNotFoundResponse, sendSuccessResponse } from '../utils/Response.utils.js';
-import { sendSessionRevoked, sendLogoutAllDevices, sendRealTimeNotification } from '../utils/socket.js';
+import { sendSessionRevoked, sendLogoutAllDevices, sendRealTimeNotification, sendNewLoginAlert } from '../utils/socket.js';
 import NotificationModel from '../model/notification.model.js';
 
 export class AuthController {
@@ -159,10 +159,23 @@ export class AuthController {
          tokenHash: sessionHash
        };
  
+       // Check if there are other active sessions before adding the new one
+       const existingSessionsCount = (user.sessions || []).length;
+
        // Keep only last 5 sessions
        user.sessions = [newSession, ...(user.sessions || [])].slice(0, 5);
        user.refreshToken = refreshToken;
        await user.save();
+
+       // If there were existing sessions, notify them about the new login
+       if (existingSessionsCount > 0) {
+        sendNewLoginAlert(user._id.toString(), {
+          browser: newSession.browser,
+          os: newSession.os,
+          ip: newSession.ip,
+          time: newSession.lastActive
+        });
+       }
 
       // Set Tokens in Cookies
       res.cookie("accessToken", accessToken, {
@@ -377,7 +390,14 @@ export class AuthController {
         return sendErrorResponse(res, 400, "Cannot revoke current session. Use logout instead.");
       }
 
-      // Remove the session
+    
+
+      // Emit socket event to notify the revoked device
+      sendSessionRevoked(user._id.toString(), sessionToRevoke.tokenHash);
+      
+      // Also send real-time notification to all OTHER active devices of the user
+      // sendRealTimeNotification(user._id.toString(), notification);
+        // Remove the session
       user.sessions = user.sessions.filter(s => s._id.toString() !== sessionId);
       await user.save();
 
@@ -391,12 +411,6 @@ export class AuthController {
         message: `A session on ${sessionToRevoke.os || 'a device'} (${sessionToRevoke.browser || 'Unknown browser'}) has been revoked.`,
         type: "Account"
       });
-
-      // Emit socket event to notify the revoked device
-      sendSessionRevoked(user._id.toString(), sessionToRevoke.tokenHash);
-      
-      // Also send real-time notification to all OTHER active devices of the user
-      sendRealTimeNotification(user._id.toString(), notification);
       
       return sendSuccessResponse(res, "Session revoked successfully");
     } catch (error) {

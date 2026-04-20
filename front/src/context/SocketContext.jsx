@@ -1,8 +1,8 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { io } from 'socket.io-client';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { logout } from '../redux/slice/auth.slice';
+import { logout, logoutUser } from '../redux/slice/auth.slice';
 import toast from 'react-hot-toast';
 import { BASE_URL } from '../utils/BASE_URL';
 
@@ -29,9 +29,11 @@ const decodeJWT = (token) => {
 
 export const SocketProvider = ({ children }) => {
     const [socket, setSocket] = useState(null);
+    const [isConnected, setIsConnected] = useState(false);
     const { user, isAuthenticated } = useSelector((state) => state.auth);
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const socketRef = useRef(null);
 
     useEffect(() => {
         if (isAuthenticated && user?._id) {
@@ -61,25 +63,25 @@ export const SocketProvider = ({ children }) => {
             newSocket.on('connect', () => {
                 const id = user._id;
                 console.log('✅ Socket connected:', newSocket.id, 'for user:', id);
+                setIsConnected(true);
                 console.log('🔑 Emitting join for room identifier:', { userId: id, tokenHash });
                 // Join user's room with tokenHash
                 newSocket.emit('join', { userId: id, tokenHash });
                 
                 // Show connection success for debugging (can be removed later)
-                toast.success('Socket Connected', { id: 'socket-connected' });
+                // toast.success('Socket Connected', { id: 'socket-connected' });
             });
 
             newSocket.on('connect_error', (error) => {
                 console.error('❌ Socket connection error:', error.message);
+                setIsConnected(false);
                 console.log('Current socketUrl being used:', socketUrl);
                 toast.error('Socket Connection Failed', { id: 'socket-error' });
             });
 
             newSocket.on('disconnect', (reason) => {
                 console.log('⚠️ Socket disconnected, reason:', reason);
-                if (reason === 'io server disconnect' || reason === 'transport close') {
-                   // Toast.error('Real-time connection lost');
-                }
+                setIsConnected(false);
             });
 
             // Listen for session revoked event (specific room)
@@ -92,8 +94,8 @@ export const SocketProvider = ({ children }) => {
                 });
                 
                 setTimeout(() => {
-                    dispatch(logout());
-                    navigate('/login');
+                    dispatch(logoutUser());
+                    navigate('/auth');
                 }, 1000);
             });
 
@@ -109,8 +111,8 @@ export const SocketProvider = ({ children }) => {
                     });
                     
                     setTimeout(() => {
-                        dispatch(logout());
-                        navigate('/login');
+                        dispatch(logoutUser());
+                        navigate('/auth');
                     }, 1000);
                 }
             });
@@ -124,8 +126,8 @@ export const SocketProvider = ({ children }) => {
                 });
                 
                 setTimeout(() => {
-                    dispatch(logout());
-                    navigate('/login');
+                    dispatch(logoutUser());
+                    navigate('/auth');
                 }, 1000);
             });
 
@@ -136,29 +138,62 @@ export const SocketProvider = ({ children }) => {
                     description: notification.message,
                     duration: 6000,
                 });
-                // Potentially refetch notifications or update store here
-                // dispatch(fetchNotifications());
+            });
+
+            // Listen for new login from another device
+            newSocket.on('new-login-detected', (data) => {
+                console.log('📱 New login detected from another device:', data);
+                
+                toast((t) => (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <div style={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                         <span style={{ fontSize: '18px' }}>🔐</span> New Login Detected
+                      </div>
+                      <div style={{ fontSize: '13px' }}>
+                        Logged in via <b>{data.browser || 'Unknown Browser'}</b> on <b>{data.os || 'Unknown OS'}</b>
+                      </div>
+                      <div style={{ fontSize: '11px', opacity: 0.7, fontStyle: 'italic' }}>
+                        IP Address: {data.ip || 'Unknown'}
+                      </div>
+                    </div>
+                  ), {
+                    duration: 8000,
+                    position: 'top-right',
+                    style: {
+                        background: '#1a1a1a',
+                        color: '#fff',
+                        border: '1px solid #333',
+                        padding: '12px 16px',
+                        minWidth: '280px'
+                    }
+                  });
             });
 
             setSocket(newSocket);
+            socketRef.current = newSocket;
 
             return () => {
                 console.log('Cleaning up socket connection');
                 newSocket.disconnect();
+                setSocket(null);
+                setIsConnected(false);
             };
         } else {
             // Disconnect socket if user logs out
-            if (socket) {
+            if (socketRef.current) {
                 console.log('User logged out, disconnecting socket');
-                socket.disconnect();
+                socketRef.current.disconnect();
+                socketRef.current = null;
                 setSocket(null);
+                setIsConnected(false);
             }
         }
     }, [isAuthenticated, user?._id]);
 
     return (
-        <SocketContext.Provider value={socket}>
+        <SocketContext.Provider value={{ socket, isConnected }}>
             {children}
         </SocketContext.Provider>
     );
 };
+
