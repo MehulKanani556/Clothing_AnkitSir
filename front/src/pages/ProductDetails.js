@@ -92,7 +92,7 @@ const ProductDetails = () => {
     const { currentProduct, variants, loading, wishlist } = useSelector((state) => state.product);
     const { isAuthenticated } = useSelector((state) => state.auth);
 
-    const isWishlisted = wishlist.some(p => (p._id || p) === currentProduct?._id);
+    const isWishlisted = wishlist?.some(p => (p._id || p) === currentProduct?._id);
 
     const [colorSidebarOpen, setColorSidebarOpen] = useState(false);
     const [sizeSidebarOpen, setSizeSidebarOpen] = useState(false);

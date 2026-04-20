@@ -14,7 +14,7 @@ const WishlistButton = ({
     const { wishlist } = useSelector((state) => state.product);
     const { isAuthenticated } = useSelector((state) => state.auth);
 
-    const isWishlisted = wishlist.some(item => (item._id || item) === productId);
+    const isWishlisted = wishlist?.some(item => (item._id || item) === productId);
 
     const handleWishlistToggle = (e) => {
         e.preventDefault();

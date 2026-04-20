@@ -370,10 +370,13 @@ export const productSlice = createSlice({
                 // So fetchRecentlyViewed is more useful.
             })
             .addCase(fetchWishlist.fulfilled, (state, action) => {
-                state.wishlist = action.payload?.result || action.payload?.data || [];
+                const items = action.payload?.result?.items || action.payload?.data?.items || action.payload?.result || action.payload?.data || [];
+                // If the backend returns populated items [{ productId: {...} }], map them to just products
+                state.wishlist = Array.isArray(items) ? items.map(item => item.productId || item) : [];
             })
             .addCase(toggleWishlist.pending, (state, action) => {
                 const productId = action.meta.arg;
+                if (!Array.isArray(state.wishlist)) state.wishlist = [];
                 const exists = state.wishlist.some(p => (p._id || p) === productId);
                 if (exists) {
                     state.wishlist = state.wishlist.filter(p => (p._id || p) !== productId);
@@ -392,11 +395,12 @@ export const productSlice = createSlice({
                 }
             })
             .addCase(toggleWishlist.fulfilled, (state, action) => {
-                const { productId, isWishlisted } = action.payload;
+                const productId = action.meta.arg;
+                const isWishlisted = action.payload?.result?.isWishlisted ?? action.payload?.isWishlisted;
                 
-                if (!isWishlisted) {
+                if (isWishlisted === false) {
                     state.wishlist = state.wishlist.filter(p => (p._id || p) !== productId);
-                } else {
+                } else if (isWishlisted === true) {
                     // Check if we only have a skeletal object
                     const existingIndex = state.wishlist.findIndex(p => (p._id || p) === productId);
                     const isSkeletal = existingIndex !== -1 && !state.wishlist[existingIndex].name;

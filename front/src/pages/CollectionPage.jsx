@@ -23,7 +23,7 @@ const ProductCard = ({ product }) => {
     const dispatch = useDispatch();
     const { wishlist } = useSelector((state) => state.product);
     const { isAuthenticated } = useSelector((state) => state.auth);
-    const isWishlisted = wishlist.some(item => (item._id || item) === product._id);
+    const isWishlisted = wishlist?.some(item => (item._id || item) === product._id);
 
     const handleWishlistToggle = (e) => {
         e.preventDefault();
