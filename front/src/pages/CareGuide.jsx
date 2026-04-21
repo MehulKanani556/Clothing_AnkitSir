@@ -58,8 +58,10 @@ function CategoryCard({ category }) {
     const [expanded, setExpanded] = useState(false);
 
     return (
-        <div className="bg-white p-6 md:p-8 flex flex-col items-center text-center">
-            <div className="mb-5"><img src={category.icon} alt={category.title} className='h-20 w-20 object-cover' /></div>
+        <div className="group bg-white p-6 md:p-8 flex flex-col items-center text-center transition-all duration-500 hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)] hover:-translate-y-2 border border-transparent hover:border-border/50">
+            <div className="mb-5 transition-transform duration-500 group-hover:scale-110">
+                <img src={category.icon} alt={category.title} className='h-20 w-20 object-contain' />
+            </div>
             <h3 className="text-sm md:text-base font-bold uppercase tracking-widest text-primary mb-3">
                 {category.title}
             </h3>
@@ -68,7 +70,7 @@ function CategoryCard({ category }) {
             </p>
             <button
                 onClick={() => setExpanded(!expanded)}
-                className="flex items-center gap-1 text-xs md:text-sm uppercase tracking-widest text-lightText font-medium transition-opacity mt-auto"
+                className="flex items-center gap-1 text-xs md:text-sm uppercase tracking-widest text-lightText font-medium transition-all group-hover:text-primary mt-auto"
             >
                 {expanded ? 'Less' : 'More'}
                 <svg

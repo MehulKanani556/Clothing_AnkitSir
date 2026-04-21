@@ -79,7 +79,7 @@ function AddressCard({ addr, isDefault, onEdit, onDelete, onSetDefault, actionLo
         .join(', ');
 
     return (
-        <div className="bg-white border border-border p-5">
+        <div className="bg-white p-5">
             {/* Top row */}
             <div className="flex md:flex-row flex-col md:items-center justify-between gap-2">
                 <div className="flex items-center gap-2 flex-wrap">
@@ -142,9 +142,7 @@ function AddressCard({ addr, isDefault, onEdit, onDelete, onSetDefault, actionLo
 
 export default function Address() {
     const dispatch = useDispatch();
-    const { addresses, selectedAddressId, loading, actionLoading, error } = useSelector(
-        (state) => state.address
-    );
+    const { addresses, selectedAddressId, loading, actionLoading, error } = useSelector((state) => state.address);
 
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [editAddress, setEditAddress] = useState(null);
