@@ -97,24 +97,26 @@ export default function Evolution() {
             {/* ── Hero Section — contained with side padding, text top-left ── */}
             <div className="px-6 md:px-10 pt-8 md:pt-10">
                 <div className="max-w-7xl mx-auto">
-                    <div className="relative w-full h-[55vh] md:h-[65vh] overflow-hidden">
+                    <div className="relative w-full h-[50vh] md:h-[65vh] overflow-hidden">
                         <img
                             src={evolutionHero}
                             alt="EO Evolution Hero"
                             className="w-full h-full object-cover object-center"
                         />
 
-                        {/* Hero text — top-left */}
-                        <div className="absolute top-0 left-0 px-8 md:px-12 pt-10 md:pt-12">
-                            <p className="text-border text-xs md:text-sm uppercase tracking-widest font-medium mb-1">
-                                Where the art of fine tailoring meets the soul of signature fragrances.
-                            </p>
-                            <h1 className="text-white text-[26px] md:text-[38px] lg:text-[46px] max-w-3xl font-bold uppercase mb-2">
-                                Redefining The Modern Aesthetic.
-                            </h1>
-                            <p className="text-border text-sm md:text-base font-medium leading-relaxed max-w-3xl tracking-normal">
-                                We don't just create products; we curate identities. EO was born from a desire to blend the tactile richness of luxury clothing with the sensory depth of artisanal scents and cosmetics.
-                            </p>
+                        {/* Hero text — top-left positioned with responsive padding */}
+                        <div className="absolute inset-0 flex flex-col justify-start pt-4 md:pt-12 px-6 md:px-12 lg:px-16">
+                            <div className="max-w-4xl">
+                                <p className="text-border text-[10px] md:text-sm uppercase tracking-widest font-medium mb-2 pr-4">
+                                    Where the art of fine tailoring meets the soul of signature fragrances.
+                                </p>
+                                <h1 className="text-white text-[24px] md:text-[42px] lg:text-[56px] font-bold uppercase leading-tight mb-4">
+                                    Redefining The<br className="hidden md:block" /> Modern Aesthetic.
+                                </h1>
+                                <p className="text-border text-xs md:text-base font-medium leading-relaxed max-w-3xl">
+                                    We don't just create products; we curate identities. EO was born from a desire to blend the tactile richness of luxury clothing with the sensory depth of artisanal scents and cosmetics.
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
