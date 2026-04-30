@@ -382,7 +382,7 @@ export default function Header() {
                             </div>
 
                             {/* Right: Icons */}
-                            <div className="flex items-center justify-end w-1/4 lg:w-auto lg:flex-1 space-x-0 xs:space-x-1 sm:space-x-[clamp(0.25rem,1.5vw,1rem)] transition-all">
+                            <div className="flex items-center justify-end gap-0.5 sm:gap-1 lg:gap-2 xl:gap-3 flex-shrink-0 lg:flex-1 transition-all">
                                 <button
                                     onClick={() => setIsSearchOpen(true)}
                                     className={`p-1.5 rounded-full transition-all duration-300 opacity-70 hover:opacity-100 ${isHomePage
@@ -390,28 +390,31 @@ export default function Header() {
                                         : 'hover:bg-mainBG text-dark'
                                         }`}
                                 >
-                                    <LuSearch className='text-[clamp(1.1rem,2.5vw,1.4rem)]' />
+                                    <LuSearch className='text-[1.2rem] lg:text-[clamp(1.1rem,2.5vw,1.4rem)]' />
                                 </button>
-                                <button 
+                                {/* Wishlist — desktop only */}
+                                <button
                                     onClick={() => navigate('/wishlist')}
-                                    className={`p-1.5 lg:block hidden rounded-full transition-all duration-300 opacity-70 hover:opacity-100 relative ${isHomePage
+                                    className={`p-1.5 hidden lg:flex rounded-full transition-all duration-300 opacity-70 hover:opacity-100 relative ${isHomePage
                                         ? (isScrolled || hoveredCategory || isMenuOpen ? 'hover:bg-mainBG text-dark' : 'hover:bg-white/5 text-white')
                                         : 'hover:bg-mainBG text-dark'
-                                    }`}
+                                        }`}
                                 >
                                     <FaRegHeart className='text-[clamp(1.1rem,2.5vw,1.4rem)]' />
                                     {wishlist && wishlist.length > 0 && (
-                                        <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#14372F] text-[9px] font-bold text-white ring-2 ring-white animate-in zoom-in duration-300">
+                                        <span className="absolute -top-0.5 -right-0.5 flex h-[14px] w-[14px] items-center justify-center rounded-full bg-[#14372F] text-[8px] font-bold text-white ring-1 ring-white">
                                             {wishlist.length}
                                         </span>
                                     )}
                                 </button>
+                                {/* Cart */}
                                 <button className={`p-1.5 rounded-full transition-all duration-300 opacity-70 hover:opacity-100 relative ${isHomePage
                                     ? (isScrolled || hoveredCategory || isMenuOpen ? 'hover:bg-mainBG text-dark' : 'hover:bg-white/5 text-white')
                                     : 'hover:bg-mainBG text-dark'
                                     }`}>
-                                    <HiOutlineShoppingBag className='text-[clamp(1.1rem,2.5vw,1.4rem)]' />
+                                    <HiOutlineShoppingBag className='text-[1.2rem] lg:text-[clamp(1.1rem,2.5vw,1.4rem)]' />
                                 </button>
+                                {/* Notifications — logged in only */}
                                 {user && (
                                     <button
                                         onClick={() => setIsNotificationsOpen(true)}
@@ -420,32 +423,33 @@ export default function Header() {
                                             : 'hover:bg-mainBG text-dark'
                                             }`}
                                     >
-                                        <HiOutlineBell className='text-[clamp(1.1rem,2.5vw,1.4rem)]' />
+                                        <HiOutlineBell className='text-[1.2rem] lg:text-[clamp(1.1rem,2.5vw,1.4rem)]' />
                                         {unreadCount > 0 && (
-                                            <span className="absolute top-1 right-1 w-4 h-4 bg-primary text-white text-[9px] font-bold flex items-center justify-center rounded-full ring-2 ring-white">
+                                            <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-[14px] px-0.5 bg-primary text-white text-[8px] font-bold flex items-center justify-center rounded-full ring-1 ring-white">
                                                 {unreadCount > 9 ? '9+' : unreadCount}
                                             </span>
                                         )}
                                     </button>
                                 )}
+                                {/* Account avatar */}
                                 {user ? (
                                     <button
                                         onClick={() => setIsAccountOpen(true)}
-                                        className={`flex gap-2 items-center ${isHomePage
+                                        className={`flex gap-1.5 items-center ml-0.5 ${isHomePage
                                             ? (isScrolled || hoveredCategory || isMenuOpen ? 'text-dark' : 'text-white')
                                             : 'text-dark'
                                             }`}>
-                                        <div className="h-7 w-7 xs:h-8 xs:w-8 bg-primary uppercase rounded-full flex items-center justify-center font-bold text-white text-[10px] transition-all flex-shrink-0">
+                                        <div className="h-7 w-7 bg-primary uppercase rounded-full flex items-center justify-center font-bold text-white text-[10px] flex-shrink-0">
                                             {user?.firstName?.slice(0, 1) || 'U'}
                                         </div>
-                                        <span className='capitalize font-semibold tracking-wide hidden md:block'>{user?.firstName}</span>
+                                        <span className='capitalize font-semibold tracking-wide hidden lg:block text-sm'>{user?.firstName}</span>
                                     </button>
                                 ) : (
                                     <Link to="/auth" className={`p-1.5 rounded-full transition-all duration-300 opacity-70 hover:opacity-100 ${isHomePage
                                         ? (isScrolled || hoveredCategory || isMenuOpen ? 'hover:bg-mainBG text-dark' : 'hover:bg-white/5 text-white')
                                         : 'hover:bg-mainBG text-dark'
                                         }`}>
-                                        <CgProfile className='text-[clamp(1.1rem,2.5vw,1.4rem)]' />
+                                        <CgProfile className='text-[1.2rem] lg:text-[clamp(1.1rem,2.5vw,1.4rem)]' />
                                     </Link>
                                 )}
                             </div>
@@ -470,14 +474,14 @@ export default function Header() {
                                             }`}
                                         style={{ transitionDelay: `${index * 50}ms` }}
                                     >
-                                        <span 
+                                        <span
                                             className="cursor-pointer flex-1 py-1"
                                             onClick={() => handleMainCategoryNavigate(category)}
                                         >
                                             {category.mainCategoryName}
                                         </span>
                                         {getCategoriesForMainCategory(category._id).length > 0 && (
-                                            <div 
+                                            <div
                                                 className="cursor-pointer p-2 -mr-2"
                                                 onClick={() => handleOpenSubCategories(category)}
                                             >
@@ -502,14 +506,14 @@ export default function Header() {
                                         key={category._id}
                                         className="flex items-center justify-between text-[clamp(1rem,3.5vw,1.25rem)] font-medium tracking-[0.05em] text-white/90 hover:text-white uppercase"
                                     >
-                                        <span 
+                                        <span
                                             className="cursor-pointer flex-1 py-1"
                                             onClick={() => handleCategoryNavigate(category, menuStack[0])}
                                         >
                                             {category.categoryName}
                                         </span>
                                         {getSubCategoriesForCategory(category._id).length > 0 && (
-                                            <div 
+                                            <div
                                                 className="cursor-pointer p-2 -mr-2"
                                                 onClick={() => handleOpenSubSubCategories(category, menuStack[0])}
                                             >
