@@ -17,6 +17,7 @@ import {
   MdLayers
 } from 'react-icons/md';
 import CategoryForm from './CategoryForm';
+import Pagination from '../../components/Pagination';
 
 const CategoryList = () => {
   const dispatch = useDispatch();
@@ -24,6 +25,8 @@ const CategoryList = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     dispatch(fetchCategories());
@@ -74,6 +77,18 @@ const CategoryList = () => {
   const filteredCategories = categories.filter(cat =>
     cat.categoryName?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Pagination logic
+  const totalItems = filteredCategories.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedCategories = filteredCategories.slice(startIndex, endIndex);
+
+  // Reset to page 1 when search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -153,7 +168,7 @@ const CategoryList = () => {
                   <td colSpan="6" className="px-6 py-12 text-center text-slate-400 italic">No categories found matching your search.</td>
                 </tr>
               ) : (
-                filteredCategories.map((category) => (
+                paginatedCategories.map((category) => (
                   <tr key={category._id} className="hover:bg-slate-50/50 transition-colors group">
                     <td className="px-6 py-4">
                       <div className="w-12 h-12 rounded-xl bg-slate-100 overflow-hidden border border-slate-100 group-hover:border-black/10 transition-colors">
@@ -215,6 +230,15 @@ const CategoryList = () => {
             </tbody>
           </table>
         </div>
+        
+        {/* Pagination */}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+        />
       </div>
 
       {/* Modal Overlay */}

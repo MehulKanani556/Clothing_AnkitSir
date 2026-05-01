@@ -7,6 +7,7 @@ import {
     MdShoppingBag, MdVisibility, MdToggleOn, MdToggleOff, MdWarning
 } from 'react-icons/md';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
+import Pagination from '../../components/Pagination';
 
 // ── Delete Confirmation Modal ─────────────────────────────────────
 const DeleteModal = ({ product, onConfirm, onCancel, deleting }) => {
@@ -114,6 +115,8 @@ const ProductList = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [productToDelete, setProductToDelete] = useState(null);
     const [deleting, setDeleting] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 12;
 
     useEffect(() => {
         dispatch(fetchProducts());
@@ -133,6 +136,18 @@ const ProductList = () => {
     const filteredProducts = products.filter(p =>
         p.name?.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
+    // Pagination logic
+    const totalItems = filteredProducts.length;
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
+
+    // Reset to page 1 when search changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm]);
 
     const getDefaultImage = (product) => {
         const v = product.variants?.find(v => v.isDefault) || product.variants?.[0];
@@ -203,67 +218,82 @@ const ProductList = () => {
             </div>
 
             {/* Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {loading && products.length === 0 ? (
-                    <div className="col-span-full flex flex-col items-center justify-center py-20 gap-4">
-                        <div className="w-12 h-12 border-4 border-black border-t-transparent rounded-full animate-spin" />
-                        <span className="text-slate-400">Loading products...</span>
-                    </div>
-                ) : filteredProducts.length === 0 ? (
-                    <div className="col-span-full text-center py-20 text-slate-400">
-                        No products found.
-                    </div>
-                ) : filteredProducts.map((product) => (
-                    <div key={product._id} className="bg-white rounded-3xl border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300 group">
-                        <div className="relative aspect-square bg-slate-100 overflow-hidden">
-                            {getDefaultImage(product) ? (
-                                <img src={getDefaultImage(product)} alt={product.name}
-                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center text-slate-300">
-                                    <MdShoppingBag size={64} />
+            <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {loading && products.length === 0 ? (
+                        <div className="col-span-full flex flex-col items-center justify-center py-20 gap-4">
+                            <div className="w-12 h-12 border-4 border-black border-t-transparent rounded-full animate-spin" />
+                            <span className="text-slate-400">Loading products...</span>
+                        </div>
+                    ) : filteredProducts.length === 0 ? (
+                        <div className="col-span-full text-center py-20 text-slate-400">
+                            No products found.
+                        </div>
+                    ) : paginatedProducts.map((product) => (
+                        <div key={product._id} className="bg-white rounded-3xl border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300 group">
+                            <div className="relative aspect-square bg-slate-100 overflow-hidden">
+                                {getDefaultImage(product) ? (
+                                    <img src={getDefaultImage(product)} alt={product.name}
+                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-slate-300">
+                                        <MdShoppingBag size={64} />
+                                    </div>
+                                )}
+                                {product.badge && (
+                                    <div className="absolute top-3 left-3 bg-black text-white px-3 py-1 rounded-full text-xs font-bold">
+                                        {product.badge}
+                                    </div>
+                                )}
+                                <div className="absolute top-3 right-3">
+                                    {product.isActive
+                                        ? <MdToggleOn className="text-green-500 bg-white rounded-full" size={28} />
+                                        : <MdToggleOff className="text-slate-400 bg-white rounded-full" size={28} />
+                                    }
                                 </div>
-                            )}
-                            {product.badge && (
-                                <div className="absolute top-3 left-3 bg-black text-white px-3 py-1 rounded-full text-xs font-bold">
-                                    {product.badge}
+                                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                    <button onClick={() => navigate(`/admin/product/edit/${product._id}`)}
+                                        className="p-3 bg-white text-black rounded-xl hover:scale-110 transition-transform">
+                                        <MdEdit size={20} />
+                                    </button>
+                                    <button onClick={() => navigate(`/admin/product/view/${product._id}`)}
+                                        className="p-3 bg-white text-black rounded-xl hover:scale-110 transition-transform">
+                                        <MdVisibility size={20} />
+                                    </button>
+                                    <button onClick={() => handleDeleteClick(product)}
+                                        className="p-3 bg-red-500 text-white rounded-xl hover:scale-110 transition-transform">
+                                        <MdDelete size={20} />
+                                    </button>
                                 </div>
-                            )}
-                            <div className="absolute top-3 right-3">
-                                {product.isActive
-                                    ? <MdToggleOn className="text-green-500 bg-white rounded-full" size={28} />
-                                    : <MdToggleOff className="text-slate-400 bg-white rounded-full" size={28} />
-                                }
                             </div>
-                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                <button onClick={() => navigate(`/admin/product/edit/${product._id}`)}
-                                    className="p-3 bg-white text-black rounded-xl hover:scale-110 transition-transform">
-                                    <MdEdit size={20} />
-                                </button>
-                                <button onClick={() => navigate(`/admin/product/view/${product._id}`)}
-                                    className="p-3 bg-white text-black rounded-xl hover:scale-110 transition-transform">
-                                    <MdVisibility size={20} />
-                                </button>
-                                <button onClick={() => handleDeleteClick(product)}
-                                    className="p-3 bg-red-500 text-white rounded-xl hover:scale-110 transition-transform">
-                                    <MdDelete size={20} />
-                                </button>
+                            <div className="p-4 space-y-2">
+                                <h3 className="font-bold text-slate-900 line-clamp-2">{product.name}</h3>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm text-slate-500">{product.mainCategory?.mainCategoryName}</span>
+                                    <span className="text-lg font-black text-black">{getPrice(product)}</span>
+                                </div>
+                                <div className="flex items-center gap-4 text-xs text-slate-400 pt-2 border-t border-slate-100">
+                                    <span>Views: {product.view || 0}</span>
+                                    <span>Sold: {product.sold || 0}</span>
+                                    <span>Variants: {product.variants?.length || 0}</span>
+                                </div>
                             </div>
                         </div>
-                        <div className="p-4 space-y-2">
-                            <h3 className="font-bold text-slate-900 line-clamp-2">{product.name}</h3>
-                            <div className="flex items-center justify-between">
-                                <span className="text-sm text-slate-500">{product.mainCategory?.mainCategoryName}</span>
-                                <span className="text-lg font-black text-black">{getPrice(product)}</span>
-                            </div>
-                            <div className="flex items-center gap-4 text-xs text-slate-400 pt-2 border-t border-slate-100">
-                                <span>Views: {product.view || 0}</span>
-                                <span>Sold: {product.sold || 0}</span>
-                                <span>Variants: {product.variants?.length || 0}</span>
-                            </div>
-                        </div>
+                    ))}
+                </div>
+
+                {/* Pagination */}
+                {filteredProducts.length > 0 && (
+                    <div className="mt-6">
+                        <Pagination
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            totalItems={totalItems}
+                            itemsPerPage={itemsPerPage}
+                            onPageChange={setCurrentPage}
+                        />
                     </div>
-                ))}
+                )}
             </div>
         </div>
     );

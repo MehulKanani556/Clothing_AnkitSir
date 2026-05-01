@@ -8,6 +8,7 @@ import {
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import axiosInstance from '../../../utils/axiosInstance';
 import toast from 'react-hot-toast';
+import Pagination from '../../components/Pagination';
 
 // ── Order Status Badge ────────────────────────────────────────────
 const StatusBadge = ({ status }) => {
@@ -400,29 +401,13 @@ const OrderList = () => {
                         </div>
 
                         {/* Pagination */}
-                        {totalPages > 1 && (
-                            <div className="px-6 py-4 border-t border-slate-200 flex items-center justify-between">
-                                <p className="text-sm text-slate-600">
-                                    Page {currentPage} of {totalPages} • Total {totalOrders} orders
-                                </p>
-                                <div className="flex gap-2">
-                                    <button
-                                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                                        disabled={currentPage === 1}
-                                        className="px-4 py-2 border border-slate-200 rounded-xl text-sm font-semibold hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                                    >
-                                        Previous
-                                    </button>
-                                    <button
-                                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                                        disabled={currentPage === totalPages}
-                                        className="px-4 py-2 bg-black text-white rounded-xl text-sm font-semibold hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                                    >
-                                        Next
-                                    </button>
-                                </div>
-                            </div>
-                        )}
+                        <Pagination
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            totalItems={totalOrders}
+                            itemsPerPage={10}
+                            onPageChange={setCurrentPage}
+                        />
                     </>
                 )}
             </div>
