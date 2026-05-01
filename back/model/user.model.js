@@ -33,15 +33,21 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default: null
   },
+  stripeCustomerId: {
+    type: String,
+    default: null
+  },
   password: { type: String, select: false },
   address: [UserAddressSchema],
   savedCards: [
     {
-      cardNumber: { type: String, required: true },
-      cardHolderName: { type: String, required: true },
-      expiryDate: { type: String, required: true },
-      cvv: { type: String, required: true },
-      cardType: { type: String, default: "Card" },
+      stripePaymentMethodId: { type: String }, // Stripe Payment Method ID
+      last4: { type: String }, // Last 4 digits
+      brand: { type: String }, // visa, mastercard, etc.
+      expiryMonth: { type: Number },
+      expiryYear: { type: Number },
+      cardHolderName: { type: String, default: null },
+      isDefault: { type: Boolean, default: false },
       createdAt: { type: Date, default: Date.now }
     }
   ],

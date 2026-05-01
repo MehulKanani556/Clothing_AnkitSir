@@ -82,6 +82,7 @@ function CheckoutFormContent() {
             saveInfo: false,
             paymentMethod: 'Card',
             cardName: '',
+            saveCard: false,
         },
         validationSchema: checkoutSchema,
         onSubmit: async (values) => {
@@ -147,6 +148,7 @@ function CheckoutFormContent() {
                 // Step 3: Place the order (backend creates payment intent)
                 const orderPayload = {
                     paymentMethod: values.paymentMethod,
+                    saveCardInfo: values.saveCard && showAddNewCard, // Pass saveCard flag to backend
                 };
 
                 // If using saved card
@@ -183,9 +185,21 @@ function CheckoutFormContent() {
                             await axiosInstance.post('/payment/confirm', {
                                 paymentIntentId: stripePaymentIntentId,
                                 orderId: orderId,
+                                saveCard: values.saveCard && showAddNewCard, // Only save if it's a new card
                             });
 
                             toast.success('Payment successful! Order confirmed.');
+                            
+                            // Refresh saved cards if card was saved
+                            if (values.saveCard && showAddNewCard) {
+                                try {
+                                    const cardsResponse = await axiosInstance.get('/user/saved-cards');
+                                    setSavedCards(cardsResponse.data?.result || []);
+                                } catch (error) {
+                                    console.error('Error refreshing saved cards:', error);
+                                }
+                            }
+                            
                             navigate(orderId ? `/orders/${orderId}` : '/orders');
                         } catch (confirmError) {
                             console.error('Error confirming payment:', confirmError);
@@ -573,8 +587,23 @@ function CheckoutFormContent() {
                                             {savedCards.length > 0 && (
                                                 <div className="space-y-3">
                                                     {savedCards.map((card) => {
-                                                        const brand = getCardBrand(card.cardNumber);
-                                                        const maskedNumber = `•••• •••• •••• ${card.cardNumber.slice(-4)}`;
+                                                        // Handle missing data gracefully
+                                                        const brand = card.brand || 'card';
+                                                        const last4 = card.last4 || '****';
+                                                        const displayNumber = card.displayNumber || `•••• •••• •••• ${last4}`;
+                                                        
+                                                        // Format expiry date
+                                                        let expiryDate = card.expiryDate;
+                                                        if (!expiryDate && card.expiryMonth && card.expiryYear) {
+                                                            expiryDate = `${String(card.expiryMonth).padStart(2, '0')}/${String(card.expiryYear).slice(-2)}`;
+                                                        }
+                                                        
+                                                        // Skip invalid cards (missing required data)
+                                                        if (!card.last4 || !card.brand || !card.expiryMonth || !card.expiryYear) {
+                                                            console.warn('Skipping invalid saved card:', card._id);
+                                                            return null;
+                                                        }
+                                                        
                                                         return (
                                                             <label
                                                                 key={card._id}
@@ -588,10 +617,6 @@ function CheckoutFormContent() {
                                                                     onChange={() => {
                                                                         setSelectedSavedCard(card._id);
                                                                         setShowAddNewCard(false);
-                                                                        // Clear new card form
-                                                                        formik.setFieldValue('cardNumber', '');
-                                                                        formik.setFieldValue('cardExpiry', '');
-                                                                        formik.setFieldValue('cardCVV', '');
                                                                         formik.setFieldValue('cardName', '');
                                                                         formik.setFieldValue('saveCard', false);
                                                                     }}
@@ -600,18 +625,23 @@ function CheckoutFormContent() {
                                                                 <CardBrandLogo brand={brand} />
                                                                 <div className="flex-1">
                                                                     <p className="text-sm font-medium text-dark">
-                                                                        {maskedNumber}
+                                                                        {displayNumber}
                                                                     </p>
                                                                     <p className="text-xs text-gray-500">
-                                                                        Expires {card.expiryDate}
+                                                                        Expires {expiryDate || 'N/A'}
                                                                     </p>
+                                                                    {card.cardHolderName && (
+                                                                        <p className="text-xs text-gray-500">
+                                                                            {card.cardHolderName}
+                                                                        </p>
+                                                                    )}
                                                                 </div>
                                                             </label>
                                                         );
                                                     })}
 
                                                     {/* Add New Card Option */}
-                                                    {savedCards.length < 2 && (
+                                                    {savedCards.length < 3 && (
                                                         <label className="flex items-center gap-3 p-3 border border-dashed border-gray-400 rounded cursor-pointer hover:border-primary transition-colors">
                                                             <input
                                                                 type="radio"
@@ -630,10 +660,11 @@ function CheckoutFormContent() {
                                                 </div>
                                             )}
 
-                                            {/* New Card Form - Show if no saved cards OR "Add New Card" selected */}
+                            {/* New Card Form - Show if no saved cards OR "Add New Card" selected */}
                                             {(savedCards.length === 0 || showAddNewCard) && (
                                                 <StripeCardInput 
                                                     formik={formik}
+                                                    showSaveCard={savedCards.length < 3}
                                                 />
                                             )}
                                         </div>

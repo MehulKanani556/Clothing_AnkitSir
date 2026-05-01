@@ -94,7 +94,9 @@ import {
   paymentStatusChangeController,
   getAllPaymentHistory,
   getPaymentStatusController,
-  confirmStripePaymentController
+  confirmStripePaymentController,
+  getSavedCardsController,
+  deleteSavedCardController
 } from "../controller/payment.controller.js";
 import {
   updateProfileController,
@@ -106,8 +108,8 @@ import {
   getUserAddressController,
   selectAddressController,
   addSavedCardController,
-  getSavedCardsController,
-  deleteSavedCardController,
+  // getSavedCardsController, // Removed - using payment.controller version
+  // deleteSavedCardController, // Removed - using payment.controller version
   selectCardController,
   addRecentlyViewedController,
   getRecentlyViewedController,
@@ -258,17 +260,11 @@ router.put("/user/address/select/:addressId", UserAuth, selectAddressController)
 
 // --- Card Management Routes ---
 router.post("/user/card/save", UserAuth, saveCard);
-router.get("/user/saved-cards", UserAuth, getSavedCards);
-router.delete("/user/card/delete/:cardId", UserAuth, deleteCard);
+router.get("/user/saved-cards", UserAuth, getSavedCardsController); // Use payment controller (Stripe-based)
+router.delete("/user/card/delete/:cardId", UserAuth, deleteSavedCardController); // Use payment controller
 router.post("/user/delete-account/request", UserAuth, requestAccountDeletionController);
 router.post("/user/delete-account/verify", UserAuth, verifyDeletionOtpController);
 router.post("/user/delete-account/finalize", UserAuth, finalizeAccountDeletionController);
-
-// --- User Saved Cards ---
-router.post("/user/card/add", UserAuth, addSavedCardController);
-router.get("/user/card/my", UserAuth, getSavedCardsController);
-router.delete("/user/card/delete/:cardId", UserAuth, deleteSavedCardController);
-router.put("/user/card/select/:cardId", UserAuth, selectCardController);
 
 // --- Notification Routes ---
 router.get("/notifications/my", UserAuth, getMyNotifications);

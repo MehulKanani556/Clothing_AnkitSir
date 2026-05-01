@@ -17,7 +17,7 @@ const CARD_ELEMENT_OPTIONS = {
     },
 };
 
-export default function StripeCardInput({ formik }) {
+export default function StripeCardInput({ formik, showSaveCard = true }) {
     return (
         <div className="space-y-4">
             {/* Card Number */}
@@ -60,6 +60,20 @@ export default function StripeCardInput({ formik }) {
                     <p className="text-xs text-red-500 mt-1">{formik.errors.cardName}</p>
                 )}
             </div>
+
+            {/* Save Card Checkbox */}
+            {showSaveCard && (
+                <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                        type="checkbox"
+                        name="saveCard"
+                        checked={formik.values.saveCard}
+                        onChange={formik.handleChange}
+                        className="w-4 h-4 text-primary"
+                    />
+                    <span className="text-sm text-gray-700">Save this card for future purchases (max 3 cards)</span>
+                </label>
+            )}
         </div>
     );
 }

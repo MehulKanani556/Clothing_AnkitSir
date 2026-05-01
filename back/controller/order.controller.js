@@ -156,55 +156,65 @@ export const placeOrder = async (req, res) => {
 
         let clientSecret = null;
         let stripePaymentIntentId = null;
-
-        let finalCardNumber = cardNumber;
-        let finalCardHolderName = cardHolderName;
-        let finalExpiryDate = expiryDate;
-        let finalCvv = cvv;
+        let usesSavedCard = false;
+        let savedCardPaymentMethodId = null;
 
         // --- Card Specific Data Prep ---
-        // Note: When using Stripe, card details are handled on frontend
-        // We only save card info if explicitly provided (for saved cards feature)
-        if (paymentMethod === "Card") {
-            if (savedCardId) {
-                const matchingCard = user.savedCards.find(c => c._id.toString() === savedCardId.toString());
-                if (!matchingCard) {
-                    await session.abortTransaction();
-                    return sendBadRequestResponse(res, "Selected saved card not found.");
-                }
-                finalCardNumber = matchingCard.cardNumber;
-                finalCardHolderName = matchingCard.cardHolderName;
-                finalExpiryDate = matchingCard.expiryDate;
-                finalCvv = matchingCard.cvv;
+        // When using saved card, get the Stripe Payment Method ID
+        if (paymentMethod === "Card" && savedCardId) {
+            const matchingCard = user.savedCards.find(c => c._id.toString() === savedCardId.toString());
+            if (!matchingCard) {
+                await session.abortTransaction();
+                return sendBadRequestResponse(res, "Selected saved card not found.");
             }
-            // Card details are optional when using Stripe (handled on frontend)
-            // Only save if provided and saveCardInfo is true
-            else if (saveCardInfo && finalCardNumber && finalExpiryDate && finalCvv) {
-                user.savedCards.push({
-                    cardNumber: finalCardNumber,
-                    cardHolderName: finalCardHolderName || "Unknown",
-                    expiryDate: finalExpiryDate,
-                    cvv: finalCvv,
-                    cardType: "Card"
-                });
-                await user.save({ session });
-            }
+            usesSavedCard = true;
+            savedCardPaymentMethodId = matchingCard.stripePaymentMethodId;
         }
 
         // --- Stripe Payment Intent Generic Block ---
         if (["Card", "Zip Pay", "After Pay"].includes(paymentMethod)) {
             try {
                 const amountInCents = Math.round(savedOrder.totalAmount * 100);
-                const paymentIntent = await stripe.paymentIntents.create({
+                
+                // Create Stripe customer if doesn't exist
+                if (!user.stripeCustomerId) {
+                    const customer = await stripe.customers.create({
+                        email: user.email,
+                        name: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
+                        metadata: { userId: userId.toString() }
+                    });
+                    user.stripeCustomerId = customer.id;
+                    await user.save({ session });
+                }
+                
+                const paymentIntentData = {
                     amount: amountInCents,
                     currency: "aud",
-                    automatic_payment_methods: { enabled: true },
+                    customer: user.stripeCustomerId,
                     metadata: {
                         orderId: savedOrder._id.toString(),
                         userId: userId.toString(),
                         methodSelected: paymentMethod
                     }
-                });
+                };
+                
+                // If user wants to save card for future use, add setup_future_usage
+                if (saveCardInfo && !usesSavedCard) {
+                    paymentIntentData.setup_future_usage = 'off_session';
+                    console.log('🔐 Payment Intent configured to save card for future use');
+                }
+                
+                // If using saved card, attach payment method
+                if (usesSavedCard && savedCardPaymentMethodId) {
+                    paymentIntentData.payment_method = savedCardPaymentMethodId;
+                    paymentIntentData.off_session = false;
+                    paymentIntentData.confirm = false;
+                } else {
+                    paymentIntentData.automatic_payment_methods = { enabled: true };
+                }
+                
+                const paymentIntent = await stripe.paymentIntents.create(paymentIntentData);
+                
                 clientSecret = paymentIntent.client_secret;
                 stripePaymentIntentId = paymentIntent.id;
 
@@ -227,12 +237,6 @@ export const placeOrder = async (req, res) => {
             paymentStatus,
             clientSecret,
             stripePaymentIntentId,
-            cardDetails: paymentMethod === "Card" ? {
-                cardNumber: finalCardNumber ? `**** **** **** ${finalCardNumber.slice(-4)}` : null,
-                cardHolderName: finalCardHolderName,
-                expiryDate: finalExpiryDate,
-                cardType: "Card"
-            } : undefined
         });
 
         await paymentRecord.save({ session });

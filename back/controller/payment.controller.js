@@ -460,6 +460,109 @@ export const confirmStripePaymentController = async (req, res) => {
 
     await order.save({ session });
 
+    // Save payment method for future use if requested
+    const { saveCard } = req.body;
+    console.log('💳 Save card requested:', saveCard);
+    console.log('💳 Payment method ID:', paymentIntent.payment_method);
+    
+    if (saveCard && paymentIntent.payment_method) {
+      try {
+        const user = await UserModel.findById(userId).session(session);
+        console.log('👤 User found:', user._id);
+        console.log('💳 Current saved cards count:', user.savedCards.length);
+        
+        // Retrieve payment method details from Stripe
+        const paymentMethod = await stripe.paymentMethods.retrieve(paymentIntent.payment_method);
+        console.log('💳 Payment method retrieved:', paymentMethod.id);
+        console.log('💳 Card details:', {
+          last4: paymentMethod.card?.last4,
+          brand: paymentMethod.card?.brand,
+          exp_month: paymentMethod.card?.exp_month,
+          exp_year: paymentMethod.card?.exp_year
+        });
+        
+        // Validate payment method has card details
+        if (!paymentMethod.card || !paymentMethod.card.last4 || !paymentMethod.card.brand) {
+          console.error('❌ Invalid payment method - missing card details');
+          // Don't fail payment, just skip saving - but don't return early
+        } else {
+          // Check if this card is already saved
+          const existingCard = user.savedCards.find(
+            card => card.stripePaymentMethodId === paymentMethod.id
+          );
+          
+          if (existingCard) {
+            console.log('ℹ️ Card already saved');
+          } else if (user.savedCards.length >= 3) {
+            console.log('ℹ️ Maximum cards limit reached (3)');
+          } else {
+            console.log('✅ Saving new card...');
+            
+            // Attach payment method to customer for future use
+            if (!user.stripeCustomerId) {
+              console.log('📝 Creating Stripe customer...');
+              // Create Stripe customer if doesn't exist
+              const customer = await stripe.customers.create({
+                email: user.email,
+                name: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
+                metadata: { userId: userId.toString() }
+              });
+              user.stripeCustomerId = customer.id;
+              console.log('✅ Stripe customer created:', customer.id);
+            }
+            
+            // Check if payment method is already attached to a customer
+            console.log('🔍 Checking if payment method is already attached...');
+            const currentPaymentMethod = await stripe.paymentMethods.retrieve(paymentMethod.id);
+            
+            if (currentPaymentMethod.customer) {
+              console.log('ℹ️ Payment method already attached to customer:', currentPaymentMethod.customer);
+              // If attached to a different customer, we can't use it
+              if (currentPaymentMethod.customer !== user.stripeCustomerId) {
+                console.log('⚠️ Payment method attached to different customer, skipping save');
+                return; // Skip saving this card
+              }
+            } else {
+              // Attach payment method to customer only if not already attached
+              console.log('📎 Attaching payment method to customer...');
+              await stripe.paymentMethods.attach(paymentMethod.id, {
+                customer: user.stripeCustomerId,
+              });
+              console.log('✅ Payment method attached');
+            }
+            
+            // Save card details in database with validation
+            const cardData = {
+              stripePaymentMethodId: paymentMethod.id,
+              last4: paymentMethod.card.last4,
+              brand: paymentMethod.card.brand,
+              expiryMonth: paymentMethod.card.exp_month,
+              expiryYear: paymentMethod.card.exp_year,
+              cardHolderName: paymentMethod.billing_details?.name || null,
+              isDefault: user.savedCards.length === 0, // First card is default
+            };
+            
+            console.log('💾 Card data to save:', cardData);
+            
+            // Validate all required fields are present
+            if (cardData.stripePaymentMethodId && cardData.last4 && cardData.brand && 
+                cardData.expiryMonth && cardData.expiryYear) {
+              user.savedCards.push(cardData);
+              await user.save({ session });
+              console.log('✅ Card saved successfully!');
+            } else {
+              console.error('❌ Card data validation failed:', cardData);
+            }
+          }
+        }
+      } catch (saveCardError) {
+        console.error('❌ Error saving card:', saveCardError);
+        // Don't fail the payment if card save fails
+      }
+    } else {
+      console.log('ℹ️ Card save not requested or no payment method');
+    }
+
     // Deduct stock natively for standard custom product variant arrays
     for (const item of order.products) {
       const variant = await ProductVariant.findById(item.variantId).session(session);
@@ -573,11 +676,14 @@ export const getSavedCardsController = async (req, res) => {
 
     const savedCards = user.savedCards.map(card => ({
       _id: card._id,
-      cardNumber: `**** **** **** ${card.cardNumber.slice(-4)}`,
+      last4: card.last4,
+      brand: card.brand,
+      expiryMonth: card.expiryMonth,
+      expiryYear: card.expiryYear,
       cardHolderName: card.cardHolderName,
-      expiryDate: card.expiryDate,
-      cardType: card.cardType,
-      isDefault: false
+      isDefault: card.isDefault,
+      displayNumber: `•••• •••• •••• ${card.last4}`,
+      expiryDate: `${String(card.expiryMonth).padStart(2, '0')}/${String(card.expiryYear).slice(-2)}`,
     }));
 
     return sendSuccessResponse(res, "Saved cards fetched successfully", savedCards);
@@ -603,6 +709,16 @@ export const deleteSavedCardController = async (req, res) => {
 
     if (cardIndex === -1) {
       return sendNotFoundResponse(res, "Card not found");
+    }
+
+    const card = user.savedCards[cardIndex];
+    
+    // Detach payment method from Stripe
+    try {
+      await stripe.paymentMethods.detach(card.stripePaymentMethodId);
+    } catch (stripeError) {
+      console.error('Error detaching payment method from Stripe:', stripeError);
+      // Continue with deletion even if Stripe detach fails
     }
 
     user.savedCards.splice(cardIndex, 1);
