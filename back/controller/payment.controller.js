@@ -578,6 +578,16 @@ export const confirmStripePaymentController = async (req, res) => {
         if (variant.stock >= item.quantity) variant.stock -= item.quantity;
       }
       if (variant) await variant.save({ session });
+
+      // Update product sold count
+      if (item.productId) {
+        await productModel.findByIdAndUpdate(
+          item.productId,
+          { $inc: { sold: item.quantity } },
+          { session }
+        );
+        console.log(`📊 Updated sold count for product ${item.productId}: +${item.quantity}`);
+      }
     }
 
     await session.commitTransaction();

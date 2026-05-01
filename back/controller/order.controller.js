@@ -4,6 +4,7 @@ import Payment from "../model/payment.model.js";
 import Cart from "../model/cart.model.js";
 import ProductVariant from "../model/productVariant.model.js";
 import User from "../model/user.model.js";
+import productModel from "../model/product.model.js";
 import { sendBadRequestResponse, sendErrorResponse, sendNotFoundResponse, sendSuccessResponse } from "../utils/Response.utils.js";
 // Optional Stripe integration, if installed.
 import Stripe from "stripe";
@@ -558,6 +559,16 @@ export const cancelOrder = async (req, res) => {
                     variant.stock += item.quantity;
                 }
                 await variant.save({ session });
+            }
+
+            // Decrement sold count if order was paid (sold count was already incremented)
+            if (order.paymentStatus === "Paid" && item.productId) {
+                await productModel.findByIdAndUpdate(
+                    item.productId,
+                    { $inc: { sold: -item.quantity } },
+                    { session }
+                );
+                console.log(`📊 Decremented sold count for product ${item.productId}: -${item.quantity}`);
             }
         }
 

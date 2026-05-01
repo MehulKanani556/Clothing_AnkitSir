@@ -9,12 +9,14 @@ import {
   MdChevronRight,
   MdGridView,
   MdFolder,
-  MdAccountTree
+  MdAccountTree,
+  MdShoppingCart
 } from 'react-icons/md';
 
 const AdminSidebar = () => {
   const menuItems = [
     { name: 'Dashboard', icon: <MdDashboard size={20} />, path: '/admin' },
+    { name: 'Orders', icon: <MdShoppingCart size={20} />, path: '/admin/orders' },
     { name: 'Main Category', icon: <MdLayers size={20} />, path: '/admin/main-category' },
     { name: 'Category', icon: <MdGridView size={20} />, path: '/admin/category' },
     { name: 'Sub Category', icon: <MdFolder size={20} />, path: '/admin/sub-category' },

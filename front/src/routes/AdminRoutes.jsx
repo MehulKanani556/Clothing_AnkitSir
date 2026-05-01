@@ -7,6 +7,7 @@ import InsideSubCategoryList from '../admin/pages/InsideSubCategory/InsideSubCat
 import ProductList from '../admin/pages/Product/ProductList';
 import ProductForm from '../admin/pages/Product/ProductForm';
 import ProductView from '../admin/pages/Product/ProductView';
+import OrderList from '../admin/pages/Order/OrderList';
 import ProtectedRoute from './ProtectedRoute';
 
 const AdminRoutes = () => {
@@ -24,6 +25,7 @@ const AdminRoutes = () => {
                     <Route path="product/create" element={<ProductForm />} />
                     <Route path="product/edit/:id" element={<ProductForm />} />
                     <Route path="product/view/:id" element={<ProductView />} />
+                    <Route path="orders" element={<OrderList />} />
                 </Route>
             </Route>
         </Routes>
