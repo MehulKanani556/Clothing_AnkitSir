@@ -115,7 +115,7 @@ export default function Header() {
     const { mainCategories, categories, subCategories } = useSelector((state) => state.category);
     const { user, isAuthenticated } = useSelector((state) => state.auth);
     const { popularSearches, recentSearches, trendingProducts, searchResults, searchLoading } = useSelector((state) => state.search);
-    const { notifications, unreadCount, loading: notificationsLoading } = useSelector((state) => state.notification);
+    const { notifications, unreadCount } = useSelector((state) => state.notification);
     const { wishlist } = useSelector((state) => state.product);
     const { items: cartItems, isCartOpen } = useSelector((state) => state.cart);
 
@@ -414,11 +414,11 @@ export default function Header() {
                                 </button>
                                 {/* Cart */}
                                 <button
-                                    onClick={() => navigate('/checkout')}
-                                className={`p-1.5 rounded-full transition-all duration-300 opacity-70 hover:opacity-100 relative ${isHomePage
-                                    ? (isScrolled || hoveredCategory || isMenuOpen ? 'hover:bg-mainBG text-dark' : 'hover:bg-white/5 text-white')
-                                    : 'hover:bg-mainBG text-dark'
-                                    }`}>
+                                    onClick={() => dispatch(openCart())}
+                                    className={`p-1.5 rounded-full transition-all duration-300 opacity-70 hover:opacity-100 relative ${isHomePage
+                                        ? (isScrolled || hoveredCategory || isMenuOpen ? 'hover:bg-mainBG text-dark' : 'hover:bg-white/5 text-white')
+                                        : 'hover:bg-mainBG text-dark'
+                                        }`}>
                                     <HiOutlineShoppingBag className='text-[1.2rem] lg:text-[clamp(1.1rem,2.5vw,1.4rem)]' />
                                     {cartItems && cartItems.length > 0 && (
                                         <span className="absolute -top-0.5 -right-0.5 flex h-[14px] w-[14px] items-center justify-center rounded-full bg-[#14372F] text-[8px] font-bold text-white ring-1 ring-white">

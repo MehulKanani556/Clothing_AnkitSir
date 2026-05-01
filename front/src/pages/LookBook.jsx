@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { HiOutlineArrowUpRight } from "react-icons/hi2";
+import { useNavigate } from 'react-router-dom';
 
 // Import images (using the ones available in the project as seen in Home.jsx)
 import bgImage from '../assets/images/BG.webp';
@@ -20,8 +21,13 @@ import look01 from '../assets/images/look01.avif'
 import look02 from '../assets/images/look02.avif'
 import look03 from '../assets/images/look03.avif'
 import look04 from '../assets/images/look04.avif'
+import look20 from '../assets/images/look20.png'
+import look201 from '../assets/images/look201.png'
+import look203 from '../assets/images/look203.png'
+import look204 from '../assets/images/look204.png'
 
 const LookBook = () => {
+    const navigate = useNavigate();
     // Scroll to top on mount
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -39,7 +45,8 @@ const LookBook = () => {
         {
             id: 2,
             category: "WOMEN",
-            image: womenCate,
+            image: look20,
+            subImage: [look201, look203, look203, look204],
             span: "aspect-[4/5]",
             description: "ATELIER 02 showcases elegant women's designs crafted with precision and artistic detail."
         },
@@ -47,6 +54,7 @@ const LookBook = () => {
             id: 3,
             category: "CARE",
             image: careCate,
+            subImage: [ex1, ex2, ex3, careCate],
             span: "aspect-square",
             description: "RITUALS 03 focuses on self-care essentials designed to elevate everyday routines."
         },
@@ -54,6 +62,7 @@ const LookBook = () => {
             id: 4,
             category: "DESIGN",
             image: objectCate,
+            subImage: [look04, ex1, look02, objectCate],
             span: "aspect-[2/3]",
             description: "OBJECTS 04 highlights curated design pieces blending functionality with aesthetics."
         },
@@ -61,6 +70,7 @@ const LookBook = () => {
             id: 5,
             category: "HERITAGE",
             image: craft,
+            subImage: [look01, look02, craft, ex3],
             span: "aspect-[4/3]",
             description: "CRAFT 05 celebrates heritage craftsmanship rooted in tradition and skilled artistry."
         },
@@ -138,7 +148,7 @@ const LookBook = () => {
     };
 
     return (
-        <div className="bg-white min-h-screen">
+        <div className="bg-[#F8F9FA] min-h-screen">
             {/* Masonry Grid */}
             <main className="py-4 md:py-4 px-10">
                 <p className='text-[#14372F] font-semibold pb-4'>{lookbookItems?.length} products </p>
@@ -152,6 +162,7 @@ const LookBook = () => {
                         <motion.div
                             key={item.id}
                             variants={itemVariants}
+                            onClick={() => navigate('/lookbook-lpl', { state: { look: item } })}
                             className="break-inside-avoid group cursor-pointer"
                         >
                             <div className={`relative overflow-hidden bg-gray-100 ${item?.span}`}>
@@ -177,24 +188,7 @@ const LookBook = () => {
                         </motion.div>
                     ))}
                 </motion.div>
-            </main>
-
-            {/* Footer Call to Action */}
-            <section className="bg-mainBG py-24 px-4 md:px-10 text-center">
-                <div className="max-w-4xl mx-auto">
-                    <h2 className="text-3xl md:text-5xl font-bold text-primary mb-6 tracking-tight">
-                        EXPLORE THE COLLECTION
-                    </h2>
-                    <p className="text-sm md:text-lg text-lightText font-light mb-10 leading-relaxed">
-                        The pieces featured in this lookbook are part of our latest archive.
-                        Each one is crafted with the same dedication to form and function.
-                    </p>
-                    <button className="group relative inline-flex items-center space-x-3 bg-primary px-10 py-5 text-sm md:text-lg font-semibold text-white transition-all hover:bg-teal-800 hover:scale-105 active:scale-95">
-                        <span>SHOP NEW ARRIVALS</span>
-                        <HiOutlineArrowUpRight className="text-xl transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
-                    </button>
-                </div>
-            </section>
+            </main>            
         </div>
     );
 };
