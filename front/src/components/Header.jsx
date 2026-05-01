@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, Fragment } from 'react'
 import { CgProfile } from "react-icons/cg";
 import { HiOutlineShoppingBag } from "react-icons/hi";
 import { LuSearch } from "react-icons/lu";
@@ -16,6 +16,92 @@ import { fetchNotifications, markAsRead, markAllAsRead, deleteNotification } fro
 import { formatDistanceToNow } from 'date-fns';
 import { openCart, closeCart, fetchCart } from '../redux/slice/cart.slice';
 import CartSidebar from './CartSidebar';
+import shoph from '../assets/images/shoph.webp';
+import menH from '../assets/images/menH.webp';
+import wH from '../assets/images/wH.webp';
+import wh2 from '../assets/images/wh2.webp';
+import lc1 from '../assets/images/lc1.webp';
+import lc2 from '../assets/images/lc2.webp';
+import lc3 from '../assets/images/lc3.webp';
+import ac1 from '../assets/images/ac1.webp';
+import ac2 from '../assets/images/ac2.webp';
+
+const CATEGORY_ASSETS = {
+    'SHOP': {
+        editorialImage: shoph,
+        editorialTitle: 'SEASONAL EDITORIAL',
+        links: [
+            { label: 'VIEW THE LOOKBOOK', href: '/lookbook' },
+            { label: 'SHOP ALL CATEGORIES', href: '/collection/shop' }
+        ]
+    },
+    'MEN': {
+        editorialImage: menH,
+        editorialTitle: 'MAN OF THE MOMENT',
+        links: [
+            { label: 'SPRING/SUMMER 2026 COLLECTION', href: '/collection/men' }
+        ]
+    },
+    'WOMEN': {
+        editorialImages: [wH, wh2],
+        editorialTitle: 'EXPLORE THE NEW COLLECTION N° 01',
+        links: [
+            { label: 'EXPLORE THE NEW COLLECTION N° 01', href: '/collection/women' }
+        ]
+    },
+    'LUX CARE': {
+        editorialImage: lc3,
+        editorialTitle: '',
+        links: [
+            { label: 'DISCOVER THE INGREDIENTS', href: '/ingredients' },
+            { label: 'THE BEAUTY JOURNAL', href: '/journal' }
+        ],
+        columnBottomImages: {
+            'SKIN ARCHIVE': [lc1, lc2]
+        },
+        extraSections: {
+            'ARTISTRY EDIT': {
+                title: 'THE SCENT STORY',
+                links: [
+                    { label: 'Signature Parfum Intense', href: '#' },
+                    { label: 'Home Fragrance & Candles', href: '#' },
+                    { label: 'Travel Size Essentials', href: '#' }
+                ]
+            }
+        }
+    },
+    'ACCESSORIES': {
+        editorialImages: [ac1, ac2],
+        editorialTitle: '',
+        links: [
+            { label: 'SHOP ALL CATEGORIES', href: '/collection/accessories' }
+        ],
+        extraSections: {
+            'FOR HIM: LEATHER GOODS': {
+                title: "MEN'S ESSENTIALS",
+                links: [
+                    { label: 'Signature Logo Belts', href: '#' },
+                    { label: 'Reversible Formal Belts', href: '#' },
+                    { label: 'Bi-fold Wallets', href: '#' },
+                    { label: 'Leather Tech & Laptop Sleeves', href: '#' },
+                    { label: 'Key Pouch & Car fobs', href: '#' },
+                    { label: 'Magnetic Money Clips', href: '#' },
+                    { label: 'Card Holders', href: '#' }
+                ]
+            },
+            'FOR HER: THE HANDBAG ARCHIVE': {
+                title: "WOMEN'S ESSENTIALS",
+                links: [
+                    { label: 'Continental Zip Wallets', href: '#' },
+                    { label: "Women's Compact Coin Purses", href: '#' },
+                    { label: 'Statement Waist Belts', href: '#' },
+                    { label: 'Luxury Vanity Cases', href: '#' }
+                ]
+            }
+        }
+    }
+};
+
 
 const ACCOUNT_MENU = [
     { label: 'Profile', href: '/profile' },
@@ -364,7 +450,7 @@ export default function Header() {
                                             </div>
                                         ))
                                     ) : (
-                                        ['SHOP', 'MEN', 'WOMEN', 'LUX CARE'].map((item) => (
+                                        ['SHOP', 'MEN', 'WOMEN', 'LUX CARE', 'ACCESSORIES'].map((item) => (
                                             <Link key={item} to="#" className={`text-[clamp(0.875rem,1.1vw,1rem)] font-medium uppercase transition-colors opacity-60 hover:opacity-100 ${isHomePage
                                                 ? (isScrolled || hoveredCategory ? 'text-dark' : 'text-white')
                                                 : 'text-dark'
@@ -594,144 +680,125 @@ export default function Header() {
                             {mainCategories.map((mainCategory) => {
                                 if (mainCategory._id !== hoveredCategory) return null;
 
-                                const menuContent = getMegaMenuContent(mainCategory);
+                                const categoryName = mainCategory.mainCategoryName.toUpperCase().trim();
+                                const assets = CATEGORY_ASSETS[categoryName];
                                 const categoryList = getCategoriesForMainCategory(mainCategory._id);
 
-                                // Split categories into up to 3 columns
-                                const col1 = categoryList.slice(0, Math.ceil(categoryList.length / 3));
-                                const col2 = categoryList.slice(Math.ceil(categoryList.length / 3), Math.ceil(categoryList.length / 3) * 2);
-                                const col3 = categoryList.slice(Math.ceil(categoryList.length / 3) * 2);
-                                const columns = [col1, col2, col3].filter(c => c.length > 0);
-
                                 return (
-                                    <div key={mainCategory._id} className="flex flex-row items-start p-8 w-full">
-                                        {categoryList.length > 0 ? (
-                                            <>
-                                                {/* Category Columns (1–3) */}
-                                                {columns.map((colCategories, colIdx) => (
-                                                    <div
-                                                        key={colIdx}
-                                                        className="flex flex-col items-start gap-6 flex-1 pr-8 self-stretch"
-                                                    >
-                                                        {colCategories.map((category) => {
-                                                            const subCats = getSubCategoriesForCategory(category._id);
-                                                            return (
-                                                                <div key={category._id} className="flex flex-col items-start gap-4 w-full">
-                                                                    {/* Column Title */}
-                                                                    <h3
-                                                                        className="w-full uppercase text-primary"
-                                                                        style={{
-                                                                            fontFamily: 'Urbanist, sans-serif',
-                                                                            fontWeight: 800,
-                                                                            fontSize: '14px',
-                                                                            lineHeight: '16px',
-                                                                        }}
-                                                                    >
-                                                                        {category.categoryName}
-                                                                    </h3>
-                                                                    {/* Options */}
-                                                                    {subCats.length > 0 ? (
-                                                                        <ul className="flex flex-col items-start gap-4 w-full">
-                                                                            {subCats.map((subCat) => (
-                                                                                <li key={subCat._id} className="w-full">
-                                                                                    <Link
-                                                                                        to={`/collection/${mainCategory.slug}/${category.slug}/${subCat.slug}`}
-                                                                                        onClick={closeMegaMenu}
-                                                                                        className="block w-full transition-colors duration-200 hover:text-gold"
-                                                                                        style={{
-                                                                                            fontFamily: 'Urbanist, sans-serif',
-                                                                                            fontWeight: 500,
-                                                                                            fontSize: '16px',
-                                                                                            lineHeight: '22px',
-                                                                                            color: '#343A40',
-                                                                                        }}
-                                                                                    >
-                                                                                        {subCat.subCategoryName}
-                                                                                    </Link>
-                                                                                </li>
-                                                                            ))}
-                                                                        </ul>
-                                                                    ) : (
-                                                                        <p className="text-sm text-lightText italic">No subcategories</p>
-                                                                    )}
-                                                                </div>
-                                                            );
-                                                        })}
-                                                    </div>
-                                                ))}
+                                    <div key={mainCategory._id} className="flex flex-row items-start py-10 w-full md:px-10 lg:px-20 mx-auto gap-10">
+                                        {/* Dynamic Category Columns */}
+                                        <div className="flex flex-row flex-[3] gap-10 overflow-x-auto scrollbar-hide">
+                                            {categoryList.map((category) => {
+                                                const subCats = getSubCategoriesForCategory(category._id);
+                                                const categoryUpper = category.categoryName.toUpperCase().trim();
+                                                const bottomImages = assets?.columnBottomImages?.[categoryUpper];
+                                                const extraSection = assets?.extraSections?.[categoryUpper];
 
-                                                {/* Column 4 — Featured Image + CTAs */}
-                                                <div className="flex flex-col items-start gap-6 flex-1 self-stretch">
-                                                    {/* Section title */}
-                                                    <h3
-                                                        className="w-full uppercase text-primary"
-                                                        style={{
-                                                            fontFamily: 'Urbanist, sans-serif',
-                                                            fontWeight: 800,
-                                                            fontSize: '14px',
-                                                            lineHeight: '16px',
-                                                        }}
-                                                    >
-                                                        {mainCategory.mainCategoryName}
-                                                    </h3>
-                                                    {/* Featured Image */}
-                                                    <div className="w-full" style={{ height: '400px' }}>
+                                                return (
+                                                    <div key={category._id} className="flex flex-col gap-8 flex-1 min-w-[180px]">
+                                                        {/* Main Category Links */}
+                                                        <div className="flex flex-col gap-6">
+                                                            <h3 className="uppercase text-primary font-extrabold text-[12px] tracking-[0.1em] pb-1">
+                                                                {category.categoryName}
+                                                            </h3>
+                                                            {subCats.length > 0 ? (
+                                                                <ul className="flex flex-col gap-2.5">
+                                                                    {subCats.map((subCat) => (
+                                                                        <li key={subCat._id}>
+                                                                            <Link
+                                                                                to={`/collection/${mainCategory.slug}/${category.slug}/${subCat.slug}`}
+                                                                                onClick={closeMegaMenu}
+                                                                                className="text-[14px] font-medium text-[#495057] hover:text-gold transition-colors block leading-relaxed"
+                                                                            >
+                                                                                {subCat.subCategoryName}
+                                                                            </Link>
+                                                                        </li>
+                                                                    ))}
+                                                                </ul>
+                                                            ) : (
+                                                                <p className="text-[12px] text-gray-400 italic">No items</p>
+                                                            )}
+                                                        </div>
+
+                                                        {/* Extra Section INSIDE the same column */}
+                                                        {extraSection && (
+                                                            <div className="flex flex-col gap-4">
+                                                                <h3 className="uppercase text-primary font-extrabold text-[11px] tracking-[0.1em] pt-2">
+                                                                    {extraSection.title}
+                                                                </h3>
+                                                                <ul className="flex flex-col gap-2.5">
+                                                                    {extraSection.links.map((link, lIdx) => (
+                                                                        <li key={lIdx}>
+                                                                            <Link
+                                                                                to={link.href}
+                                                                                onClick={closeMegaMenu}
+                                                                                className="text-[14px] font-medium text-[#495057] hover:text-gold transition-colors block leading-relaxed"
+                                                                            >
+                                                                                {link.label}
+                                                                            </Link>
+                                                                        </li>
+                                                                    ))}
+                                                                </ul>
+                                                            </div>
+                                                        )}
+
+                                                        {/* Inject bottom images if associated with this category name */}
+                                                        {bottomImages && (
+                                                            <div className="flex gap-4 mt-auto pt-6">
+                                                                {bottomImages.map((img, iIdx) => (
+                                                                    <div key={iIdx} className="flex-1 aspect-[4/5] overflow-hidden group">
+                                                                        <img src={img} alt="" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+
+                                        {/* Editorial/Featured Section (Right Side) */}
+                                        <div className="flex flex-col flex-1 pl-10 min-w-[350px]">
+                                            {assets?.editorialTitle && (
+                                                <h3 className="uppercase text-primary font-extrabold text-[12px] tracking-[0.1em] mb-6">
+                                                    {assets.editorialTitle}
+                                                </h3>
+                                            )}
+
+                                            {/* Images */}
+                                            <div className="flex gap-4 mb-6">
+                                                {assets?.editorialImages ? (
+                                                    assets.editorialImages.map((img, iIdx) => (
+                                                        <div key={iIdx} className="flex-1 aspect-[3/4] overflow-hidden group">
+                                                            <img src={img} alt="" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                                                        </div>
+                                                    ))
+                                                ) : (
+                                                    <div className="w-full max-w-72  overflow-hidden group">
                                                         <img
-                                                            src={menuContent.featuredImage}
-                                                            alt={menuContent.featuredTitle}
-                                                            className="w-full h-full object-cover"
+                                                            src={assets?.editorialImage || mainCategory.mainCategoryImage || '/men_archive.png'}
+                                                            alt=""
+                                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                                         />
                                                     </div>
-                                                    {/* CTA Buttons */}
-                                                    <Link
-                                                        to={menuContent.featuredLink}
-                                                        onClick={closeMegaMenu}
-                                                        className="flex flex-row items-center gap-3 hover:opacity-70 transition-opacity"
-                                                    >
-                                                        <span
-                                                            style={{
-                                                                fontFamily: 'Urbanist, sans-serif',
-                                                                fontWeight: 600,
-                                                                fontSize: '18px',
-                                                                lineHeight: '22px',
-                                                                textTransform: 'uppercase',
-                                                                color: '#1B1B1B',
-                                                            }}
-                                                        >
-                                                            Shop {mainCategory.mainCategoryName}
-                                                        </span>
-                                                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                            <path d="M4 10H16M16 10L10 4M16 10L10 16" stroke="#1B1B1B" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                                        </svg>
-                                                    </Link>
-                                                    <Link
-                                                        to={`${menuContent.featuredLink}/new-arrivals`}
-                                                        className="flex flex-row items-center gap-3 hover:opacity-70 transition-opacity"
-                                                        onClick={closeMegaMenu}
-                                                    >
-                                                        <span
-                                                            style={{
-                                                                fontFamily: 'Urbanist, sans-serif',
-                                                                fontWeight: 600,
-                                                                fontSize: '18px',
-                                                                lineHeight: '22px',
-                                                                textTransform: 'uppercase',
-                                                                color: '#1B1B1B',
-                                                            }}
-                                                        >
-                                                            New Arrivals
-                                                        </span>
-                                                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                            <path d="M4 10H16M16 10L10 4M16 10L10 16" stroke="#1B1B1B" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                                        </svg>
-                                                    </Link>
-                                                </div>
-                                            </>
-                                        ) : (
-                                            <div className="py-8 text-center w-full">
-                                                <p className="text-lightText">No categories available for {mainCategory.mainCategoryName}</p>
+                                                )}
                                             </div>
-                                        )}
+
+                                            {/* CTA Links */}
+                                            <div className="flex flex-col gap-4">
+                                                {(assets?.links || [
+                                                    { label: `SHOP ${mainCategory.mainCategoryName}`, href: `/collection/${mainCategory.slug}` },
+                                                    { label: 'NEW ARRIVALS', href: `/collection/${mainCategory.slug}/new-arrivals` }
+                                                ]).map((link, lIdx) => (
+                                                    <Link key={lIdx} to={link.href} onClick={closeMegaMenu} className="flex items-center gap-2 group">
+                                                        <span className="text-[14px] font-bold tracking-widest text-[#1B1B1B] group-hover:text-gold transition-colors uppercase">
+                                                            {link.label}
+                                                        </span>
+                                                        <HiArrowUpRight className="text-sm transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1" />
+                                                    </Link>
+                                                ))}
+                                            </div>
+                                        </div>
                                     </div>
                                 );
                             })}

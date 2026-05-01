@@ -51,15 +51,15 @@ const StepImage = ({ step, index, totalSteps, scrollYProgress }) => {
  */
 const StepItem = ({ step, isRevealed }) => (
   <motion.div
-    className="mb-6 last:mb-0"
+    className="mb-4 md:mb-6 last:mb-0"
     initial={{ opacity: 0, y: 40 }}
     animate={isRevealed ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
     transition={{ duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] }}
   >
-    <h4 className="text-xl md:text-2xl font-semibold text-[#1B1B1B] mb-2 font-urbanist leading-snug">
+    <h4 className="text-lg md:text-2xl font-semibold text-[#1B1B1B] mb-1 md:mb-2 font-urbanist leading-snug">
       {step.subtitle}
     </h4>
-    <p className="text-sm text-[#ADB5BD] font-medium leading-relaxed max-w-sm font-urbanist">
+    <p className="text-xs md:text-sm text-[#ADB5BD] font-medium leading-relaxed max-w-sm font-urbanist">
       {step.description}
     </p>
   </motion.div>
@@ -92,15 +92,15 @@ const CraftsmanshipSection = ({ sectionTitle, sectionTitle2, steps, imageLeft = 
   const totalHeight = steps.length * 100;
 
   return (
-    <div ref={containerRef} className="relative" style={{ height: `${totalHeight}vh` }}>
+    <div ref={containerRef} className="relative pb-10 md:pb-20" style={{ height: `${totalHeight}vh` }}>
       {/* Sticky viewport */}
-      <div className="sticky top-0 h-screen w-full flex items-center overflow-hidden bg-white">
-        <div className="w-full h-full px-6 md:px-20 py-16 flex items-center">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-24 items-center w-full">
+      <div className="sticky top-16 md:top-32 h-[calc(100vh-4rem)] md:h-[calc(100vh-10rem)] w-full flex items-center overflow-hidden bg-white">
+        <div className="w-full h-full px-4 md:px-20 flex items-center">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-24 items-start w-full h-full">
 
             {/* Image panel */}
             <div
-              className={`relative aspect-[4/5] md:aspect-[3/4] w-full overflow-hidden rounded-sm shadow-2xl ${imageLeft ? 'order-1' : 'md:order-2 order-1'
+              className={`relative w-full h-full overflow-hidden rounded-sm shadow-2xl ${imageLeft ? 'order-1' : 'md:order-2 order-1'
                 }`}
             >
               {steps.map((step, index) => (
@@ -115,9 +115,9 @@ const CraftsmanshipSection = ({ sectionTitle, sectionTitle2, steps, imageLeft = 
             </div>
 
             {/* Text panel */}
-            <div className={`flex flex-col ${imageLeft ? 'order-2' : 'md:order-1 order-2'}`}>
+            <div className={`flex flex-col relative z-20 h-full ${imageLeft ? 'order-2' : 'md:order-1 order-2'}`}>
               {/* Watermark title */}
-              <h2 className="text-5xl md:text-7xl lg:text-[72px] font-bold text-[#ADB5BD]/20 uppercase tracking-tighter mb-8 leading-none select-none font-urbanist">
+              <h2 className="text-3xl sm:text-4xl md:text-7xl lg:text-[72px] font-bold text-[#ADB5BD]/20 uppercase tracking-tighter mb-4 md:mb-8 leading-none select-none font-urbanist">
                 {sectionTitle} <br /> {sectionTitle2}
               </h2>
 
@@ -147,13 +147,13 @@ const Craftsmanship = () => {
     <div className="bg-white">
 
       {/* Hero Section */}
-      <section className="relative px-6 md:px-20 min-h-screen flex items-center bg-white font-urbanist overflow-hidden">
+      <section className="relative px-4 md:px-20 min-h-screen flex items-center bg-white font-urbanist overflow-hidden">
         <div className="max-w-screen-2xl mx-auto w-full">
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-4xl md:text-5xl lg:text-[48px] text-[#14372F] font-semibold mb-4 tracking-tight leading-[58px]"
+            className="text-3xl md:text-5xl lg:text-[48px] text-[#14372F] font-semibold mb-4 tracking-tight leading-tight md:leading-[58px]"
           >
             The Anatomy of Luxury.
           </motion.h1>
@@ -161,7 +161,7 @@ const Craftsmanship = () => {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-sm md:text-base text-[#14372F] font-medium mb-2"
+            className="text-xs md:text-base text-[#14372F] font-medium mb-2"
           >
             An inside look at the meticulous craftsmanship behind every EO creation.
           </motion.p>
@@ -169,7 +169,7 @@ const Craftsmanship = () => {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
-            className="text-[10px] md:text-base text-[#ADB5BD] max-w-3xl leading-[22px] mb-12 font-medium"
+            className="text-xs md:text-base text-[#ADB5BD] max-w-3xl leading-relaxed md:leading-[22px] mb-8 md:mb-12 font-medium"
           >
             At EO, we don't believe in mass production. We believe in the slow, deliberate process of creation. From the first sketch to the final polish, every step is a testament to our commitment to excellence.
           </motion.p>
@@ -185,19 +185,19 @@ const Craftsmanship = () => {
       </section>
 
       {/* Intro Section */}
-      <section className="bg-white min-h-screen flex items-center font-urbanist">
-        <div className="mx-auto px-4 md:px-8 text-center max-w-5xl w-full">
+      <section className="bg-white flex items-center font-urbanist">
+        <div className="mx-auto px-4 py-6 md:py-6 mb-12 md:px-8 text-center max-w-5xl w-full">
           <motion.h3
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            className="text-[10px] md:text-[18px] font-semibold text-[#343A40] mb-6 uppercase tracking-[0.2em]"
+            className="text-xs md:text-[18px] font-semibold text-[#343A40] mb-4 md:mb-6 uppercase tracking-[0.2em]"
           >
             CRAFT & PROCESS
           </motion.h3>
           <motion.h2
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
-            className="text-4xl md:text-6xl lg:text-[72px] font-bold text-[#14372F] mb-6 uppercase tracking-tighter leading-[80px]"
+            className="text-3xl md:text-6xl lg:text-[72px] font-bold text-[#14372F] mb-4 md:mb-6 uppercase tracking-tighter leading-tight md:leading-[80px]"
           >
             THE ARTISAN'S WAY
           </motion.h2>
@@ -205,7 +205,7 @@ const Craftsmanship = () => {
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="text-xs md:text-[18px] text-[#ADB5BD] leading-[22px] max-w-2xl mx-auto mb-16 font-medium"
+            className="text-sm md:text-[18px] text-[#ADB5BD] leading-relaxed md:leading-[22px] max-w-2xl mx-auto mb-8 md:mb-16 font-medium"
           >
             An immersive journey behind the curtain of EO. Discover the meticulous artistry, heritage techniques, and scientific precision that define our signature collections.
           </motion.p>
@@ -215,13 +215,13 @@ const Craftsmanship = () => {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="flex flex-wrap justify-center items-center gap-6 md:gap-10 border-y border-[#E9ECEF] py-8"
+            className="flex flex-wrap justify-center items-center gap-4 md:gap-10 border-y border-[#E9ECEF] py-4 md:py-8"
           >
             {['All Craft & Process', 'Fashion', 'Lux care', 'Accessories', 'Fragrance'].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`text-[9px] md:text-[14px] uppercase tracking-[0.2em] transition-all duration-300 font-medium ${activeTab === tab ? 'text-[#14372F] font-semibold' : 'text-[#ADB5BD] hover:text-[#14372F]'
+                className={`text-[10px] md:text-[14px] uppercase tracking-[0.2em] transition-all duration-300 font-medium ${activeTab === tab ? 'text-[#14372F] font-semibold' : 'text-[#ADB5BD] hover:text-[#14372F]'
                   }`}
               >
                 {tab}
@@ -344,22 +344,6 @@ const Craftsmanship = () => {
           )}
         </motion.div>
       </AnimatePresence>
-
-      {/* Bottom CTA */}
-      <section className="bg-primary py-24 text-white flex items-center justify-center overflow-hidden relative">
-        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent" />
-        <div className="max-w-4xl mx-auto px-4 text-center z-10">
-          <h2 className="text-4xl md:text-7xl font-bold mb-10 tracking-tighter uppercase">
-            Experience <br /> The Difference
-          </h2>
-          <p className="text-sm md:text-xl text-gray-300 font-light mb-12 max-w-xl mx-auto tracking-wide">
-            Discover pieces that transcend trends and celebrate the timeless soul of artisan creation.
-          </p>
-          <button className="bg-white text-primary px-12 py-5 text-sm md:text-base font-bold tracking-widest hover:bg-gold hover:text-white transition-all duration-500 uppercase rounded-full">
-            EXPLORE THE CRAFT
-          </button>
-        </div>
-      </section>
 
     </div>
   );

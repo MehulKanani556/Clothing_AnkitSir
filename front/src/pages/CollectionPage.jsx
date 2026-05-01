@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchProductsByCategory, fetchFilterOptions, fetchRecentlyViewed, fetchWishlist, toggleWishlist } from '../redux/slice/product.slice';
+import { fetchProductsByCategory, fetchFilterOptions, fetchRecentlyViewed, fetchWishlist } from '../redux/slice/product.slice';
 import { fetchMainCategories, fetchCategories, fetchSubCategories } from '../redux/slice/category.slice';
 import Layout from '../components/Layout';
 import { IoClose } from 'react-icons/io5';
@@ -20,18 +20,6 @@ const SkeletonCard = () => (
 
 // ── Product Card ──────────────────────────────────────────────────
 const ProductCard = ({ product }) => {
-    const dispatch = useDispatch();
-    const { wishlist } = useSelector((state) => state.product);
-    const { isAuthenticated } = useSelector((state) => state.auth);
-    const isWishlisted = wishlist?.some(item => (item._id || item) === product._id);
-
-    const handleWishlistToggle = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (!isAuthenticated) return;
-        dispatch(toggleWishlist(product._id));
-    };
-
     const defaultVariant = product.variants?.find(v => v.isDefault) || product.variants?.[0];
     const image1 = defaultVariant?.images?.[0] || null;
     const image2 = defaultVariant?.images?.[1] || image1; // fallback to image1 if no second image

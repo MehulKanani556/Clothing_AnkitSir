@@ -2,10 +2,11 @@ import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toggleWishlist } from '../redux/slice/product.slice';
 import { IoHeart, IoHeartOutline } from 'react-icons/io5';
+import toast from 'react-hot-toast';
 
 const WishlistButton = ({ 
     productId, 
-    className = "absolute top-5 right-5 transition-all duration-500 opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0 z-20",
+    className = "absolute top-5 right-5 transition-all duration-500 opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0 z-20 pointer-events-auto",
     iconSize = 22,
     activeColor = "text-[#14372F]",
     inactiveColor = "text-[#6C757D] hover:text-[#14372F]"
@@ -16,11 +17,28 @@ const WishlistButton = ({
 
     const isWishlisted = wishlist?.some(item => (item._id || item) === productId);
 
-    const handleWishlistToggle = (e) => {
+    const handleWishlistToggle = async(e) => {
         e.preventDefault();
         e.stopPropagation();
-        if (!isAuthenticated) return;
-        dispatch(toggleWishlist(productId));
+        
+        if (!isAuthenticated) {
+            toast.error('Please login to add items to wishlist');
+            return;
+        }
+
+        try {
+            const result = await dispatch(toggleWishlist(productId)).unwrap();
+            // console.log("result", result);
+            
+            // result usually contains { isWishlisted: boolean } or similar from the slice
+            if (result?.result?.isWishlisted) {
+                toast.success('Added to wishlist');
+            } else {
+                toast.success('Removed from wishlist');
+            }
+        } catch (error) {
+            toast.error(error?.message || 'Failed to update wishlist');
+        }
     };
 
     return (
