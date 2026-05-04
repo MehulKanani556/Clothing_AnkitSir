@@ -79,7 +79,7 @@ const ProductDetails = () => {
                 subtitle: "Elevate your daily ritual with these essential pairings"
             };
         }
-        
+
         if (fullCat.includes("OBJECT") || fullCat.includes("HOME") || fullCat.includes("DESIGNER")) {
             return {
                 title: "STYLE WITH",
@@ -107,9 +107,6 @@ const ProductDetails = () => {
     const [addingToCart, setAddingToCart] = useState(false);
     const sliderRef = useRef(null);
     const mainSectionRef = useRef(null);
-
-    console.log(id, slug, currentProduct);
-
 
     useEffect(() => {
         if (slug) {
@@ -157,7 +154,7 @@ const ProductDetails = () => {
                 selectedSize: selectedSize.size || selectedSize,
                 quantity: 1
             })).unwrap();
-            
+
             // Open cart sidebar and show success message
             dispatch(openCart());
             toast.success('Product added to bag');
@@ -537,8 +534,8 @@ const ProductDetails = () => {
                                         : 'bg-[#14372F] text-white cursor-pointer hover:opacity-90'
                                         }`}
                                 >
-                                    {addingToCart 
-                                        ? 'Adding...' 
+                                    {addingToCart
+                                        ? 'Adding...'
                                         : !selectedSize
                                             ? 'Select Size'
                                             : isSoldOut
