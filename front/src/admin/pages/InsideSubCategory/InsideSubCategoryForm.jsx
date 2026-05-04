@@ -8,7 +8,7 @@ import { useSelector } from 'react-redux';
 const InsideSubCategoryForm = ({ initialValues, onSubmit, onCancel, isLoading }) => {
   const [preview, setPreview] = useState(null);
   const [attributes, setAttributes] = useState(initialValues?.attributes || []);
-  const { subCategories } = useSelector((state) => state.category);
+  const { mainCategories, categories, subCategories } = useSelector((state) => state.category);
 
   useEffect(() => {
     if (initialValues?.insideSubCategoryImage) {
@@ -21,6 +21,8 @@ const InsideSubCategoryForm = ({ initialValues, onSubmit, onCancel, isLoading })
   const formik = useFormik({
     initialValues: {
       insideSubCategoryName: initialValues?.insideSubCategoryName || '',
+      mainCategoryId: initialValues?.mainCategoryId?._id || initialValues?.mainCategoryId || '',
+      categoryId: initialValues?.categoryId?._id || initialValues?.categoryId || '',
       subCategoryId: initialValues?.subCategoryId?._id || initialValues?.subCategoryId || '',
       insideSubCategoryImage: null
     },
@@ -29,6 +31,8 @@ const InsideSubCategoryForm = ({ initialValues, onSubmit, onCancel, isLoading })
         .min(2, 'Too Short!')
         .max(50, 'Too Long!')
         .required('Inside sub category name is required'),
+      mainCategoryId: Yup.string().required('Main category is required'),
+      categoryId: Yup.string().required('Category is required'),
       subCategoryId: Yup.string().required('Sub category is required'),
       insideSubCategoryImage: Yup.mixed().nullable()
     }),
@@ -37,6 +41,14 @@ const InsideSubCategoryForm = ({ initialValues, onSubmit, onCancel, isLoading })
       onSubmit({ ...values, attributes });
     },
   });
+
+  const filteredCategories = categories.filter(
+    (cat) => cat.mainCategoryId?._id === formik.values.mainCategoryId || cat.mainCategoryId === formik.values.mainCategoryId
+  );
+
+  const filteredSubCategories = subCategories.filter(
+    (subCat) => subCat.categoryId?._id === formik.values.categoryId || subCat.categoryId === formik.values.categoryId
+  );
 
   const handleImageChange = (e) => {
     const file = e.currentTarget.files[0];
@@ -132,29 +144,94 @@ const InsideSubCategoryForm = ({ initialValues, onSubmit, onCancel, isLoading })
             )}
           </div>
 
-          <div className="space-y-1.5">
-            <label htmlFor="subCategoryId" className="text-sm font-bold text-slate-700 ml-1">
-              Sub Category
-            </label>
-            <select
-              id="subCategoryId"
-              name="subCategoryId"
-              className={`w-full px-5 py-3.5 rounded-2xl border transition-all outline-none text-sm font-medium ${formik.touched.subCategoryId && formik.errors.subCategoryId
-                ? 'border-red-300 focus:border-red-500 bg-red-50/10'
-                : 'border-slate-200 focus:border-black focus:ring-4 focus:ring-black/5'
-                }`}
-              {...formik.getFieldProps('subCategoryId')}
-            >
-              <option value="">Select Sub Category</option>
-              {subCategories.map((subCat) => (
-                <option key={subCat._id} value={subCat._id}>
-                  {subCat.subCategoryName}
-                </option>
-              ))}
-            </select>
-            {formik.touched.subCategoryId && formik.errors.subCategoryId && (
-              <p className="text-xs font-bold text-red-500 ml-1 mt-1">{formik.errors.subCategoryId}</p>
-            )}
+          <div className="grid grid-cols-1 gap-4">
+            <div className="space-y-1.5">
+              <label htmlFor="mainCategoryId" className="text-sm font-bold text-slate-700 ml-1">
+                Main Category
+              </label>
+              <select
+                id="mainCategoryId"
+                name="mainCategoryId"
+                className={`w-full px-5 py-3.5 rounded-2xl border transition-all outline-none text-sm font-medium ${formik.touched.mainCategoryId && formik.errors.mainCategoryId
+                  ? 'border-red-300 focus:border-red-500 bg-red-50/10'
+                  : 'border-slate-200 focus:border-black focus:ring-4 focus:ring-black/5'
+                  }`}
+                {...formik.getFieldProps('mainCategoryId')}
+                onChange={(e) => {
+                  formik.setFieldValue('mainCategoryId', e.target.value);
+                  formik.setFieldValue('categoryId', '');
+                  formik.setFieldValue('subCategoryId', '');
+                }}
+              >
+                <option value="">Select Main Category</option>
+                {mainCategories.map((mcat) => (
+                  <option key={mcat._id} value={mcat._id}>
+                    {mcat.mainCategoryName}
+                  </option>
+                ))}
+              </select>
+              {formik.touched.mainCategoryId && formik.errors.mainCategoryId && (
+                <p className="text-xs font-bold text-red-500 ml-1 mt-1">{formik.errors.mainCategoryId}</p>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label htmlFor="categoryId" className="text-sm font-bold text-slate-700 ml-1">
+                  Category
+                </label>
+                <select
+                  id="categoryId"
+                  name="categoryId"
+                  disabled={!formik.values.mainCategoryId}
+                  className={`w-full px-5 py-3.5 rounded-2xl border transition-all outline-none text-sm font-medium ${formik.touched.categoryId && formik.errors.categoryId
+                    ? 'border-red-300 focus:border-red-500 bg-red-50/10'
+                    : 'border-slate-200 focus:border-black focus:ring-4 focus:ring-black/5'
+                    } ${!formik.values.mainCategoryId ? 'bg-slate-50 cursor-not-allowed opacity-60' : ''}`}
+                  {...formik.getFieldProps('categoryId')}
+                  onChange={(e) => {
+                    formik.setFieldValue('categoryId', e.target.value);
+                    formik.setFieldValue('subCategoryId', '');
+                  }}
+                >
+                  <option value="">Select Category</option>
+                  {filteredCategories.map((cat) => (
+                    <option key={cat._id} value={cat._id}>
+                      {cat.categoryName}
+                    </option>
+                  ))}
+                </select>
+                {formik.touched.categoryId && formik.errors.categoryId && (
+                  <p className="text-xs font-bold text-red-500 ml-1 mt-1">{formik.errors.categoryId}</p>
+                )}
+              </div>
+
+              <div className="space-y-1.5">
+                <label htmlFor="subCategoryId" className="text-sm font-bold text-slate-700 ml-1">
+                  Sub Category
+                </label>
+                <select
+                  id="subCategoryId"
+                  name="subCategoryId"
+                  disabled={!formik.values.categoryId}
+                  className={`w-full px-5 py-3.5 rounded-2xl border transition-all outline-none text-sm font-medium ${formik.touched.subCategoryId && formik.errors.subCategoryId
+                    ? 'border-red-300 focus:border-red-500 bg-red-50/10'
+                    : 'border-slate-200 focus:border-black focus:ring-4 focus:ring-black/5'
+                    } ${!formik.values.categoryId ? 'bg-slate-50 cursor-not-allowed opacity-60' : ''}`}
+                  {...formik.getFieldProps('subCategoryId')}
+                >
+                  <option value="">Select Sub Category</option>
+                  {filteredSubCategories.map((subCat) => (
+                    <option key={subCat._id} value={subCat._id}>
+                      {subCat.subCategoryName}
+                    </option>
+                  ))}
+                </select>
+                {formik.touched.subCategoryId && formik.errors.subCategoryId && (
+                  <p className="text-xs font-bold text-red-500 ml-1 mt-1">{formik.errors.subCategoryId}</p>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 

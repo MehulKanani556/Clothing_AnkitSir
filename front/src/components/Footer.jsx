@@ -4,13 +4,13 @@ import instaImg from '../assets/images/insta.webp';
 import fbImg from '../assets/images/fb.webp';
 
 const shopLinks = [
-    { label: 'Seasonal Edit', to: '/shop/seasonal-edit' },
-    { label: 'New Arrivals', to: '/shop/new-arrivals' },
-    { label: 'All Collections', to: '/shop/all-collections' },
-    { label: 'Men', to: '/shop/men' },
-    { label: 'Women', to: '/shop/women' },
-    { label: 'Lux Care', to: '/shop/lux-care' },
-    { label: 'Accessories', to: '/shop/accessories' },
+    { label: 'Seasonal Edit', to: '/collection/shop/seasonal-edit' },
+    { label: 'New Arrivals', to: '/collection/shop/new-arrivals' },
+    { label: 'All Collections', to: '/collection/all-collections' },
+    { label: 'Men', to: '/collection/men' },
+    { label: 'Women', to: '/collection/women' },
+    { label: 'Lux Care', to: '/collection/lux-care' },
+    { label: 'Accessories', to: '/collection/accessories' },
 ];
 
 const aboutLinks = [

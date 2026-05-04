@@ -5,7 +5,9 @@ import {
   createInsideSubCategory,
   updateInsideSubCategory,
   deleteInsideSubCategory,
-  fetchSubCategories
+  fetchSubCategories,
+  fetchCategories,
+  fetchMainCategories
 } from '../../../redux/slice/category.slice';
 import {
   MdAdd,
@@ -31,12 +33,16 @@ const InsideSubCategoryList = () => {
   useEffect(() => {
     dispatch(fetchInsideSubCategories());
     dispatch(fetchSubCategories());
+    dispatch(fetchCategories());
+    dispatch(fetchMainCategories());
   }, [dispatch]);
 
   const handleCreate = (values) => {
     const formData = new FormData();
     formData.append('insideSubCategoryName', values.insideSubCategoryName);
     formData.append('subCategoryId', values.subCategoryId);
+    formData.append('categoryId', values.categoryId);
+    formData.append('mainCategoryId', values.mainCategoryId);
     if (values.insideSubCategoryImage) {
       formData.append('insideSubCategoryImage', values.insideSubCategoryImage);
     }
@@ -53,6 +59,8 @@ const InsideSubCategoryList = () => {
     const formData = new FormData();
     formData.append('insideSubCategoryName', values.insideSubCategoryName);
     formData.append('subCategoryId', values.subCategoryId);
+    formData.append('categoryId', values.categoryId);
+    formData.append('mainCategoryId', values.mainCategoryId);
     if (values.insideSubCategoryImage) {
       formData.append('insideSubCategoryImage', values.insideSubCategoryImage);
     }

@@ -10,6 +10,7 @@ const initialState = {
     filterOptions: null,
     recentlyViewed: [],
     wishlist: [],
+    wearItWith: [],
     loading: false,
     error: null,
 };
@@ -282,7 +283,9 @@ export const productSlice = createSlice({
             })
             .addCase(fetchProductById.fulfilled, (state, action) => {
                 state.loading = false;
-                state.currentProduct = action.payload?.result || action.payload?.data || null;
+                const result = action.payload?.result || action.payload?.data;
+                state.currentProduct = result?.product || result || null;
+                state.wearItWith = result?.wearItWith || [];
             })
             .addCase(fetchProductById.rejected, (state, action) => {
                 state.loading = false;
@@ -293,7 +296,9 @@ export const productSlice = createSlice({
             })
             .addCase(fetchProductBySlug.fulfilled, (state, action) => {
                 state.loading = false;
-                state.currentProduct = action.payload?.result || action.payload?.data || null;
+                const result = action.payload?.result || action.payload?.data;
+                state.currentProduct = result?.product || result || null;
+                state.wearItWith = result?.wearItWith || [];
             })
             .addCase(fetchProductBySlug.rejected, (state, action) => {
                 state.loading = false;

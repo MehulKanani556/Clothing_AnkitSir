@@ -9,6 +9,70 @@ import { ThrowError } from "../utils/Error.utils.js";
 import { sendBadRequestResponse, sendNotFoundResponse, sendSuccessResponse, sendForbiddenResponse } from "../utils/Response.utils.js";
 import { slugify } from "../utils/slug.config.js";
 import { deleteManyFromS3 } from "../middleware/imageupload.js";
+import CategoryRule from "../model/categoryRule.model.js";
+import LookbookModel from "../model/lookbook.model.js";
+
+// --- AUTOMATIC CATEGORY-FLIP MAP ---
+// This logic automatically pairs products based on their names/categories if no manual rule exists.
+const getAutomaticSuggestions = async (product) => {
+  try {
+    const name = product.name?.toLowerCase() || "";
+    const subCatName = product.subCategory?.subCategoryName?.toLowerCase() || "";
+    const fullName = `${name} ${subCatName}`;
+
+    let searchKeywords = [];
+
+    // 1. PRIMARY MATCH: Logic based on Keywords
+    if (fullName.match(/shirt|top|hoodie|jacket|blazer|sweater|cardigan|vest|knit|tee|polo/)) {
+      searchKeywords = ["pants", "shorts", "jeans", "trousers", "denim", "skirt"];
+    } else if (fullName.match(/pants|shorts|jeans|trousers|skirt|bottom|cargo|denim/)) {
+      searchKeywords = ["shirt", "top", "hoodie", "jacket", "blazer", "knit", "tee", "sweater", "polo"];
+    } else if (fullName.match(/dress|jumpsuit|romper/)) {
+      searchKeywords = ["bag", "accessory", "shoes", "sandals", "jewelry", "jacket"];
+    } else if (fullName.match(/shoes|sandals|boots|sneakers/)) {
+      searchKeywords = ["socks", "pants", "jeans", "shorts", "bag"];
+    } else if (fullName.match(/bag|wallet|clutch/)) {
+      searchKeywords = ["dress", "shoes", "jewelry", "accessory"];
+    }
+
+    // 2. SECONDARY MATCH: Fallback to "Other Categories" if no keywords match
+    // This ensures even unique categories get a suggestion
+    if (searchKeywords.length === 0) {
+       return await productModel.find({
+          mainCategory: product.mainCategory,
+          subCategory: { $ne: product.subCategory },
+          isActive: true,
+          gender: { $in: [product.gender || "Unisex", "Unisex"] },
+          _id: { $ne: product._id }
+       })
+       .select('name price images slug variants')
+       .populate("variants")
+       .limit(4)
+       .lean();
+    }
+
+    // 3. Find complementary products using the keywords
+    const complementarySubCats = await SubCategoryModel.find({
+      subCategoryName: { $regex: searchKeywords.join("|"), $options: "i" }
+    }).select("_id").lean();
+
+    if (complementarySubCats.length === 0) return [];
+
+    return await productModel.find({
+      subCategory: { $in: complementarySubCats.map(s => s._id) },
+      isActive: true,
+      gender: { $in: [product.gender || "Unisex", "Unisex"] },
+      _id: { $ne: product._id }
+    })
+    .select('name price images slug variants')
+    .populate("variants")
+    .limit(4)
+    .lean();
+  } catch (error) {
+    console.error("Auto-Flip Logic Error:", error);
+    return [];
+  }
+};
 
 export const createProduct = async (req, res) => {
   try {
@@ -29,6 +93,7 @@ export const createProduct = async (req, res) => {
       countryOfOrigin,
       isActive,
       isFeatured,
+      gender,
     } = req.body;
 
     // Normalize optional ObjectId fields — empty string → null
@@ -97,6 +162,7 @@ export const createProduct = async (req, res) => {
       countryOfOrigin: countryOfOrigin || null,
       isActive: isActive ?? true,
       isFeatured: isFeatured ?? false,
+      gender: gender || "Unisex",
     };
 
     const newProduct = await productModel.create(productData);
@@ -151,7 +217,60 @@ export const getProductById = async (req, res) => {
       return sendNotFoundResponse(res, "Product not found!");
     }
 
-    return sendSuccessResponse(res, "Product fetched successfully!", product);
+    // --- WEAR IT WITH LOGIC ---
+    let wearItWith = [];
+    
+    // 1. Try to find in Lookbooks (Curated Styling)
+    const lookbook = await LookbookModel.findOne({ products: product._id }).lean();
+    if (lookbook) {
+      wearItWith = await productModel.find({
+        _id: { $in: lookbook.products, $ne: product._id },
+        isActive: true
+      })
+      .select('name price images slug variants')
+      .populate("variants")
+      .limit(4)
+      .lean();
+    }
+
+    // 2. If not in Lookbook, try Category Rules
+    if (wearItWith.length === 0) {
+      const rule = await CategoryRule.findOne({ sourceCategory: product.subCategory }).lean();
+      if (rule && rule.suggestedCategories.length > 0) {
+        wearItWith = await productModel.find({
+          subCategory: { $in: rule.suggestedCategories },
+          isActive: true,
+          _id: { $ne: product._id }
+        })
+        .select('name price images slug variants')
+        .populate("variants")
+        .limit(4)
+        .lean();
+      }
+    }
+
+    // 3. Automatic Category-Flip (Zero Admin Work)
+    if (wearItWith.length === 0) {
+      wearItWith = await getAutomaticSuggestions(product);
+    }
+
+    // 4. Fallback: Similar products in same sub-category
+    if (wearItWith.length === 0) {
+      wearItWith = await productModel.find({
+        subCategory: product.subCategory,
+        isActive: true,
+        _id: { $ne: product._id }
+      })
+      .select('name price images slug variants')
+      .populate("variants")
+      .limit(4)
+      .lean();
+    }
+
+    return sendSuccessResponse(res, "Product fetched successfully!", {
+      product,
+      wearItWith
+    });
 
   } catch (error) {
     return ThrowError(res, 500, error.message);
@@ -173,7 +292,60 @@ export const getProductBySlug = async (req, res) => {
       return sendNotFoundResponse(res, "Product not found!");
     }
 
-    return sendSuccessResponse(res, "Product fetched successfully!", product);
+    // --- WEAR IT WITH LOGIC ---
+    let wearItWith = [];
+    
+    // 1. Try to find in Lookbooks (Curated Styling)
+    const lookbook = await LookbookModel.findOne({ products: product._id }).lean();
+    if (lookbook) {
+      wearItWith = await productModel.find({
+        _id: { $in: lookbook.products, $ne: product._id },
+        isActive: true
+      })
+      .select('name price images slug variants')
+      .populate("variants")
+      .limit(4)
+      .lean();
+    }
+
+    // 2. If not in Lookbook, try Category Rules
+    if (wearItWith.length === 0) {
+      const rule = await CategoryRule.findOne({ sourceCategory: product.subCategory }).lean();
+      if (rule && rule.suggestedCategories.length > 0) {
+        wearItWith = await productModel.find({
+          subCategory: { $in: rule.suggestedCategories },
+          isActive: true,
+          _id: { $ne: product._id }
+        })
+        .select('name price images slug variants')
+        .populate("variants")
+        .limit(4)
+        .lean();
+      }
+    }
+
+    // 3. Automatic Category-Flip (Zero Admin Work)
+    if (wearItWith.length === 0) {
+      wearItWith = await getAutomaticSuggestions(product);
+    }
+
+    // 4. Fallback: Similar products in same sub-category
+    if (wearItWith.length === 0) {
+      wearItWith = await productModel.find({
+        subCategory: product.subCategory,
+        isActive: true,
+        _id: { $ne: product._id }
+      })
+      .select('name price images slug variants')
+      .populate("variants")
+      .limit(4)
+      .lean();
+    }
+
+    return sendSuccessResponse(res, "Product fetched successfully!", {
+      product,
+      wearItWith
+    });
 
   } catch (error) {
     return ThrowError(res, 500, error.message);

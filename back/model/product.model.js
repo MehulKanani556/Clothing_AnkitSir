@@ -94,6 +94,11 @@ const productSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  gender: {
+    type: String,
+    enum: ["Men", "Women", "Unisex"],
+    default: "Unisex",
+  },
 }, { timestamps: true });
 
 productSchema.post("save", async function (doc) {

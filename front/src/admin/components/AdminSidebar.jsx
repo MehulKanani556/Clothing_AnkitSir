@@ -59,6 +59,12 @@ const AdminSidebar = () => {
       activePatterns: ['/admin/product']
     },
     { 
+      name: 'Lookbook', 
+      icon: <MdLayers size={20} />, 
+      path: '/admin/lookbook',
+      activePatterns: ['/admin/lookbook']
+    },
+    { 
       name: 'Customers', 
       icon: <MdPeople size={20} />, 
       path: '/admin/customers',

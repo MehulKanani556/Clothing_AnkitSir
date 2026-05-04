@@ -6,6 +6,7 @@ import * as Yup from 'yup';
 import { HiMinus, HiPlus } from 'react-icons/hi';
 import { IoClose } from 'react-icons/io5';
 import { updateCartItem, removeFromCart, fetchCart, applyCoupon, removeCoupon } from '../redux/slice/cart.slice';
+import { fetchRecentlyViewed } from '../redux/slice/product.slice';
 import { placeOrder } from '../redux/slice/order.slice';
 import toast from 'react-hot-toast';
 import EditCartItemModal from '../components/EditCartItemModal';
@@ -22,6 +23,49 @@ const couponSchema = Yup.object({
 const fmt = (n) =>
     Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+// ── Recently Viewed Card ──────────────────────────────────────────
+const RecentlyViewedCard = ({ product }) => {
+    const navigate = useNavigate();
+    const defaultVariant = product.variants?.find(v => v.isDefault) || product.variants?.[0];
+    const image = defaultVariant?.images?.[0] || null;
+
+    const getPrice = () => {
+        if (!defaultVariant) return null;
+        if (defaultVariant.options?.length > 0) {
+            const prices = defaultVariant.options.map(o => o.price).filter(Boolean);
+            if (!prices.length) return null;
+            const min = Math.min(...prices);
+            return `$${min}`;
+        }
+        return defaultVariant.price ? `$${defaultVariant.price}` : null;
+    };
+
+    return (
+        <div 
+            onClick={() => navigate(`/product/${product.slug}`)}
+            className="flex flex-col items-center bg-white border border-border/10 cursor-pointer group"
+        >
+            <div className="w-full aspect-[4/5] bg-white overflow-hidden">
+                {image ? (
+                    <img
+                        src={image}
+                        alt={product.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    />
+                ) : (
+                    <div className="w-full h-full flex items-center justify-center text-lightText/40">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1"><rect x="3" y="3" width="18" height="18" rx="2" /></svg>
+                    </div>
+                )}
+            </div>
+            <div className="py-6 px-4 flex flex-col items-center gap-1">
+                <p className="text-[13px] font-medium text-dark text-center tracking-tight">{product.name}</p>
+                <p className="text-[12px] font-bold text-lightText">{getPrice()}</p>
+            </div>
+        </div>
+    );
+};
+
 export default function CheckOut() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -29,6 +73,7 @@ export default function CheckOut() {
     const { placeOrderLoading } = useSelector((state) => state.order);
 
     const { cartData, loading: cartLoading } = useSelector((state) => state.cart);
+    const { recentlyViewed } = useSelector((state) => state.product);
     const [updatingId, setUpdatingId] = useState(null); // item._id being updated
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [editingItem, setEditingItem] = useState(null);
@@ -39,6 +84,7 @@ export default function CheckOut() {
             return;
         }
         dispatch(fetchCart());
+        dispatch(fetchRecentlyViewed());
     }, [isAuthenticated, dispatch, navigate]);
 
     // ── Quantity change ───────────────────────────────────────────────────────
@@ -137,7 +183,57 @@ export default function CheckOut() {
     const hasCoupon = !!appliedCoupon?.code;
     const isEmpty = !cartLoading && cartItems.length === 0;
 
-    console.log("cartItems", cartItems);
+    if (isEmpty) {
+        return (
+            <div className="bg-mainBG flex flex-col">
+                {/* Empty Cart Section */}
+                <div className="flex flex-col items-center justify-center px-6 py-24">
+                    <div className="w-full max-w-4xl flex flex-col items-center">
+                        <div className="w-full  p-16 text-center border border-dashed border-border/40 rounded-lg flex flex-col items-center justify-center">
+                            <p className="text-xl font-bold text-primary mb-8 tracking-wider">
+                                YOUR CART IS EMPTY
+                            </p>
+                            <Link
+                                to="/"
+                                className="inline-block bg-primary text-white text-[13px] font-bold uppercase tracking-[3px] px-12 py-5 hover:bg-primary/90 transition-all shadow-lg"
+                            >
+                                continue shopping
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Recently Viewed Section */}
+                {recentlyViewed && recentlyViewed.length > 0 && (
+                    <section className="bg-mainBG border-t border-border/20">
+                        <div className="mx-auto px-6 py-24">
+                            <div className="flex flex-col items-center text-center mb-16 gap-3">
+                                <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-dark/60">
+                                    THE ARCHIVE OF YOUR SEARCH
+                                </p>
+                                <h2 className="text-[32px] md:text-[48px] font-bold uppercase text-primary leading-tight tracking-tight">
+                                    RECENTLY VIEWED PRODUCTS
+                                </h2>
+                                <p className="text-[14px] text-lightText max-w-2xl leading-relaxed">
+                                    Don't let a favorite piece slip away. Re-access your latest searches and pick up your exploration exactly where you left off.
+                                </p>
+                            </div>
+
+                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-0 border-t border-l border-border/10">
+                                {recentlyViewed.slice(0, 4).map((product) => (
+                                    <div key={product._id} className="border-r border-b border-border/10">
+                                        <RecentlyViewedCard product={product} />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </section>
+                )}
+            </div>
+        );
+    }
+
+    // console.log("cartItems", cartItems);
 
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -187,24 +283,6 @@ export default function CheckOut() {
                             </div>
                         )}
 
-                        {/* ── Empty state ── */}
-                        {isEmpty && (
-                            <div className="bg-white p-12 text-center border border-dashed border-border/40 rounded-lg">
-                                <p className="text-lg font-bold text-primary mb-2">
-                                    YOUR CART IS EMPTY
-                                </p>
-                                {/* <p className="text-sm text-lightText mb-8">
-                                    Looks like you haven't added anything yet.
-                                </p> */}
-                                <Link
-                                    to="/"
-                                    className="inline-block bg-primary text-white text-[13px] font-bold uppercase tracking-[2px] px-10 py-4 hover:bg-primary/90 transition-all"
-                                >
-                                    continue shopping
-                                </Link>
-                            </div>
-                        )}
-
                         {/* ── Cart items ── */}
                         {!cartLoading && cartItems.length > 0 && (
                             <div className="space-y-12">
@@ -224,16 +302,28 @@ export default function CheckOut() {
                                     return (
                                         <div
                                             key={item._id}
-                                            className={`flex flex-col md:flex-row gap-6 transition-opacity ${isUpdating ? 'opacity-50 pointer-events-none' : ''}`}
+                                            className={`flex flex-col md:flex-row gap-6 transition-opacity group relative pr-10 ${isUpdating ? 'opacity-50 pointer-events-none' : ''}`}
                                         >
+                                            {/* Remove Button Icon - Far Right */}
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleRemove(item);
+                                                }}
+                                                className="absolute top-0 right-0 md:top-2 md:right-0 bg-white/80 hover:bg-red-50 text-lightText hover:text-red-500 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 z-10"
+                                                title="Remove from cart"
+                                            >
+                                                <IoClose size={18} />
+                                            </button>
+
                                             {/* Product image */}
                                             <div
-                                                className="w-[130px] h-[130px] bg-[#F9F9F7] flex-shrink-0 overflow-hidden cursor-pointer"
-                                                onClick={() => navigate(`/product/${item?.productId?.slug}`)}
+                                                className="w-[130px] h-[130px] bg-[#F9F9F7] flex-shrink-0 overflow-hidden cursor-pointer relative"
                                             >
                                                 <img
                                                     src={variant?.images?.[0] || '/images/product.png'}
                                                     alt={item?.productId?.name}
+                                                    onClick={() => navigate(`/product/${item?.productId?.slug}`)}
                                                     className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
                                                 />
                                             </div>
@@ -287,13 +377,6 @@ export default function CheckOut() {
                                                             <HiPlus size={12} />
                                                         </button>
                                                     </div>
-
-                                                    <button
-                                                        onClick={() => handleRemove(item)}
-                                                        className="text-sm font-medium text-lightText hover:text-primary transition-colors tracking-wide"
-                                                    >
-                                                        Remove
-                                                    </button>
 
                                                     <span className="text-sm font-extrabold text-dark">
                                                         ${fmt(itemPrice * item.quantity)}

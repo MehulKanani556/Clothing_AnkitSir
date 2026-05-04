@@ -6,8 +6,10 @@ import * as Yup from 'yup';
 import { placeOrder, confirmPayment } from '../redux/slice/order.slice';
 import { applyCoupon, removeCoupon } from '../redux/slice/cart.slice';
 import { fetchAddresses, addAddress, selectAddress } from '../redux/slice/address.slice';
+import { fetchRecentlyViewed } from '../redux/slice/product.slice';
 import { fetchSavedCards } from '../redux/slice/paymentCard.slice';
 import { IoClose } from 'react-icons/io5';
+import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, useStripe, useElements, CardNumberElement } from '@stripe/react-stripe-js';
@@ -42,16 +44,63 @@ const couponSchema = Yup.object({
 
 const fmt = (n) => Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+// ── Recently Viewed Card ──────────────────────────────────────────
+const RecentlyViewedCard = ({ product }) => {
+    const navigate = useNavigate();
+    const defaultVariant = product.variants?.find(v => v.isDefault) || product.variants?.[0];
+    const image = defaultVariant?.images?.[0] || null;
+
+    const getPrice = () => {
+        if (!defaultVariant) return null;
+        if (defaultVariant.options?.length > 0) {
+            const prices = defaultVariant.options.map(o => o.price).filter(Boolean);
+            if (!prices.length) return null;
+            const min = Math.min(...prices);
+            return `$${min}`;
+        }
+        return defaultVariant.price ? `$${defaultVariant.price}` : null;
+    };
+
+    return (
+        <div 
+            onClick={() => navigate(`/product/${product.slug}`)}
+            className="flex flex-col items-center bg-white border border-border/10 cursor-pointer group"
+        >
+            <div className="w-full aspect-[4/5] bg-[#F9F9F7] overflow-hidden">
+                {image ? (
+                    <img
+                        src={image}
+                        alt={product.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    />
+                ) : (
+                    <div className="w-full h-full flex items-center justify-center text-lightText/40">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1"><rect x="3" y="3" width="18" height="18" rx="2" /></svg>
+                    </div>
+                )}
+            </div>
+            <div className="py-6 px-4 flex flex-col items-center gap-1">
+                <p className="text-[13px] font-medium text-dark text-center tracking-tight">{product.name}</p>
+                <p className="text-[12px] font-bold text-lightText">{getPrice()}</p>
+            </div>
+        </div>
+    );
+};
+
 function CheckoutFormContent() {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const stripe = useStripe();
     const elements = useElements();
-    const { cartData } = useSelector((state) => state.cart);
+    const { cartData, loading: cartLoading } = useSelector((state) => state.cart);
     const { placeOrderLoading, confirmPaymentLoading } = useSelector((state) => state.order);
     const { isAuthenticated } = useSelector((state) => state.auth);
     const { addresses, selectedAddressId: storeSelectedAddressId, actionLoading: addressActionLoading } = useSelector((state) => state.address);
     const { cards, loading: cardsLoading } = useSelector((state) => state.payment);
+    const { recentlyViewed } = useSelector((state) => state.product);
+    const cartItems = cartData?.items || [];
+    const isEmpty = !cartLoading && cartItems.length === 0;
+
 
     const [showSignIn, setShowSignIn] = useState(false);
     const [selectedSavedCard, setSelectedSavedCard] = useState(null);
@@ -59,7 +108,6 @@ function CheckoutFormContent() {
     const [selectedAddressId, setSelectedAddressId] = useState(null);
     const [stripeError, setStripeError] = useState(null);
 
-    const cartItems = cartData?.items || [];
     const subtotal = cartData?.subtotal || 0;
     const discount = cartData?.discount || 0;
     const shipping = cartData?.shipping || 0;
@@ -237,7 +285,7 @@ function CheckoutFormContent() {
                                 dispatch(fetchSavedCards());
                             }
                             
-                            navigate(orderId ? `/orders/${orderId}` : '/orders');
+                            navigate(orderId ? `/orders/${orderId}` : '/checkout');
                         } catch (confirmError) {
                             console.error('Error confirming payment:', confirmError);
                             toast.error('Payment succeeded but order confirmation failed. Please contact support.');
@@ -251,7 +299,7 @@ function CheckoutFormContent() {
                 } else {
                     // For other payment methods (PayPal, ZipPay, AfterPay)
                     toast.success('Order placed successfully!');
-                    navigate(orderId ? `/orders/${orderId}` : '/orders');
+                    navigate(orderId ? `/orders/${orderId}` : '/checkout');
                 }
                 
             } catch (error) {
@@ -293,6 +341,7 @@ function CheckoutFormContent() {
         if (isAuthenticated) {
             dispatch(fetchSavedCards());
             dispatch(fetchAddresses());
+            dispatch(fetchRecentlyViewed());
         }
     }, [isAuthenticated, dispatch]);
 
@@ -353,6 +402,56 @@ function CheckoutFormContent() {
     if (!isAuthenticated) {
         navigate('/auth');
         return null;
+    }
+
+    if (isEmpty && !cartLoading) {
+        return (
+            <div className="bg-white flex flex-col">
+                {/* Empty Cart Section */}
+                <div className="flex flex-col items-center justify-center px-6 py-24">
+                    <div className="w-full max-w-4xl flex flex-col items-center">
+                        <div className="w-full bg-white p-16 text-center border border-dashed border-border/40 rounded-lg flex flex-col items-center justify-center">
+                            <p className="text-xl font-bold text-primary mb-8 tracking-wider">
+                                YOUR CART IS EMPTY
+                            </p>
+                            <Link
+                                to="/"
+                                className="inline-block bg-primary text-white text-[13px] font-bold uppercase tracking-[3px] px-12 py-5 hover:bg-primary/90 transition-all shadow-lg"
+                            >
+                                continue shopping
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Recently Viewed Section */}
+                {recentlyViewed && recentlyViewed.length > 0 && (
+                    <section className="bg-white border-t border-border/20">
+                        <div className="max-w-7xl mx-auto px-6 py-24">
+                            <div className="flex flex-col items-center text-center mb-16 gap-3">
+                                <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-dark/60">
+                                    THE ARCHIVE OF YOUR SEARCH
+                                </p>
+                                <h2 className="text-[32px] md:text-[48px] font-bold uppercase text-primary leading-tight tracking-tight">
+                                    RECENTLY VIEWED PRODUCTS
+                                </h2>
+                                <p className="text-[14px] text-lightText max-w-2xl leading-relaxed">
+                                    Don't let a favorite piece slip away. Re-access your latest searches and pick up your exploration exactly where you left off.
+                                </p>
+                            </div>
+
+                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-0 border-t border-l border-border/10">
+                                {recentlyViewed.slice(0, 4).map((product) => (
+                                    <div key={product._id} className="border-r border-b border-border/10">
+                                        <RecentlyViewedCard product={product} />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </section>
+                )}
+            </div>
+        );
     }
 
     return (

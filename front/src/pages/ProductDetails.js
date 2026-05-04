@@ -55,47 +55,45 @@ const PRODUCT_IMAGES = [
     }
 ];
 
-// WEAR IT WITH products
-const WEAR_IT_WITH_PRODUCTS = [
-    {
-        id: 1,
-        name: "Stripe Crochet Short Sleeve Shirt",
-        price: "$685",
-        image: product2,
-        alt: "Stripe Crochet Short Sleeve Shirt"
-    },
-    {
-        id: 2,
-        name: "Tennis Bouclé Shorts",
-        price: "$570",
-        image: product3,
-        alt: "Tennis Bouclé Shorts"
-    },
-    {
-        id: 3,
-        name: "Tennis Crochet Shorts",
-        price: "$480",
-        image: product4,
-        alt: "Tennis Crochet Shorts"
-    },
-    {
-        id: 4,
-        name: "Motif Crochet Shorts",
-        price: "$300",
-        image: product5,
-        alt: "Motif Crochet Shorts"
-    }
-];
+// Dynamic WEAR IT WITH products are now fetched from the backend
 
 
 const ProductDetails = () => {
     const { slug, id } = useParams();
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const { currentProduct, variants, loading, wishlist } = useSelector((state) => state.product);
+    const { currentProduct, variants, loading, wishlist, wearItWith } = useSelector((state) => state.product);
     const { isAuthenticated } = useSelector((state) => state.auth);
 
     const isWishlisted = wishlist?.some(p => (p._id || p) === currentProduct?._id);
+
+    // Dynamic Section Titles based on Category
+    const getSuggestionsHeader = () => {
+        const mainCat = currentProduct?.mainCategory?.mainCategoryName?.toUpperCase() || "";
+        const cat = currentProduct?.category?.categoryName?.toUpperCase() || "";
+        const fullCat = `${mainCat} ${cat}`;
+
+        if (fullCat.includes("BEAUTY") || fullCat.includes("COSMETIC") || fullCat.includes("SKINCARE")) {
+            return {
+                title: "COMPLETE YOUR ROUTINE",
+                subtitle: "Elevate your daily ritual with these essential pairings"
+            };
+        }
+        
+        if (fullCat.includes("OBJECT") || fullCat.includes("HOME") || fullCat.includes("DESIGNER")) {
+            return {
+                title: "STYLE WITH",
+                subtitle: "Curated selections to complement your aesthetic"
+            };
+        }
+
+        return {
+            title: "WEAR IT WITH",
+            subtitle: "Complete the look with our most coveted seasonal pairings"
+        };
+    };
+
+    const sectionHeader = getSuggestionsHeader();
 
     const [colorSidebarOpen, setColorSidebarOpen] = useState(false);
     const [sizeSidebarOpen, setSizeSidebarOpen] = useState(false);
@@ -569,62 +567,64 @@ const ProductDetails = () => {
             </div>
 
             {/* WEAR IT WITH Section */}
-            <div className="w-full bg-gray-50/30 py-12 md:py-16 lg:py-20">
-                <div className=" mx-auto px-8">
-                    {/* Section Header */}
-                    <div className="text-center mb-8 lg:mb-16">
-                        <p className="text-[11px] lg:text-[13px] uppercase text-[#343A40] font-black mb-4 tracking-widest">
-                            COMPLEMENTARY OBJECTS OF DESIRE
-                        </p>
-                        <h2 className="text-4xl lg:text-5xl xl:text-6xl font-bold text-[#14372F] tracking-tight">
-                            WEAR IT WITH
-                        </h2>
-                        <p className="text-sm lg:text-base text-[#ADB5BD] mt-4 font-normal">
-                            Complete the look with our most coveted seasonal pairings
-                        </p>
-                    </div>
+            {wearItWith && wearItWith.length > 0 && (
+                <div className="w-full bg-gray-50/30 pt-12 md:pt-16 lg:pt-20">
+                    <div className=" mx-auto px-8">
+                        {/* Section Header */}
+                        <div className="text-center mb-8 lg:mb-16">
+                            <p className="text-[11px] lg:text-[13px] uppercase text-[#343A40] font-black mb-4 tracking-widest">
+                                COMPLEMENTARY OBJECTS OF DESIRE
+                            </p>
+                            <h2 className="text-4xl lg:text-5xl xl:text-6xl font-bold text-[#14372F] tracking-tight">
+                                {sectionHeader.title}
+                            </h2>
+                            <p className="text-sm lg:text-base text-[#ADB5BD] mt-4 font-normal">
+                                {sectionHeader.subtitle}
+                            </p>
+                        </div>
 
-                    {/* Product Grid */}
-                    <div className="grid grid-cols-2 lg:grid-cols-4 bg-white">
-                        {(relatedProducts.length > 0 ? relatedProducts : WEAR_IT_WITH_PRODUCTS).map((product, index) => {
-                            const firstVariant = product.variants?.[0];
-                            const imageUrl = firstVariant?.images?.[0] || product.image;
-                            const name = product.name;
-                            const price = firstVariant?.options?.[0]?.price ? `$${firstVariant.options[0].price}` : product.price;
+                        {/* Product Grid */}
+                        <div className="grid grid-cols-2 lg:grid-cols-4 bg-white">
+                            {wearItWith.map((product, index) => {
+                                const firstVariant = product.variants?.[0];
+                                const imageUrl = firstVariant?.images?.[0] || product.image;
+                                const name = product.name;
+                                const price = firstVariant?.options?.[0]?.price ? `$${firstVariant.options[0].price}` : `$${product.basePrice || 0}`;
 
-                            return (
-                                <div
-                                    key={product._id || product.id}
-                                    onClick={() => {
-                                        navigate(`/product/${product._id || product.id}`);
-                                        window.scrollTo(0, 0);
-                                    }}
-                                    className={`group cursor-pointer p-6 lg:p-8 ${index < (relatedProducts.length || WEAR_IT_WITH_PRODUCTS.length) - 1 ? 'border-r border-[#E9ECEF]' : ''} ${index < 2 ? 'lg:border-r lg:border-[#E9ECEF]' : ''}`}
-                                >
-                                    <div className="overflow-hidden mb-4 aspect-square flex items-center justify-center">
-                                        <img
-                                            src={imageUrl}
-                                            alt={name}
-                                            className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
-                                        />
+                                return (
+                                    <div
+                                        key={product._id}
+                                        onClick={() => {
+                                            navigate(`/product/${product.slug}`);
+                                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                                        }}
+                                        className={`group cursor-pointer p-6 lg:p-8 ${index < wearItWith.length - 1 ? 'border-r border-[#E9ECEF]' : ''} ${index < 2 ? 'lg:border-r lg:border-[#E9ECEF]' : ''}`}
+                                    >
+                                        <div className="overflow-hidden mb-4 aspect-square flex items-center justify-center">
+                                            <img
+                                                src={imageUrl}
+                                                alt={name}
+                                                className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                                            />
+                                        </div>
+                                        <div className="text-center">
+                                            <h3 className="text-sm lg:text-base font-medium text-dark mb-1 uppercase tracking-tight">
+                                                {name}
+                                            </h3>
+                                            <p className="text-sm lg:text-base text-dark font-light">
+                                                {price}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div className="text-center">
-                                        <h3 className="text-sm lg:text-base font-medium text-dark mb-1">
-                                            {name}
-                                        </h3>
-                                        <p className="text-sm lg:text-base text-dark font-light">
-                                            {price}
-                                        </p>
-                                    </div>
-                                </div>
-                            );
-                        })}
+                                );
+                            })}
+                        </div>
                     </div>
                 </div>
-            </div>
+            )}
 
             {/* SIGNATURE SUGGESTIONS Section */}
-            <div className="w-full bg-gray-50/30">
+            <div className="w-full bg-gray-50/30  pt-12 md:pt-16 lg:pt-20">
                 <div className="mx-auto px-8">
                     {/* Section Header */}
                     <div className="text-center mb-8 lg:mb-16">

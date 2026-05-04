@@ -105,6 +105,7 @@ const ProductForm = () => {
             countryOfOrigin: currentProduct?.countryOfOrigin || '',
             isActive: currentProduct?.isActive ?? true,
             isFeatured: currentProduct?.isFeatured ?? false,
+            gender: currentProduct?.gender || 'Unisex',
         },
         validationSchema: Yup.object({
             name: Yup.string().required('Product name is required'),
@@ -473,6 +474,18 @@ const ProductForm = () => {
                                 <option value="LIMITED">LIMITED</option>
                                 <option value="RARE">RARE</option>
                                 <option value="BEST">BEST</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="text-xs font-bold text-slate-700 ml-1">Gender *</label>
+                            <select
+                                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 mt-1 focus:border-black focus:ring-2 focus:ring-black/5 transition-all outline-none text-sm font-medium"
+                                {...formik.getFieldProps('gender')}
+                            >
+                                <option value="Men">Men</option>
+                                <option value="Women">Women</option>
+                                <option value="Unisex">Unisex</option>
                             </select>
                         </div>
                     </div>

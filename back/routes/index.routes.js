@@ -140,6 +140,14 @@ import { sendResponse, sendSuccessResponse } from "../utils/Response.utils.js";
 import { addContact, addSupport, deleteContact, deleteSupport, getAllContact, getAllSupport, getContactById, getSupportById } from "../controller/contact.controller.js";
 import { deleteNewsLetter, getAllNewsLetter, newsLetterController } from "../controller/newsLetter.controller.js";
 import { getWishlist, toggleWishlist } from "../controller/wishlist.controller.js";
+import {
+  createLookbook,
+  getAllLookbooks,
+  getAllLookbooksAdmin,
+  getLookbookBySlug,
+  updateLookbook,
+  deleteLookbook
+} from "../controller/lookbook.controller.js";
 
 const router = express.Router();
 
@@ -302,6 +310,14 @@ router.get("/user/wishlist/my", UserAuth, getWishlist)
 router.get("/user/admin/all", UserAuth, adminAuth, getAllUsersAdmin);
 router.get("/user/admin/:userId", UserAuth, adminAuth, getUserByIdAdmin);
 router.put("/user/admin/status/:userId", UserAuth, adminAuth, updateUserStatusAdmin);
+
+// --- Lookbook Routes ---
+router.post("/lookbook/create", UserAuth, adminAuth, upload.single("lookImage"), createLookbook);
+router.get("/lookbook/get-all", getAllLookbooks);
+router.get("/lookbook/admin/get-all", UserAuth, adminAuth, getAllLookbooksAdmin);
+router.get("/lookbook/get-by-slug/:slug", getLookbookBySlug);
+router.put("/lookbook/update/:id", UserAuth, adminAuth, upload.single("lookImage"), updateLookbook);
+router.delete("/lookbook/delete/:id", UserAuth, adminAuth, deleteLookbook);
 
 //aws
 router.get("/list", async (req, res) => {
