@@ -677,7 +677,7 @@ const ProductForm = () => {
                             <label className="text-[11px] font-black text-mainText uppercase tracking-widest ml-1 opacity-70">Policy Points (one per line)</label>
                             <textarea
                                 rows="3"
-                                placeholder="e.g. Free delivery on orders above ₹999&#10;Easy 30-day returns"
+                                placeholder="e.g. Free delivery on orders above $999&#10;Easy 30-day returns"
                                 className="w-full px-6 py-4 rounded-none border border-border bg-mainBG/10 focus:border-primary focus:ring-8 focus:ring-primary/5 transition-all outline-none text-sm font-medium resize-none"
                                 {...formik.getFieldProps('deliveryReturns.points')}
                             />
@@ -760,41 +760,41 @@ const ProductForm = () => {
                                             />
                                         </label>
                                     </div>
-                                                              {/* Color & Details */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="space-y-2">
-                                        <label className="text-[11px] font-black text-mainText uppercase tracking-widest ml-1 opacity-70">Color Name *</label>
-                                        <input
-                                            type="text"
-                                            placeholder="e.g. Red, Blue, Black"
-                                            className="w-full px-6 py-4 rounded-none border border-border bg-white focus:border-primary focus:ring-8 focus:ring-primary/5 transition-all outline-none text-sm font-black tracking-tight"
-                                            value={variant.color}
-                                            onChange={(e) => updateVariant(index, 'color', e.target.value)}
-                                        />
-                                    </div>
+                                    {/* Color & Details */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="space-y-2">
+                                            <label className="text-[11px] font-black text-mainText uppercase tracking-widest ml-1 opacity-70">Color Name *</label>
+                                            <input
+                                                type="text"
+                                                placeholder="e.g. Red, Blue, Black"
+                                                className="w-full px-6 py-4 rounded-none border border-border bg-white focus:border-primary focus:ring-8 focus:ring-primary/5 transition-all outline-none text-sm font-black tracking-tight"
+                                                value={variant.color}
+                                                onChange={(e) => updateVariant(index, 'color', e.target.value)}
+                                            />
+                                        </div>
 
-                                    <div className="space-y-2">
-                                        <label className="text-[11px] font-black text-mainText uppercase tracking-widest ml-1 opacity-70">Color Hex Code</label>
-                                        <div className="flex gap-4">
-                                            <div className="relative w-14 h-14 rounded-none overflow-hidden border border-border shadow-sm shrink-0">
+                                        <div className="space-y-2">
+                                            <label className="text-[11px] font-black text-mainText uppercase tracking-widest ml-1 opacity-70">Color Hex Code</label>
+                                            <div className="flex gap-4">
+                                                <div className="relative w-14 h-14 rounded-none overflow-hidden border border-border shadow-sm shrink-0">
+                                                    <input
+                                                        type="color"
+                                                        className="absolute inset-[-10px] w-[200%] h-[200%] cursor-pointer"
+                                                        value={variant.colorCode}
+                                                        onChange={(e) => updateVariant(index, 'colorCode', e.target.value)}
+                                                    />
+                                                </div>
                                                 <input
-                                                    type="color"
-                                                    className="absolute inset-[-10px] w-[200%] h-[200%] cursor-pointer"
+                                                    type="text"
+                                                    placeholder="#000000"
+                                                    className="flex-1 px-6 py-4 rounded-none border border-border bg-white focus:border-primary focus:ring-8 focus:ring-primary/5 transition-all outline-none text-sm font-black tracking-tight"
                                                     value={variant.colorCode}
                                                     onChange={(e) => updateVariant(index, 'colorCode', e.target.value)}
                                                 />
                                             </div>
-                                            <input
-                                                type="text"
-                                                placeholder="#000000"
-                                                className="flex-1 px-6 py-4 rounded-none border border-border bg-white focus:border-primary focus:ring-8 focus:ring-primary/5 transition-all outline-none text-sm font-black tracking-tight"
-                                                value={variant.colorCode}
-                                                onChange={(e) => updateVariant(index, 'colorCode', e.target.value)}
-                                            />
                                         </div>
                                     </div>
                                 </div>
-    </div>
 
                                 {/* Pricing Type Toggle */}
                                 <div className="flex items-center gap-8 p-6 bg-mainBG/30 rounded-none border border-border/50">
@@ -830,7 +830,7 @@ const ProductForm = () => {
                                 {!variant.useOptions && (
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                         <div className="space-y-2">
-                                            <label className="text-[11px] font-black text-mainText uppercase tracking-widest ml-1 opacity-70">Selling Price (₹) *</label>
+                                            <label className="text-[11px] font-black text-mainText uppercase tracking-widest ml-1 opacity-70">Selling Price ($) *</label>
                                             <input
                                                 type="number"
                                                 placeholder="e.g. 999"

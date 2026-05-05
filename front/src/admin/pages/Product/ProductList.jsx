@@ -159,9 +159,9 @@ const ProductList = () => {
         if (v?.options?.length > 0) {
             const prices = v.options.map(o => o.price);
             const min = Math.min(...prices), max = Math.max(...prices);
-            return min === max ? `₹${min}` : `₹${min} – ₹${max}`;
+            return min === max ? `$${min}` : `$${min} – $${max}`;
         }
-        return v?.price ? `₹${v.price}` : 'N/A';
+        return v?.price ? `$${v.price}` : 'N/A';
     };
 
     return (
@@ -262,15 +262,18 @@ const ProductList = () => {
                                 </div>
                                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                                     <button onClick={() => navigate(`/admin/product/edit/${product._id}`)}
-                                        className="p-3 bg-white text-black rounded-none hover:scale-110 transition-transform">
+                                        className="p-3 bg-white text-primary rounded-none hover:bg-primary hover:text-white transition-all duration-300 shadow-xl scale-90 hover:scale-100 border border-transparent hover:border-primary/20"
+                                        title="Edit Product">
                                         <MdEdit size={20} />
                                     </button>
                                     <button onClick={() => navigate(`/admin/product/view/${product._id}`)}
-                                        className="p-3 bg-white text-black rounded-none hover:scale-110 transition-transform">
+                                        className="p-3 bg-white text-primary rounded-none hover:bg-primary hover:text-white transition-all duration-300 shadow-xl scale-90 hover:scale-100 border border-transparent hover:border-primary/20"
+                                        title="View Details">
                                         <MdVisibility size={20} />
                                     </button>
                                     <button onClick={() => handleDeleteClick(product)}
-                                        className="p-3 bg-red-500 text-white rounded-none hover:scale-110 transition-transform">
+                                        className="p-3 bg-white text-red-500 rounded-none hover:bg-red-500 hover:text-white transition-all duration-300 shadow-xl scale-90 hover:scale-100 border border-transparent hover:border-red-200"
+                                        title="Delete Product">
                                         <MdDelete size={20} />
                                     </button>
                                 </div>

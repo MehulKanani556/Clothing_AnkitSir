@@ -379,17 +379,17 @@ const OrderList = () => {
                                                 <div className="flex items-center gap-2">
                                                     <button
                                                         onClick={() => navigate(`/admin/order/view/${order._id}`)}
-                                                        className="p-2 hover:bg-mainBG rounded-none transition-colors"
+                                                        className="p-2.5 text-primary hover:bg-primary hover:text-white rounded-none transition-all duration-300 shadow-sm border border-border group-hover:border-primary/20"
                                                         title="View Details"
                                                     >
-                                                        <MdVisibility size={18} className="text-lightText" />
+                                                        <MdVisibility size={18} />
                                                     </button>
                                                     <button
                                                         onClick={() => setOrderToUpdate(order)}
-                                                        className="p-2 hover:bg-blue-50 rounded-none transition-colors"
+                                                        className="p-2.5 text-primary hover:bg-primary hover:text-white rounded-none transition-all duration-300 shadow-sm border border-border group-hover:border-primary/20"
                                                         title="Update Status"
                                                     >
-                                                        <MdEdit size={18} className="text-blue-600" />
+                                                        <MdEdit size={18} />
                                                     </button>
                                                 </div>
                                             </td>

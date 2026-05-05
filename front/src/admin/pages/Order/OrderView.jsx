@@ -130,14 +130,14 @@ const OrderView = () => {
                 <div className="flex gap-3">
                     <button
                         onClick={() => window.print()}
-                        className="flex items-center gap-2 px-6 py-3 border border-slate-200 rounded-none font-bold hover:bg-slate-50 transition-all"
+                        className="flex items-center gap-2 px-6 py-3 border border-border text-mainText rounded-none font-black uppercase text-xs tracking-widest hover:bg-mainBG transition-all shadow-sm active:scale-95"
                     >
                         <MdPrint size={20} />
-                        Print
+                        Print Order
                     </button>
                     <button
                         onClick={() => navigate(`/admin/orders`)}
-                        className="flex items-center gap-2 bg-black text-white px-6 py-3 rounded-none font-bold hover:bg-slate-800 transition-all"
+                        className="flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-none font-black uppercase text-xs tracking-widest hover:opacity-90 transition-all shadow-xl shadow-primary/20 active:scale-95"
                     >
                         <MdEdit size={20} />
                         Update Status

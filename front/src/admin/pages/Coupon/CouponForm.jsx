@@ -182,7 +182,7 @@ const CouponForm = ({ initialValues, onCancel }) => {
                         {/* Discount Type */}
                         <div className="space-y-2.5">
                             <label className="text-[10px] font-black text-mainText uppercase tracking-[0.2em] ml-1 opacity-70">Discount Amount</label>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 gap-4">
                                 {[
                                     { value: 'percentage', label: 'Percentage', icon: MdPercent },
                                     { value: 'flat', label: 'Fixed Amount', icon: MdAttachMoney },

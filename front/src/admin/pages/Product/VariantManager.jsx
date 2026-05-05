@@ -304,7 +304,7 @@ const VariantManager = ({ productId, variant, onClose }) => {
                             {!useOptions && (
                                 <div className="grid grid-cols-3 gap-4">
                                     <div>
-                                        <label className="text-xs font-bold text-slate-700 ml-1">Price (₹) *</label>
+                                        <label className="text-xs font-bold text-slate-700 ml-1">Price ($) *</label>
                                         <input type="number" placeholder="999"
                                             className="w-full px-4 py-2.5 rounded-none border border-slate-200 mt-1 focus:border-black outline-none text-sm font-medium"
                                             value={formData.price}
@@ -355,7 +355,8 @@ const VariantManager = ({ productId, variant, onClose }) => {
                                                 value={option.discount || 0} onChange={(e) => updateOption(i, 'discount', e.target.value)} />
                                             <div className="text-xs text-slate-400 flex items-center">Auto SKU</div>
                                             <button type="button" onClick={() => removeOption(i)}
-                                                className="p-1.5 text-red-600 hover:bg-red-50 rounded-none transition-colors flex items-center justify-center">
+                                                className="p-1.5 text-red-500 hover:bg-red-500 hover:text-white rounded-none transition-all duration-300 shadow-sm border border-border group-hover:border-red-200"
+                                                title="Remove Size">
                                                 <MdDelete size={18} />
                                             </button>
                                         </div>

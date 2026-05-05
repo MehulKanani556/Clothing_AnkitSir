@@ -61,7 +61,7 @@ const ProductView = () => {
                 </div>
                 <button
                     onClick={() => navigate(`/admin/product/edit/${id}`)}
-                    className="flex items-center gap-2 bg-black text-white px-6 py-3 rounded-none font-bold hover:bg-slate-800 transition-all"
+                    className="flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-none font-black uppercase text-xs tracking-widest hover:opacity-90 transition-all shadow-xl shadow-primary/20 active:scale-95"
                 >
                     <MdEdit size={20} />
                     Edit Product
@@ -230,16 +230,16 @@ const ProductView = () => {
             <div className="bg-white rounded-none border border-slate-200 p-8">
                 <div className="flex items-center justify-between mb-6">
                     <h3 className="text-lg font-bold text-slate-900">Product Variants</h3>
-                    <button
-                        onClick={() => {
-                            setEditingVariant(null);
-                            setShowVariantManager(true);
-                        }}
-                        className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-none font-bold hover:bg-slate-800 transition-all text-sm"
-                    >
-                        <MdAdd size={18} />
-                        Add Variant
-                    </button>
+                        <button
+                            onClick={() => {
+                                setEditingVariant(null);
+                                setShowVariantManager(true);
+                            }}
+                            className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-none font-black uppercase text-xs tracking-widest hover:opacity-90 transition-all shadow-xl shadow-primary/20 active:scale-95"
+                        >
+                            <MdAdd size={18} />
+                            Add Variant
+                        </button>
                 </div>
 
                 {variants.length === 0 ? (
@@ -278,7 +278,7 @@ const ProductView = () => {
                                         {variant.options?.length > 0 ? (
                                             <span>{variant.options.length} size options</span>
                                         ) : (
-                                            <span>₹{variant.price} • Stock: {variant.stock}</span>
+                                            <span>${variant.price} • Stock: {variant.stock}</span>
                                         )}
                                     </div>
                                 </div>
