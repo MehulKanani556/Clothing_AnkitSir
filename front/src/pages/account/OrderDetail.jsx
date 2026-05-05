@@ -46,7 +46,8 @@ function CancelModal({ onClose, onConfirm, loading, error }) {
     const [selectedReason, setSelectedReason] = useState('');
 
     const handleConfirm = () => {
-        onConfirm(selectedReason || 'No reason provided');
+        if (!selectedReason) return;
+        onConfirm(selectedReason);
     };
 
     return (
@@ -105,8 +106,8 @@ function CancelModal({ onClose, onConfirm, loading, error }) {
                 <div className="flex gap-3">
                     <button
                         onClick={handleConfirm}
-                        disabled={loading}
-                        className="flex-1 border border-border text-dark text-xs md:text-sm font-bold py-2 md:py-3 hover:bg-mainBG transition-colors disabled:opacity-60"
+                        disabled={loading || !selectedReason}
+                        className="flex-1 border border-border text-dark text-xs md:text-sm font-bold py-2 md:py-3 hover:bg-mainBG transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {loading ? 'CANCELLING...' : 'YES, CANCEL'}
                     </button>
@@ -157,7 +158,7 @@ function CancelledModal({ onClose }) {
                 </Link>
 
                 <Link
-                    to="/shop"
+                    to="/collection/shop"
                     onClick={onClose}
                     className="w-full bg-primary text-white text-xs md:text-base font-bold py-2 md:py-3 flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors tracking-wide"
                 >

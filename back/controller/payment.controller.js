@@ -11,6 +11,7 @@ import UserModel from "../model/user.model.js";
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { sendOrderConfirmationEmail } from "../utils/Email.utils.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -389,6 +390,21 @@ export const paymentStatusChangeController = async (req, res) => {
     await order.save({ session });
     await session.commitTransaction();
 
+    // Send Confirmation Email if status changed to Paid
+    if (mappedStatus === "Paid") {
+      try {
+        const populatedOrder = await orderModel.findById(order._id)
+          .populate("products.productId", "title productName name")
+          .populate("products.variantId", "variantTitle color");
+        const user = await UserModel.findById(order.userId);
+        if (user && user.email) {
+          sendOrderConfirmationEmail(user, populatedOrder);
+        }
+      } catch (emailError) {
+        console.error("Error sending confirmation email after status change:", emailError);
+      }
+    }
+
     return res.status(200).json({
       success: true,
       message: `Payment updated to ${mappedStatus}`,
@@ -464,13 +480,13 @@ export const confirmStripePaymentController = async (req, res) => {
     const { saveCard } = req.body;
     console.log('💳 Save card requested:', saveCard);
     console.log('💳 Payment method ID:', paymentIntent.payment_method);
-    
+
     if (saveCard && paymentIntent.payment_method) {
       try {
         const user = await UserModel.findById(userId).session(session);
         console.log('👤 User found:', user._id);
         console.log('💳 Current saved cards count:', user.savedCards.length);
-        
+
         // Retrieve payment method details from Stripe
         const paymentMethod = await stripe.paymentMethods.retrieve(paymentIntent.payment_method);
         console.log('💳 Payment method retrieved:', paymentMethod.id);
@@ -480,7 +496,7 @@ export const confirmStripePaymentController = async (req, res) => {
           exp_month: paymentMethod.card?.exp_month,
           exp_year: paymentMethod.card?.exp_year
         });
-        
+
         // Validate payment method has card details
         if (!paymentMethod.card || !paymentMethod.card.last4 || !paymentMethod.card.brand) {
           console.error('❌ Invalid payment method - missing card details');
@@ -490,14 +506,14 @@ export const confirmStripePaymentController = async (req, res) => {
           const existingCard = user.savedCards.find(
             card => card.stripePaymentMethodId === paymentMethod.id
           );
-          
+
           if (existingCard) {
             console.log('ℹ️ Card already saved');
           } else if (user.savedCards.length >= 3) {
             console.log('ℹ️ Maximum cards limit reached (3)');
           } else {
             console.log('✅ Saving new card...');
-            
+
             // Attach payment method to customer for future use
             if (!user.stripeCustomerId) {
               console.log('📝 Creating Stripe customer...');
@@ -510,11 +526,11 @@ export const confirmStripePaymentController = async (req, res) => {
               user.stripeCustomerId = customer.id;
               console.log('✅ Stripe customer created:', customer.id);
             }
-            
+
             // Check if payment method is already attached to a customer
             console.log('🔍 Checking if payment method is already attached...');
             const currentPaymentMethod = await stripe.paymentMethods.retrieve(paymentMethod.id);
-            
+
             if (currentPaymentMethod.customer) {
               console.log('ℹ️ Payment method already attached to customer:', currentPaymentMethod.customer);
               // If attached to a different customer, we can't use it
@@ -530,7 +546,7 @@ export const confirmStripePaymentController = async (req, res) => {
               });
               console.log('✅ Payment method attached');
             }
-            
+
             // Save card details in database with validation
             const cardData = {
               stripePaymentMethodId: paymentMethod.id,
@@ -541,12 +557,12 @@ export const confirmStripePaymentController = async (req, res) => {
               cardHolderName: paymentMethod.billing_details?.name || null,
               isDefault: user.savedCards.length === 0, // First card is default
             };
-            
+
             console.log('💾 Card data to save:', cardData);
-            
+
             // Validate all required fields are present
-            if (cardData.stripePaymentMethodId && cardData.last4 && cardData.brand && 
-                cardData.expiryMonth && cardData.expiryYear) {
+            if (cardData.stripePaymentMethodId && cardData.last4 && cardData.brand &&
+              cardData.expiryMonth && cardData.expiryYear) {
               user.savedCards.push(cardData);
               await user.save({ session });
               console.log('✅ Card saved successfully!');
@@ -591,6 +607,19 @@ export const confirmStripePaymentController = async (req, res) => {
     }
 
     await session.commitTransaction();
+
+    // Send Confirmation Email
+    try {
+      const populatedOrder = await orderModel.findById(order._id)
+        .populate("products.productId", "title productName name")
+        .populate("products.variantId", "variantTitle color");
+      const user = await UserModel.findById(userId);
+      if (user && user.email) {
+        sendOrderConfirmationEmail(user, populatedOrder);
+      }
+    } catch (emailError) {
+      console.error("Error sending confirmation email after Stripe payment:", emailError);
+    }
 
     return sendSuccessResponse(res, "Payment confirmed successfully", {
       paymentId: payment._id,
@@ -666,11 +695,11 @@ export const saveStripePaymentMethodController = async (req, res) => {
 
     // Check if card already exists in DB
     const existingCard = user.savedCards.find(
-      (card) => card.stripePaymentMethodId === paymentMethodId || 
-               (card.last4 === paymentMethod.card.last4 && 
-                card.brand === paymentMethod.card.brand && 
-                card.expiryMonth === paymentMethod.card.exp_month && 
-                card.expiryYear === paymentMethod.card.exp_year)
+      (card) => card.stripePaymentMethodId === paymentMethodId ||
+        (card.last4 === paymentMethod.card.last4 &&
+          card.brand === paymentMethod.card.brand &&
+          card.expiryMonth === paymentMethod.card.exp_month &&
+          card.expiryYear === paymentMethod.card.exp_year)
     );
 
     if (existingCard) {
@@ -744,6 +773,19 @@ export const getPaymentStatusController = async (req, res) => {
             orderStatus: "Pending", // Keep as Pending after payment
             paymentStatus: "Paid"
           });
+
+          // Send Confirmation Email
+          try {
+            const populatedOrder = await orderModel.findById(orderId)
+              .populate("products.productId", "title productName name")
+              .populate("products.variantId", "variantTitle color");
+            const user = await UserModel.findById(userId);
+            if (user && user.email) {
+              sendOrderConfirmationEmail(user, populatedOrder);
+            }
+          } catch (emailError) {
+            console.error("Error sending confirmation email during status check:", emailError);
+          }
         }
       } catch (stripeError) {
         console.error("Stripe status check error:", stripeError);
@@ -828,7 +870,7 @@ export const deleteSavedCardController = async (req, res) => {
     }
 
     const card = user.savedCards[cardIndex];
-    
+
     // Detach payment method from Stripe
     try {
       await stripe.paymentMethods.detach(card.stripePaymentMethodId);
