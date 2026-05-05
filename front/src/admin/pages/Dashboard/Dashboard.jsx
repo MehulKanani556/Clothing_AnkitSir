@@ -291,7 +291,7 @@ const Dashboard = () => {
 
                 {/* Payment Status */}
                 <div className="bg-background rounded-none border border-border p-8 shadow-xl shadow-black/5 relative overflow-hidden group">
-                     <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-none -mr-16 -mt-16 blur-3xl" />
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-none -mr-16 -mt-16 blur-3xl" />
                     <div className="flex items-center justify-between mb-8">
                         <div>
                             <h3 className="text-xl font-black text-mainText tracking-tight">Revenue Stream</h3>

@@ -180,7 +180,7 @@ const ProductList = () => {
                     <p className="text-lightText text-sm">View and manage all your products here.</p>
                 </div>
                 <div className="flex gap-3">
-                    <button 
+                    <button
                         onClick={() => dispatch(fetchProducts())}
                         className="flex items-center justify-center gap-2.5 bg-white text-mainText px-6 py-2.5 rounded-none font-bold hover:shadow-lg hover:shadow-black/5 transition-all border border-slate-200 active:scale-95 shadow-sm"
                     >
@@ -279,7 +279,7 @@ const ProductList = () => {
                                 </div>
                             </div>
                             <div className="p-4 space-y-2">
-                                <h3 className="font-bold text-mainText line-clamp-2">{product.name}</h3>
+                                <h3 className="font-bold text-mainText line-clamp-1">{product.name}</h3>
                                 <div className="flex items-center justify-between">
                                     <span className="text-sm text-lightText">{product.mainCategory?.mainCategoryName}</span>
                                     <span className="text-lg font-black text-primary">{getPrice(product)}</span>
