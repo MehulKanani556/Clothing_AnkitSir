@@ -51,21 +51,21 @@ export default function Home() {
     const [selectedHouseProduct, setSelectedHouseProduct] = useState(1);
 
     const catImages = [
-        { image: cat1, name: "Tops" },
-        { image: cat2, name: "Bottoms" },
-        { image: cat3, name: "Outerwear " },
-        { image: cat4, name: "Dresses" },
-        { image: null, name: "" },
-        { image: null, name: "" },
-        { image: cat5, name: "Accessories" },
-        { image: cat6, name: "Bags" },
-        { image: null, name: "" },
-        { image: cat7, name: "Essentials" },
-        { image: cat8, name: "Footwear" },
-        { image: null, name: "" },
-        { image: null, name: "" },
-        { image: cat9, name: "Skincare" },
-        { image: cat10, name: "Cosmetics" }
+        { image: cat1, name: "Tops", slug: "tops" },
+        { image: cat2, name: "Bottoms", slug: "bottoms" },
+        { image: cat3, name: "Outerwear", slug: "outerwear" },
+        { image: cat4, name: "Dresses", slug: "dresses" },
+        { image: null, name: "", slug: "" },
+        { image: null, name: "", slug: "" },
+        { image: cat5, name: "Accessories", slug: "accessories" },
+        { image: cat6, name: "Bags", slug: "bags" },
+        { image: null, name: "", slug: "" },
+        { image: cat7, name: "Essentials", slug: "essentials" },
+        { image: cat8, name: "Footwear", slug: "footwear" },
+        { image: null, name: "", slug: "" },
+        { image: null, name: "", slug: "" },
+        { image: cat9, name: "Skincare", slug: "skincare" },
+        { image: cat10, name: "Cosmetics", slug: "cosmetics" }
     ]
 
 
@@ -97,6 +97,20 @@ export default function Home() {
     };
 
     const filteredProducts = getProductsByCategory();
+    
+    // Function to navigate to the collection page of the active tab
+    const navigateToActiveCategory = () => {
+        const activeCat = mainCategories.find(cat => cat._id === activeTab);
+        if (activeCat) {
+            const slug = activeCat.slug || activeCat.mainCategoryName?.toLowerCase().replace(/\s+/g, '-');
+            navigate(`/collection/${slug}`);
+        } else {
+            navigate('/collection/shop');
+        }
+    };
+
+    // Get top selling products for "THE HOUSE" section
+    const topSellingProducts = products?.slice(0, 3) || [];
 
     // Get product image (first image from first variant or default)
     const getProductImage = (product) => {
@@ -148,7 +162,10 @@ export default function Home() {
                             Discover the intersection of heritage and contemporary design. Crafted for those who define the moment.
                         </p>
 
-                        <button className="group relative inline-flex items-center space-x-3 bg-primary px-8 py-4 text-[10px] sm:text-lg font-semibold text-white transition-all hover:bg-secondary hover:scale-105 active:scale-95 text-nowrap">
+                        <button 
+                            onClick={() => navigate('/lookbook')}
+                            className="group relative inline-flex items-center space-x-3 bg-primary px-8 py-4 text-[10px] sm:text-lg font-semibold text-white transition-all hover:bg-secondary hover:scale-105 active:scale-95 text-nowrap"
+                        >
                             <span>VIEW THE LOOKBOOK</span>
                             <HiOutlineArrowUpRight className="text-lg transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
                         </button>
@@ -178,34 +195,42 @@ export default function Home() {
                             img: manCate,
                             subtitle: "Structured. Intentional.",
                             description: "Tailored silhouettes defined by precision and quiet strength.",
-                            buttonText: "EXPLORE"
+                            buttonText: "EXPLORE",
+                            path: "/collection/men"
                         },
                         {
                             title: "Women's Atelier",
                             img: womenCate,
                             subtitle: "Fluid. Defined.",
                             description: "Soft forms shaped with clarity, movement, and understated elegance.",
-                            buttonText: "EXPLORE"
+                            buttonText: "EXPLORE",
+                            path: "/collection/women"
                         },
                         {
                             title: "Luxe Care Rituals",
                             img: careCate,
                             subtitle: "Care. refined.",
                             description: "A considered approach to skin where texture, purity, and performance meet.",
-                            buttonText: "DISCOVER"
+                            buttonText: "DISCOVER",
+                            path: "/collection/lux-care"
                         },
                         {
                             title: "Objects of Desire",
                             img: objectCate,
                             subtitle: "Detail. perfected.",
                             description: "Elegant pieces elevated through studied proportion, crafted lines.",
-                            buttonText: "VIEW"
+                            buttonText: "VIEW",
+                            path: "/collection/accessories"
                         }
                     ].map((collection, index) => (
-                        <div key={index} className="group relative aspect-[4/5] overflow-hidden cursor-pointer bg-lightText">
+                        <div 
+                            key={index} 
+                            onClick={() => navigate(collection.path)}
+                            className="group relative aspect-[4/5] overflow-hidden cursor-pointer bg-lightText"
+                        >
                             <img
                                 src={collection.img}
-                                alt={collection.title}
+                                alt={collection?.title}
                                 className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
                             />
 
@@ -215,13 +240,13 @@ export default function Home() {
                             {/* Hover Content */}
                             <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white opacity-0 group-hover:opacity-100 transition-all duration-500 px-6">
                                 <p className="text-[10px] md:text-lg font-semibold  uppercase mb-3 text-lightText">
-                                    {collection.title}
+                                    {collection?.title}
                                 </p>
                                 <h3 className="text-xl md:text-3xl font-semibold mb-4 tracking-tight">
-                                    {collection.subtitle}
+                                    {collection?.subtitle}
                                 </h3>
                                 <p className="text-xs md:text-base text-lightText font-light mb-6 max-w-xs leading-relaxed">
-                                    {collection.description}
+                                    {collection?.description}
                                 </p>
                                 <button className="group/btn inline-flex items-center gap-2 bg-primary hover:bg-teal-700 px-4 md:px-6 py-2.5 md:py-4 text-xs md:text-base font-semibold uppercase transition-all duration-300">
                                     <span>{collection.buttonText}</span>
@@ -308,7 +333,10 @@ export default function Home() {
 
                             {/* CTA Button */}
                             <div className='text-center my-5 lg:text-left lg:mt-0'>
-                                <button className="group inline-flex items-center  gap-2 bg-primary hover:bg-teal-800 text-white px-6 py-3.5 text-xs md:text-lg font-semibold tracking-wider uppercase transition-all duration-300">
+                                <button 
+                                    onClick={() => navigate('/craftsmanship')}
+                                    className="group inline-flex items-center  gap-2 bg-primary hover:bg-teal-800 text-white px-6 py-3.5 text-xs md:text-lg font-semibold tracking-wider uppercase transition-all duration-300"
+                                >
                                     <span>Explore the Process</span>
                                     <HiOutlineArrowUpRight className="text-base transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
                                 </button>
@@ -332,7 +360,10 @@ export default function Home() {
                         <p className="text-sm md:text-lg  text-center  text-lightText leading-relaxed mb-8 ">
                             What is left after excess is removed - clarity, purpose, and considered design.
                         </p>
-                        <button className="group inline-flex items-center gap-2 bg-primary hover:bg-teal-800 text-white px-6 py-3.5 text-xs md:text-lg font-semibold tracking-wider uppercase transition-all duration-300 mt-6">
+                        <button 
+                            onClick={navigateToActiveCategory}
+                            className="group inline-flex items-center gap-2 bg-primary hover:bg-teal-800 text-white px-6 py-3.5 text-xs md:text-lg font-semibold tracking-wider uppercase transition-all duration-300 mt-6"
+                        >
                             <span>EXPLORE ALL</span>
                             <HiOutlineArrowUpRight className="text-base transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
                         </button>
@@ -420,7 +451,10 @@ export default function Home() {
                                 </p>
                             </div>
                             <div className='text-center lg:text-left'>
-                                <button className="custom-heading group inline-flex items-center gap-2 bg-primary hover:bg-teal-800 text-white px-6 py-3.5 text-xs md:text-lg font-semibold tracking-wider uppercase transition-all duration-300">
+                                <button 
+                                    onClick={() => navigate('/philosophy')}
+                                    className="custom-heading group inline-flex items-center gap-2 bg-primary hover:bg-teal-800 text-white px-6 py-3.5 text-xs md:text-lg font-semibold tracking-wider uppercase transition-all duration-300"
+                                >
                                     <span>EXPLORE THE EXPERIENCE</span>
                                     <HiOutlineArrowUpRight className="text-base transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
                                 </button>
@@ -502,7 +536,7 @@ export default function Home() {
                     <p className="text-sm md:text-lg  text-center  text-lightText leading-relaxed mb-8 ">
                         Moments shaped through movement, material, and restraint—where identity exists beyond the surface.
                     </p>
-                    <button className="group inline-flex items-center gap-2 bg-primary hover:bg-teal-800 text-white px-6 py-3.5 text-xs md:text-lg font-semibold tracking-wider uppercase transition-all duration-300 mt-6">
+                    <button onClick={() => navigate('/lookbook')} className="group inline-flex items-center gap-2 bg-primary hover:bg-teal-800 text-white px-6 py-3.5 text-xs md:text-lg font-semibold tracking-wider uppercase transition-all duration-300 mt-6">
                         <span>View Lookbook</span>
                         <HiOutlineArrowUpRight className="text-base transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
                     </button>
@@ -531,7 +565,10 @@ export default function Home() {
                         <p className="text-sm md:text-lg  text-center  text-lightText leading-relaxed mb-8 ">
                             A quiet introduction of new pieces - crafted with the same precision, now available in limited release.
                         </p>
-                        <button className="group inline-flex items-center gap-2 bg-primary hover:bg-teal-800 text-white px-6 py-3.5 text-xs md:text-lg font-semibold tracking-wider uppercase transition-all duration-300 mt-6">
+                        <button 
+                            onClick={navigateToActiveCategory}
+                            className="group inline-flex items-center gap-2 bg-primary hover:bg-teal-800 text-white px-6 py-3.5 text-xs md:text-lg font-semibold tracking-wider uppercase transition-all duration-300 mt-6"
+                        >
                             <span>VIEW ALL</span>
                             <HiOutlineArrowUpRight className="text-base transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
                         </button>
@@ -622,7 +659,10 @@ export default function Home() {
                                     <p className="text-sm md:text-lg text-border font-light mb-4 md:mb-8 leading-relaxed">
                                         Tailored silhouettes and refined essentials designed with clarity, strength, and quiet confidence.
                                     </p>
-                                    <button className="group/btn inline-flex items-center gap-3 bg-white hover:bg-gray-100 text-dark px-4 md:px-6 py-2 md:py-3 text-xs md:text-lg font-semibold uppercase tracking-widest transition-all duration-300">
+                                    <button 
+                                        onClick={() => navigate('/collection/men')}
+                                        className="group/btn inline-flex items-center gap-3 bg-white hover:bg-gray-100 text-dark px-4 md:px-6 py-2 md:py-3 text-xs md:text-lg font-semibold uppercase tracking-widest transition-all duration-300"
+                                    >
                                         <span><span className="hidden md:inline">EXPLORE THE </span>MEN'S COLLECTION</span>
                                         <HiOutlineArrowUpRight className="text-base transition-transform group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1" />
                                     </button>
@@ -649,7 +689,10 @@ export default function Home() {
                                     <p className="text-sm md:text-lg text-dark font-light mb-4 md:mb-8 leading-relaxed">
                                         Elevated pieces shaped through balance, movement, and a considered sense of modern femininity.
                                     </p>
-                                    <button className="group/btn inline-flex items-center gap-3 bg-[#1a3026] hover:bg-[#254537] text-white px-4 md:px-6 py-2 md:py-3 text-xs md:text-lg font-semibold uppercase tracking-widest transition-all duration-300">
+                                    <button 
+                                        onClick={() => navigate('/collection/women')}
+                                        className="group/btn inline-flex items-center gap-3 bg-[#1a3026] hover:bg-[#254537] text-white px-4 md:px-6 py-2 md:py-3 text-xs md:text-lg font-semibold uppercase tracking-widest transition-all duration-300"
+                                    >
                                         <span><span className="hidden md:inline">DISCOVER THE </span>WOMEN'S COLLECTION</span>
                                         <HiOutlineArrowUpRight className="text-base transition-transform group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1" />
                                     </button>
@@ -674,7 +717,10 @@ export default function Home() {
                         <p className="text-sm md:text-lg  text-center  text-lightText leading-relaxed mb-8 ">
                             A considered selection of pieces shaped through precision, material, and enduring design each defined by quiet presence.
                         </p>
-                        <button className="group inline-flex items-center gap-2 bg-primary hover:bg-teal-800 text-white px-6 py-3.5 text-xs md:text-lg font-semibold tracking-wider uppercase transition-all duration-300 mt-6">
+                        <button 
+                            onClick={navigateToActiveCategory}
+                            className="group inline-flex items-center gap-2 bg-primary hover:bg-teal-800 text-white px-6 py-3.5 text-xs md:text-lg font-semibold tracking-wider uppercase transition-all duration-300 mt-6"
+                        >
                             <span>View All Signature Pieces</span>
                             <HiOutlineArrowUpRight className="text-base transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
                         </button>
@@ -743,7 +789,7 @@ export default function Home() {
 
             {/* ONLY WHAT MATTERS Section */}
             <section className="bg-mainBG">
-                <div className="flex flex-col lg:flex-row p-4 md:p-6 lg:p-8">
+                <div className="flex flex-col lg:flex-row px-4 md:px-6 lg:px-8">
                     {/* Left side - Content and Product List */}
                     <div className="w-full lg:w-1/2 flex flex-col justify-center">
                         <div className="">
@@ -767,46 +813,87 @@ export default function Home() {
 
                         {/* Product List Overlay Style */}
                         <div className="space-y-0 border-t border-border/50">
-                            {[
-                                { name: "Tennis Cotton Crochet Short Sleeve Shirt", price: "540", img: p1 },
-                                { name: "Brown Monogram Weekender", price: "2,495", img: p2 },
-                                { name: "La Premonition Belt", price: "275", img: p3 }
-                            ].map((item, idx) => (
-                                <div
-                                    key={idx}
-                                    onMouseEnter={() => setSelectedHouseProduct(idx)}
-                                    className={`flex items-center justify-between p-4 md:p-6 bg-mainBG border-b border-border/50 transition-all duration-500 cursor-pointer group/item
-                                        ${selectedHouseProduct === idx ? 'bg-white shadow-sm' : 'bg-transparent hover:bg-white/50'}`}
-                                >
-                                    <div className="flex items-center gap-6">
-                                        <div className="w-16 h-16 md:w-20 md:h-20 bg-mainBG flex items-center justify-center overflow-hidden p-2">
-                                            <img src={item.img} alt={item.name} className="max-w-full max-h-full object-contain mix-blend-multiply transition-transform duration-500 group-hover/item:scale-110" />
+                            {topSellingProducts.length > 0 ? (
+                                topSellingProducts.map((product, idx) => (
+                                    <div
+                                        key={product._id || idx}
+                                        onMouseEnter={() => setSelectedHouseProduct(idx)}
+                                        onClick={() => navigate(`/product/${product.slug}`)}
+                                        className={`flex items-center justify-between p-4 md:p-6 bg-mainBG border-b border-border/50 transition-all duration-500 cursor-pointer group/item
+                                            ${selectedHouseProduct === idx ? 'bg-white shadow-sm' : 'bg-transparent hover:bg-white/50'}`}
+                                    >
+                                        <div className="flex items-center gap-6">
+                                            <div className="w-16 h-16 md:w-20 md:h-20 bg-mainBG flex items-center justify-center overflow-hidden p-2">
+                                                <img 
+                                                    src={getProductImage(product)} 
+                                                    alt={product.name} 
+                                                    className="max-w-full max-h-full object-contain mix-blend-multiply transition-transform duration-500 group-hover/item:scale-110" 
+                                                />
+                                            </div>
+                                            <div>
+                                                <h4 className={`text-xs md:text-lg font-semibold transition-colors mb-1 ${selectedHouseProduct === idx ? 'text-primary' : 'text-gray-500'}`}>{product.name}</h4>
+                                                <p className="text-[10px] md:text-lg text-lightText">${getProductPrice(product)}</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <h4 className={`text-xs md:text-lg font-semibold transition-colors mb-1 ${selectedHouseProduct === idx ? 'text-primary' : 'text-gray-500'}`}>{item.name}</h4>
-                                            <p className="text-[10px] md:text-lg text-lightText">${item.price}</p>
-                                        </div>
+                                        {selectedHouseProduct === idx && (
+                                            <div className="hidden md:flex items-center gap-2 text-xs md:text-lg font-semibold  text-primary uppercase animate-fade-in">
+                                                <span>VIEW PRODUCT</span>
+                                                <HiOutlineArrowUpRight className="text-sm" />
+                                            </div>
+                                        )}
                                     </div>
-                                    {selectedHouseProduct === idx && (
-                                        <div className="hidden md:flex items-center gap-2 text-xs md:text-lg font-semibold  text-primary uppercase animate-fade-in">
-                                            <span>VIEW PRODUCT</span>
-                                            <HiOutlineArrowUpRight className="text-sm" />
+                                ))
+                            ) : (
+                                [
+                                    { name: "Tennis Cotton Crochet Short Sleeve Shirt", price: "540", img: p1 },
+                                    { name: "Brown Monogram Weekender", price: "2,495", img: p2 },
+                                    { name: "La Premonition Belt", price: "275", img: p3 }
+                                ].map((item, idx) => (
+                                    <div
+                                        key={idx}
+                                        onMouseEnter={() => setSelectedHouseProduct(idx)}
+                                        className={`flex items-center justify-between p-4 md:p-6 bg-mainBG border-b border-border/50 transition-all duration-500 cursor-pointer group/item
+                                            ${selectedHouseProduct === idx ? 'bg-white shadow-sm' : 'bg-transparent hover:bg-white/50'}`}
+                                    >
+                                        <div className="flex items-center gap-6">
+                                            <div className="w-16 h-16 md:w-20 md:h-20 bg-mainBG flex items-center justify-center overflow-hidden p-2">
+                                                <img src={item.img} alt={item.name} className="max-w-full max-h-full object-contain mix-blend-multiply transition-transform duration-500 group-hover/item:scale-110" />
+                                            </div>
+                                            <div>
+                                                <h4 className={`text-xs md:text-lg font-semibold transition-colors mb-1 ${selectedHouseProduct === idx ? 'text-primary' : 'text-gray-500'}`}>{item.name}</h4>
+                                                <p className="text-[10px] md:text-lg text-lightText">${item.price}</p>
+                                            </div>
                                         </div>
-                                    )}
-                                </div>
-                            ))}
+                                        {selectedHouseProduct === idx && (
+                                            <div className="hidden md:flex items-center gap-2 text-xs md:text-lg font-semibold  text-primary uppercase animate-fade-in">
+                                                <span>VIEW PRODUCT</span>
+                                                <HiOutlineArrowUpRight className="text-sm" />
+                                            </div>
+                                        )}
+                                    </div>
+                                ))
+                            )}
                         </div>
                     </div>
 
                     {/* Right side - Featured Image */}
                     <div className="w-full lg:w-1/2 bg-white flex items-center justify-center  border-l border-border/30">
                         <div className="relative w-full aspect-square max-w-2xl">
-                            <img
-                                key={selectedHouseProduct}
-                                src={selectedHouseProduct === 0 ? p1 : selectedHouseProduct === 1 ? p2 : p3}
-                                alt="Featured Product"
-                                className="w-full h-full object-contain animate-fade-in"
-                            />
+                            {topSellingProducts.length > 0 ? (
+                                <img
+                                    key={selectedHouseProduct}
+                                    src={getProductImage(topSellingProducts[selectedHouseProduct] || topSellingProducts[0])}
+                                    alt={topSellingProducts[selectedHouseProduct]?.name}
+                                    className="w-full h-full object-contain animate-fade-in"
+                                />
+                            ) : (
+                                <img
+                                    key={selectedHouseProduct}
+                                    src={selectedHouseProduct === 0 ? p1 : selectedHouseProduct === 1 ? p2 : p3}
+                                    alt="Featured Product"
+                                    className="w-full h-full object-contain animate-fade-in"
+                                />
+                            )}
                         </div>
                     </div>
                 </div>
@@ -814,7 +901,7 @@ export default function Home() {
 
             {/* Defined Across Form Section */}
             <section className="bg-mainBG">
-                <div className="flex flex-col lg:flex-row p-4 md:p-6 lg:p-8">
+                <div className="flex flex-col lg:flex-row px-4 md:px-6 lg:px-8">
                     {/* left side - Featured Image */}
                     <div className="w-full lg:w-1/2  flex items-center justify-center  border-l border-border/30">
                         <div className="relative w-full aspect-square">
@@ -840,7 +927,10 @@ export default function Home() {
                             </p>
                             <div className='text-center lg:text-left'>
 
-                                <button className="group inline-flex items-center gap-3 bg-primary hover:bg-[#254537] text-white  px-6 py-3.5 text-xs md:text-lg font-semibold uppercase tracking-[0.2em] transition-all duration-300 mb-16 lg:mb-20">
+                                <button 
+                                    onClick={() => navigate('/lookbook')}
+                                    className="group inline-flex items-center gap-3 bg-primary hover:bg-[#254537] text-white  px-6 py-3.5 text-xs md:text-lg font-semibold uppercase tracking-[0.2em] transition-all duration-300 mb-16 lg:mb-20"
+                                >
                                     <span>VIEW ALL COLLECTIONS</span>
                                     <HiOutlineArrowUpRight className="text-base transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
                                 </button>
@@ -896,7 +986,10 @@ export default function Home() {
                         <p className="text-sm md:text-lg  text-center  text-lightText leading-relaxed mb-8 ">
                             A refined balance of structure and function crafted with precision and designed for everyday movement.
                         </p>
-                        <button className="group inline-flex items-center gap-2 bg-primary hover:bg-teal-800 text-white px-6 py-3.5 text-xs md:text-lg font-semibold tracking-wider uppercase transition-all duration-300 mt-6">
+                        <button 
+                            onClick={navigateToActiveCategory}
+                            className="group inline-flex items-center gap-2 bg-primary hover:bg-teal-800 text-white px-6 py-3.5 text-xs md:text-lg font-semibold tracking-wider uppercase transition-all duration-300 mt-6"
+                        >
                             <span>View Products</span>
                             <HiOutlineArrowUpRight className="text-base transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
                         </button>
@@ -1094,7 +1187,7 @@ export default function Home() {
 
                             <div className='text-center lg:text-left'>
 
-                                <button className="group inline-flex items-center gap-3 bg-primary hover:bg-[#254537] text-white px-6 py-3 text-xs md:text-lg font-semibold uppercase transition-all duration-300">
+                                <button onClick={() => navigate('/philosophy')} className="group inline-flex items-center gap-3 bg-primary hover:bg-[#254537] text-white px-6 py-3 text-xs md:text-lg font-semibold uppercase transition-all duration-300">
                                     <span>ABOUT OUR BRAND</span>
                                     <HiOutlineArrowUpRight className="text-base transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
                                 </button>
@@ -1118,7 +1211,10 @@ export default function Home() {
                         <p className="text-sm md:text-lg  text-center  text-lightText leading-relaxed mb-8 ">
                             Pieces brought together through balance, proportion, and intent.
                         </p>
-                        <button className="group inline-flex items-center gap-2 bg-primary hover:bg-teal-800 text-white px-6 py-3.5 text-xs md:text-lg font-semibold tracking-wider uppercase transition-all duration-300 mt-6">
+                        <button 
+                            onClick={navigateToActiveCategory}
+                            className="group inline-flex items-center gap-2 bg-primary hover:bg-teal-800 text-white px-6 py-3.5 text-xs md:text-lg font-semibold tracking-wider uppercase transition-all duration-300 mt-6"
+                        >
                             <span>View all</span>
                             <HiOutlineArrowUpRight className="text-base transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
                         </button>
@@ -1140,9 +1236,6 @@ export default function Home() {
                                 ))}
                         </div>
                     </div>
-
-
-
                 </div>
                 {/* product grid */}
                 <div className="grid grid-cols-2 md:grid-cols-4 divide bg-white mx-5">
@@ -1193,6 +1286,7 @@ export default function Home() {
                         {catImages.map((item, index) => (
                             <div 
                                 key={index} 
+                                onClick={() => item.slug && navigate(`/collection/shop/${item.slug}`)}
                                 className={`relative aspect-square group overflow-hidden bg-white  flex items-center justify-center transition-all duration-700
                                     ${!item.image ? 'hidden md:flex bg-mainBG/30' : 'cursor-pointer'}
                                   `}
