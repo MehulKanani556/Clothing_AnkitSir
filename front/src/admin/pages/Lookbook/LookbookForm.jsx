@@ -4,90 +4,89 @@ import { createLookbook, updateLookbook, fetchLookbooksAdmin } from '../../../re
 import { fetchProducts } from '../../../redux/slice/product.slice';
 import { MdClose, MdCloudUpload, MdSearch, MdCheckCircle, MdRadioButtonUnchecked } from 'react-icons/md';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
 
 const LookbookForm = ({ initialValues, onCancel, isLoading }) => {
   const dispatch = useDispatch();
   const { products } = useSelector((state) => state.product);
-
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    isActive: true,
-    displayOrder: 0,
-    products: []
-  });
-  const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
+  const [preview, setPreview] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     dispatch(fetchProducts());
-    if (initialValues) {
-      setFormData({
-        title: initialValues.title || '',
-        description: initialValues.description || '',
-        isActive: initialValues.isActive ?? true,
-        displayOrder: initialValues.displayOrder || 0,
-        products: initialValues.products?.map(p => p._id || p) || []
-      });
-      setImagePreview(initialValues.lookImage);
+    if (initialValues?.lookImage) {
+      setPreview(initialValues.lookImage);
     }
   }, [initialValues, dispatch]);
 
+  const formik = useFormik({
+    initialValues: {
+      title: initialValues?.title || '',
+      description: initialValues?.description || '',
+      isActive: initialValues?.isActive ?? true,
+      displayOrder: initialValues?.displayOrder || 0,
+      products: initialValues?.products?.map(p => p._id || p) || [],
+      lookImage: null
+    },
+    validationSchema: Yup.object({
+      title: Yup.string().required('Title is required'),
+      description: Yup.string().required('Description is required'),
+      displayOrder: Yup.number().required('Display order is required'),
+      isActive: Yup.boolean(),
+      products: Yup.array().max(4, 'Select up to 4 products')
+    }),
+    enableReinitialize: true,
+    onSubmit: (values) => {
+      const data = new FormData();
+      data.append('title', values.title);
+      data.append('description', values.description);
+      data.append('isActive', values.isActive);
+      data.append('displayOrder', values.displayOrder);
+
+      if (values.products && values.products.length > 0) {
+        data.append('products', JSON.stringify(values.products));
+      }
+
+      if (values.lookImage) {
+        data.append('lookImage', values.lookImage);
+      }
+
+      const action = initialValues
+        ? updateLookbook({ id: initialValues._id, formData: data })
+        : createLookbook(data);
+
+      dispatch(action).then((res) => {
+        if (!res.error) {
+          dispatch(fetchLookbooksAdmin());
+          onCancel();
+        }
+      });
+    },
+  });
+
   const handleImageChange = (e) => {
-    const file = e.target.files[0];
+    const file = e.currentTarget.files[0];
     if (file) {
-      setImageFile(file);
+      formik.setFieldValue('lookImage', file);
       const reader = new FileReader();
-      reader.onloadend = () => setImagePreview(reader.result);
+      reader.onloadend = () => setPreview(reader.result);
       reader.readAsDataURL(file);
     }
   };
 
   const toggleProduct = (productId) => {
-    setFormData(prev => {
-      const isSelected = prev.products.includes(productId);
-      if (isSelected) {
-        return { ...prev, products: prev.products.filter(id => id !== productId) };
-      } else {
-        if (prev.products.length >= 4) {
-          alert('You can only select up to 4 products for a lookbook.');
-          return prev;
-        }
-        return { ...prev, products: [...prev.products, productId] };
+    const currentProducts = [...formik.values.products];
+    const isSelected = currentProducts.includes(productId);
+    if (isSelected) {
+      formik.setFieldValue('products', currentProducts.filter(id => id !== productId));
+    } else {
+      if (currentProducts.length >= 4) {
+        alert('You can only select up to 4 products for a lookbook.');
+        return;
       }
-    });
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const data = new FormData();
-    data.append('title', formData.title);
-    data.append('description', formData.description);
-    data.append('isActive', formData.isActive);
-    data.append('displayOrder', formData.displayOrder);
-
-    // Append product IDs one by one (or as stringified array depending on backend logic)
-    // Our backend expects products array in body. 
-    // FormData doesn't support arrays directly, so we append multiple times or stringify.
-    if (formData.products && formData.products.length > 0) {
-      data.append('products', JSON.stringify(formData.products));
+      formik.setFieldValue('products', [...currentProducts, productId]);
     }
-
-    if (imageFile) {
-      data.append('lookImage', imageFile);
-    }
-
-    const action = initialValues
-      ? updateLookbook({ id: initialValues._id, formData: data })
-      : createLookbook(data);
-
-    dispatch(action).then((res) => {
-      if (!res.error) {
-        dispatch(fetchLookbooksAdmin());
-        onCancel();
-      }
-    });
   };
 
   const filteredProducts = products?.filter(p =>
@@ -111,7 +110,7 @@ const LookbookForm = ({ initialValues, onCancel, isLoading }) => {
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="p-10 space-y-10 max-h-[80vh] overflow-y-auto custom-scrollbar">
+      <form onSubmit={formik.handleSubmit} className="p-10 space-y-10 max-h-[80vh] overflow-y-auto custom-scrollbar">
         {/* Basic Info */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
           <div className="space-y-8">
@@ -119,22 +118,21 @@ const LookbookForm = ({ initialValues, onCancel, isLoading }) => {
               <label className="text-[11px] font-black uppercase tracking-widest text-lightText ml-1 opacity-70">Lookbook Title</label>
               <input
                 type="text"
-                required
-                className="w-full px-6 py-4 bg-mainBG/10 border border-border rounded-none outline-none focus:border-primary focus:ring-8 focus:ring-primary/5 transition-all text-sm font-black tracking-tight"
+                className={`w-full px-6 py-4 bg-mainBG/10 border rounded-none outline-none focus:border-primary focus:ring-8 focus:ring-primary/5 transition-all text-sm font-black tracking-tight ${formik.touched.title && formik.errors.title ? 'border-red-400' : 'border-border'}`}
                 placeholder="e.g., Summer Archive 2024"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                {...formik.getFieldProps('title')}
               />
+              {formik.touched.title && formik.errors.title && <p className="text-[10px] font-black text-red-500 uppercase tracking-widest ml-1">{formik.errors.title}</p>}
             </div>
 
             <div className="space-y-2.5">
               <label className="text-[11px] font-black uppercase tracking-widest text-lightText ml-1 opacity-70">Lookbook Description</label>
               <textarea
-                className="w-full px-6 py-4 bg-mainBG/10 border border-border rounded-none outline-none focus:border-primary focus:ring-8 focus:ring-primary/5 transition-all text-sm font-medium min-h-[120px] resize-none"
+                className={`w-full px-6 py-4 bg-mainBG/10 border rounded-none outline-none focus:border-primary focus:ring-8 focus:ring-primary/5 transition-all text-sm font-medium min-h-[120px] resize-none ${formik.touched.description && formik.errors.description ? 'border-red-400' : 'border-border'}`}
                 placeholder="Share the story behind this look..."
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                {...formik.getFieldProps('description')}
               />
+              {formik.touched.description && formik.errors.description && <p className="text-[10px] font-black text-red-500 uppercase tracking-widest ml-1">{formik.errors.description}</p>}
             </div>
 
             <div className="flex gap-8 items-end">
@@ -143,8 +141,7 @@ const LookbookForm = ({ initialValues, onCancel, isLoading }) => {
                 <input
                   type="number"
                   className="w-full px-6 py-4 bg-mainBG/10 border border-border rounded-none outline-none focus:border-primary focus:ring-8 focus:ring-primary/5 transition-all text-sm font-black tracking-tight"
-                  value={formData.displayOrder}
-                  onChange={(e) => setFormData({ ...formData, displayOrder: parseInt(e.target.value) })}
+                  {...formik.getFieldProps('displayOrder')}
                 />
               </div>
               <div className="space-y-2.5 pb-2">
@@ -152,13 +149,13 @@ const LookbookForm = ({ initialValues, onCancel, isLoading }) => {
                   <input
                     type="checkbox"
                     className="hidden"
-                    checked={formData.isActive}
-                    onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                    checked={formik.values.isActive}
+                    onChange={(e) => formik.setFieldValue('isActive', e.target.checked)}
                   />
-                  <div className={`w-12 h-6 rounded-none transition-all duration-500 relative ${formData.isActive ? 'bg-primary' : 'bg-lightText/20'}`}>
-                    <div className={`absolute top-1 w-4 h-4 rounded-none bg-white transition-all duration-500 shadow-xl ${formData.isActive ? 'left-7' : 'left-1'}`}></div>
+                  <div className={`w-12 h-6 rounded-none transition-all duration-500 relative ${formik.values.isActive ? 'bg-primary' : 'bg-lightText/20'}`}>
+                    <div className={`absolute top-1 w-4 h-4 rounded-none bg-white transition-all duration-500 shadow-xl ${formik.values.isActive ? 'left-7' : 'left-1'}`}></div>
                   </div>
-                  <span className={`text-[10px] font-black uppercase tracking-widest transition-colors ${formData.isActive ? 'text-primary' : 'text-lightText'}`}>Live</span>
+                  <span className={`text-[10px] font-black uppercase tracking-widest transition-colors ${formik.values.isActive ? 'text-primary' : 'text-lightText'}`}>Live</span>
                 </label>
               </div>
             </div>
@@ -168,12 +165,12 @@ const LookbookForm = ({ initialValues, onCancel, isLoading }) => {
           <div className="space-y-2.5">
             <label className="text-[11px] font-black uppercase tracking-widest text-lightText ml-1 opacity-70">Primary Visual Asset</label>
             <div
-              className={`relative h-[280px] border-2 border-dashed rounded-none overflow-hidden transition-all duration-500 group cursor-pointer ${imagePreview ? 'border-primary' : 'border-border hover:border-primary bg-mainBG/5'}`}
+              className={`relative h-[280px] border-2 border-dashed rounded-none overflow-hidden transition-all duration-500 group cursor-pointer ${preview ? 'border-primary' : 'border-border hover:border-primary bg-mainBG/5'}`}
               onClick={() => document.getElementById('lookImage').click()}
             >
-              {imagePreview ? (
+              {preview ? (
                 <>
-                  <img src={imagePreview} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Preview" />
+                  <img src={preview} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Preview" />
                   <div className="absolute inset-0 bg-primary/40 opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col items-center justify-center backdrop-blur-sm">
                     <div className="bg-white p-4 rounded-none shadow-2xl scale-75 group-hover:scale-100 transition-transform duration-500">
                       <MdCloudUpload className="text-primary" size={32} />
@@ -199,7 +196,7 @@ const LookbookForm = ({ initialValues, onCancel, isLoading }) => {
           <div className="flex justify-between items-center border-b border-border pb-4">
             <div>
               <label className="text-[11px] font-black uppercase tracking-widest text-lightText opacity-70">Curated Product Links</label>
-              <p className="text-[10px] font-black text-primary uppercase tracking-[0.1em] mt-1.5">Selected {formData.products.length} of 4 Threshold</p>
+              <p className="text-[10px] font-black text-primary uppercase tracking-[0.1em] mt-1.5">Selected {formik.values.products.length} of 4 Threshold</p>
             </div>
             <div className="relative group">
               <MdSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-lightText group-focus-within:text-primary transition-colors" size={18} />
@@ -215,7 +212,7 @@ const LookbookForm = ({ initialValues, onCancel, isLoading }) => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[360px] overflow-y-auto pr-3 custom-scrollbar">
             {filteredProducts.map(product => {
-              const isSelected = formData.products.includes(product._id);
+              const isSelected = formik.values.products.includes(product._id);
               return (
                 <div
                   key={product._id}
@@ -249,7 +246,7 @@ const LookbookForm = ({ initialValues, onCancel, isLoading }) => {
           </button>
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={isLoading || !formik.isValid}
             className="flex-[2] px-8 py-4 bg-primary text-white rounded-none font-black uppercase tracking-[0.15em] text-[11px] hover:opacity-90 transition-all shadow-2xl shadow-primary/20 active:scale-95 disabled:opacity-30 flex items-center justify-center gap-3"
           >
             {isLoading ? (
