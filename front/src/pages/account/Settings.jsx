@@ -126,27 +126,50 @@ export default function Settings() {
 
     const defaultCard = cards.find(c => c._id === selectedCardId) || cards[0];
 
-    const getCardBadge = (type) => {
-        const t = type?.toLowerCase();
-        if (t?.includes('visa')) return (
-            <span className="inline-flex items-center gap-1 bg-[#1a1f71] text-white text-xs font-bold px-3 py-1 rounded">
-                <RiVisaLine className="text-base" /> VISA
-            </span>
-        );
-        if (t?.includes('master')) return (
-            <span className="inline-flex items-center gap-1 bg-gray-800 text-white text-xs font-bold px-3 py-1 rounded">
-                <RiMastercardLine className="text-base" /> Mastercard
-            </span>
-        );
-        if (t?.includes('amex') || t?.includes('american')) return (
-            <span className="inline-flex items-center gap-1 bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded">
-                <SiAmericanexpress className="text-base" /> Amex
-            </span>
-        );
+    // const getCardBadge = (brand) => {
+    //     const t = brand?.toLowerCase();
+    //     if (t?.includes('visa')) return (
+    //         <span className="inline-flex items-center gap-1 bg-[#1a1f71] text-white text-xs font-bold px-3 py-1 rounded">
+    //             <RiVisaLine className="text-base" /> VISA
+    //         </span>
+    //     );
+    //     if (t?.includes('master')) return (
+    //         <span className="inline-flex items-center gap-1 bg-gray-800 text-white text-xs font-bold px-3 py-1 rounded">
+    //             <RiMastercardLine className="text-base" /> Mastercard
+    //         </span>
+    //     );
+    //     if (t?.includes('amex') || t?.includes('american')) return (
+    //         <span className="inline-flex items-center gap-1 bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded">
+    //             <SiAmericanexpress className="text-base" /> Amex
+    //         </span>
+    //     );
+    //     return (
+    //         <span className="inline-flex items-center gap-1 bg-border/50 text-dark text-xs font-bold px-3 py-1 rounded">
+    //             <HiOutlineCreditCard className="text-base" /> Card
+    //         </span>
+    //     );
+    // };
+
+    const getCardBadge = (brand) => {
+        if (brand === 'visa') {
+            return (
+                <div className="w-12 h-8 bg-blue-600 rounded flex items-center justify-center">
+                    <span className="text-white text-xs font-bold">VISA</span>
+                </div>
+            );
+        }
+        if (brand === 'mastercard') {
+            return (
+                <div className="w-12 h-8 bg-gray-800 rounded flex items-center justify-center relative overflow-hidden">
+                    <div className="absolute w-5 h-5 rounded-full bg-red-500 left-1"></div>
+                    <div className="absolute w-5 h-5 rounded-full bg-orange-400 right-1"></div>
+                </div>
+            );
+        }
         return (
-            <span className="inline-flex items-center gap-1 bg-border/50 text-dark text-xs font-bold px-3 py-1 rounded">
-                <HiOutlineCreditCard className="text-base" /> Card
-            </span>
+            <div className="w-12 h-8 bg-gray-300 rounded flex items-center justify-center">
+                <span className="text-gray-600 text-xs font-bold">CARD</span>
+            </div>
         );
     };
 
@@ -218,9 +241,9 @@ export default function Settings() {
                             {defaultCard ? (
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                                     <div className="flex items-center gap-3">
-                                        {getCardBadge(defaultCard.cardType)}
+                                        {getCardBadge(defaultCard.brand)}
                                         <span className="text-sm md:text-base font-semibold text-dark tracking-widest leading-none">
-                                            ···· {defaultCard.cardNumber.slice(-4)}
+                                            ···· {defaultCard?.displayNumber?.slice(-4) || defaultCard?.last4}
                                         </span>
                                     </div>
                                     <span className="text-sm md:text-base font-semibold text-dark leading-none">

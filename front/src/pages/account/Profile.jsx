@@ -11,6 +11,7 @@ import { FaArrowRight } from 'react-icons/fa';
 import { HiOutlineDevicePhoneMobile, HiOutlineGlobeAlt } from 'react-icons/hi2';
 import { formatDistanceToNow } from 'date-fns';
 import toast from 'react-hot-toast';
+import { fetchSavedCards } from '../../redux/slice/paymentCard.slice';
 
 const ArrowUpRight = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none"
@@ -29,6 +30,7 @@ export default function Profile() {
     const dispatch = useDispatch();
     const { user, loading, emailOtpLoading, sessions = [], sessionsLoading } = useSelector((state) => state.auth);
     const [isEditing, setIsEditing] = useState(false);
+    const { cards, selectedCardId } = useSelector((state) => state.payment);
 
     // Email verify modal state
     const [verifyModal, setVerifyModal] = useState(false);
@@ -49,6 +51,7 @@ export default function Profile() {
     };
 
     useEffect(() => {
+        dispatch(fetchSavedCards());
         dispatch(fetchSessions());
     }, [dispatch]);
 
@@ -130,9 +133,7 @@ export default function Profile() {
         ].filter(Boolean).join(', ')
         : null;
 
-    const defaultCard = user?.savedCards?.find(
-        (c) => String(c._id) === String(user?.selectedCard)
-    ) || user?.savedCards?.[0] || null;
+    const defaultCard = cards.find(c => c._id === selectedCardId) || cards[0];
 
     const formik = useFormik({
         initialValues: {
@@ -201,6 +202,29 @@ export default function Profile() {
     const inputClass = (field) =>
         `w-full text-sm md:text-lg font-medium bg-transparent outline-none border-none placeholder:text-lightText ${formik.touched[field] && formik.errors[field] ? 'text-red-500' : 'text-primary'
         }`;
+
+    const getCardBadge = (brand) => {
+        if (brand === 'visa') {
+            return (
+                <div className="w-12 h-8 bg-blue-600 rounded flex items-center justify-center">
+                    <span className="text-white text-xs font-bold">VISA</span>
+                </div>
+            );
+        }
+        if (brand === 'mastercard') {
+            return (
+                <div className="w-12 h-8 bg-gray-800 rounded flex items-center justify-center relative overflow-hidden">
+                    <div className="absolute w-5 h-5 rounded-full bg-red-500 left-1"></div>
+                    <div className="absolute w-5 h-5 rounded-full bg-orange-400 right-1"></div>
+                </div>
+            );
+        }
+        return (
+            <div className="w-12 h-8 bg-gray-300 rounded flex items-center justify-center">
+                <span className="text-gray-600 text-xs font-bold">CARD</span>
+            </div>
+        );
+    };
 
     return (
         <AccountLayout>
@@ -411,11 +435,9 @@ export default function Profile() {
                         {defaultCard ? (
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                    <div className="bg-[#1A1F71] text-white text-[10px] font-extrabold px-2 py-1 rounded-sm uppercase tracking-wider">
-                                        {defaultCard.cardType || 'Card'}
-                                    </div>
+                                    {getCardBadge(defaultCard.brand)}
                                     <span className="text-sm font-medium text-dark">
-                                        ···· {defaultCard.cardNumber?.slice(-4)}
+                                        ···· {defaultCard?.displayNumber?.slice(-4) || defaultCard?.last4}
                                     </span>
                                 </div>
                                 <span className="text-sm text-primary font-semibold">
