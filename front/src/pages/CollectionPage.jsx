@@ -128,14 +128,51 @@ const FilterSection = ({ title, children, defaultOpen = false }) => {
 };
 
 // ── Filter Sidebar ────────────────────────────────────────────────
-const FilterSidebar = ({ open, onClose, filterOptions, activeFilters, onFilterChange, onClearAll }) => {
+const FilterSidebar = ({ open, onClose, filterOptions, activeFilters, onApply, onClearAll }) => {
+    const [stagedFilters, setStagedFilters] = useState(activeFilters);
     const [showAllCategories, setShowAllCategories] = useState(false);
-    const activeCount = Object.values(activeFilters).flat().filter(Boolean).length;
+
+    useEffect(() => {
+        if (open) {
+            setStagedFilters(activeFilters);
+        }
+    }, [open, activeFilters]);
+
+    const handleStagedFilterChange = (type, value) => {
+        setStagedFilters(prev => {
+            if (type === 'availability') {
+                return { ...prev, availability: prev.availability === value ? null : value };
+            }
+            const arr = prev[type] || [];
+            const isIncluded = arr.includes(value);
+            return {
+                ...prev,
+                [type]: isIncluded ? arr.filter(v => v !== value) : [...arr, value],
+            };
+        });
+    };
+
+    const handleApply = () => {
+        onApply(stagedFilters);
+        onClose();
+    };
+
+    const handleClearLocal = () => {
+        setStagedFilters({
+            availability: null,
+            colors: [],
+            sizes: [],
+            materials: [],
+            categories: [],
+        });
+    };
+
+    const activeCount = Object.values(stagedFilters).flat().filter(Boolean).length;
 
     const renderItem = (type, item, isActive) => (
         <label
             key={item.name || item.key}
-            onClick={() => onFilterChange(type, item.name || item.key)}
+            onClick={() => handleStagedFilterChange(type, item.name || item.key)}
             className="flex items-center cursor-pointer group py-0.5"
         >
             <div className="w-4 flex items-center justify-center flex-shrink-0">
@@ -177,25 +214,25 @@ const FilterSidebar = ({ open, onClose, filterOptions, activeFilters, onFilterCh
                 {/* Scrollable content */}
                 <div className="flex-1 overflow-y-auto scrollbar-hide">
                     {/* AVAILABILITY */}
-                    <FilterSection title="Availability" defaultOpen={true}>
+                    <FilterSection title="Availability" defaultOpen={false}>
                         <div className="flex flex-col gap-4">
                             {[
                                 { key: 'inStock', label: 'In stock', count: filterOptions?.availability?.inStock },
                                 { key: 'outOfStock', label: 'Out of stock', count: filterOptions?.availability?.outOfStock },
-                            ].map(item => renderItem('availability', item, activeFilters.availability === item.key))}
+                            ].map(item => renderItem('availability', item, stagedFilters.availability === item.key))}
                         </div>
                     </FilterSection>
 
                     {/* COLOR */}
                     {filterOptions?.colors?.length > 0 && (
-                        <FilterSection title="Color" defaultOpen={true}>
+                        <FilterSection title="Color" defaultOpen={false}>
                             <div className="grid grid-cols-2 gap-x-8 gap-y-4">
                                 {filterOptions.colors.map(color => {
-                                    const isActive = activeFilters.colors?.includes(color.name);
+                                    const isActive = stagedFilters.colors?.includes(color.name);
                                     return (
                                         <label
                                             key={color.name}
-                                            onClick={() => onFilterChange('colors', color.name)}
+                                            onClick={() => handleStagedFilterChange('colors', color.name)}
                                             className="flex items-center cursor-pointer group"
                                         >
                                             <div className="w-4 flex items-center justify-center flex-shrink-0">
@@ -222,10 +259,10 @@ const FilterSidebar = ({ open, onClose, filterOptions, activeFilters, onFilterCh
 
                     {/* CATEGORY */}
                     {filterOptions?.categories?.length > 0 && (
-                        <FilterSection title="Category" defaultOpen={true}>
+                        <FilterSection title="Category" defaultOpen={false}>
                             <div className="grid grid-cols-1 gap-y-4">
                                 {(showAllCategories ? filterOptions.categories : filterOptions.categories.slice(0, 6)).map(cat => 
-                                    renderItem('categories', cat, activeFilters.categories?.includes(cat.name))
+                                    renderItem('categories', cat, stagedFilters.categories?.includes(cat.name))
                                 )}
                             </div>
                             {filterOptions.categories.length > 6 && (
@@ -241,30 +278,36 @@ const FilterSidebar = ({ open, onClose, filterOptions, activeFilters, onFilterCh
 
                     {/* SIZE */}
                     {filterOptions?.sizes?.length > 0 && (
-                        <FilterSection title="Size" defaultOpen={true}>
+                        <FilterSection title="Size" defaultOpen={false}>
                             <div className="grid grid-cols-2 gap-x-8 gap-y-4">
-                                {filterOptions.sizes.map(size => renderItem('sizes', size, activeFilters.sizes?.includes(size.name)))}
+                                {filterOptions.sizes.map(size => renderItem('sizes', size, stagedFilters.sizes?.includes(size.name)))}
                             </div>
                         </FilterSection>
                     )}
 
                     {/* MATERIAL */}
                     {filterOptions?.materials?.length > 0 && (
-                        <FilterSection title="Material" defaultOpen={true}>
+                        <FilterSection title="Material" defaultOpen={false}>
                             <div className="grid grid-cols-2 gap-x-8 gap-y-4">
-                                {filterOptions.materials.map(mat => renderItem('materials', mat, activeFilters.materials?.includes(mat.name)))}
+                                {filterOptions.materials.map(mat => renderItem('materials', mat, stagedFilters.materials?.includes(mat.name)))}
                             </div>
                         </FilterSection>
                     )}
                 </div>
 
-                {/* Footer: Clear All */}
-                <div className="flex-shrink-0 py-8 bg-white text-center border-t border-[#F1F3F5]">
+                {/* Footer: Clear All & Apply */}
+                <div className="flex-shrink-0 grid grid-cols-2 border-t border-[#F1F3F5]">
                     <button
-                        onClick={onClearAll}
-                        className="text-[13px] font-extrabold uppercase tracking-[0.3em] text-[#ADB5BD] hover:text-dark transition-colors"
+                        onClick={handleClearLocal}
+                        className="py-8 text-[13px] font-extrabold uppercase tracking-[0.3em] text-[#ADB5BD] hover:text-dark transition-colors border-r border-[#F1F3F5]"
                     >
                         Clear All
+                    </button>
+                    <button
+                        onClick={handleApply}
+                        className="py-8 text-[13px] font-extrabold uppercase tracking-[0.3em] text-primary hover:bg-primary hover:text-white transition-all"
+                    >
+                        Apply Filters
                     </button>
                 </div>
             </div>
@@ -315,7 +358,7 @@ export default function CollectionPage() {
         activeFilters.categories.length,
     ].reduce((a, b) => a + b, 0);
 
-    const fetchData = useCallback(() => {
+    useEffect(() => {
         dispatch(fetchProductsByCategory({
             mainCategorySlug,
             categorySlug,
@@ -330,8 +373,6 @@ export default function CollectionPage() {
             availability: activeFilters.availability || undefined,
         }));
     }, [dispatch, mainCategorySlug, categorySlug, subCategorySlug, page, sort, activeFilters]);
-
-    useEffect(() => { fetchData(); }, [fetchData]);
 
     useEffect(() => {
         dispatch(fetchFilterOptions({ mainCategorySlug, categorySlug, subCategorySlug }));
@@ -349,25 +390,20 @@ export default function CollectionPage() {
 
     useEffect(() => {
         setPage(1);
+    }, [sort, activeFilters]);
+
+    useEffect(() => {
+        setPage(1);
         setActiveFilters({ availability: null, colors: [], sizes: [], materials: [], categories: [] });
     }, [mainCategorySlug, categorySlug, subCategorySlug]);
 
-    useEffect(() => { setPage(1); }, [sort, activeFilters]);
-
-
-
-    const handleFilterChange = (type, value) => {
-        setActiveFilters(prev => {
-            if (type === 'availability') {
-                return { ...prev, availability: prev.availability === value ? null : value };
-            }
-            const arr = prev[type] || [];
-            return {
-                ...prev,
-                [type]: arr.includes(value) ? arr.filter(v => v !== value) : [...arr, value],
-            };
-        });
+    const handleApplyFilters = (stagedFilters) => {
+        setActiveFilters(stagedFilters);
     };
+
+
+
+
 
     const handleClearAll = () => {
         setActiveFilters({ availability: null, colors: [], sizes: [], materials: [], categories: [] });
@@ -537,7 +573,7 @@ export default function CollectionPage() {
                     onClose={() => setFilterOpen(false)}
                     filterOptions={filterOptions}
                     activeFilters={activeFilters}
-                    onFilterChange={handleFilterChange}
+                    onApply={handleApplyFilters}
                     onClearAll={handleClearAll}
                 />
             </div>

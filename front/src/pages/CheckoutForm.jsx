@@ -12,13 +12,30 @@ import { IoClose } from 'react-icons/io5';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { loadStripe } from '@stripe/stripe-js';
-import { Elements, useStripe, useElements, CardNumberElement } from '@stripe/react-stripe-js';
+import { Elements, useStripe, useElements, CardNumberElement, CardCvcElement } from '@stripe/react-stripe-js';
 import StripeCardInput from '../components/StripeCardInput';
 
 // All API calls now use Redux slices
 
 // Initialize Stripe
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
+
+const CARD_ELEMENT_OPTIONS = {
+    style: {
+        base: {
+            fontSize: '16px',
+            color: '#1a1a1a',
+            fontFamily: 'inherit',
+            '::placeholder': {
+                color: '#9ca3af',
+            },
+        },
+        invalid: {
+            color: '#ef4444',
+            iconColor: '#ef4444',
+        },
+    },
+};
 
 const checkoutSchema = Yup.object({
     mobile: Yup.string()
@@ -221,9 +238,12 @@ function CheckoutFormContent() {
                         console.log('💳 Confirming payment with saved card:', selectedSavedCard);
                         
                         try {
-                            // When payment method is already attached to Payment Intent,
-                            // we just need to confirm without providing card details
-                            confirmResult = await stripe.confirmCardPayment(clientSecret);
+                            const selectedCardObj = cards.find(c => c._id === selectedSavedCard);
+                            const stripePMId = selectedCardObj?.stripePaymentMethodId;
+
+                            confirmResult = await stripe.confirmCardPayment(clientSecret, {
+                                payment_method: stripePMId
+                            });
                             console.log('✅ Payment confirmed with saved card');
                         } catch (error) {
                             console.error('❌ Error confirming saved card payment:', error);

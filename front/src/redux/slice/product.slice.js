@@ -38,7 +38,7 @@ export const fetchFilterOptions = createAsyncThunk(
 
 export const fetchProductsByCategory = createAsyncThunk(
     'product/fetchProductsByCategory',
-    async ({ mainCategorySlug, categorySlug, subCategorySlug, page = 1, limit = 12, sort = 'newest' } = {}, { rejectWithValue }) => {
+    async ({ mainCategorySlug, categorySlug, subCategorySlug, page = 1, limit = 12, sort = 'newest', colors, sizes, materials, categories, availability } = {}, { rejectWithValue }) => {
         try {
             const params = new URLSearchParams();
             if (mainCategorySlug) params.append('mainCategorySlug', mainCategorySlug);
@@ -47,6 +47,12 @@ export const fetchProductsByCategory = createAsyncThunk(
             params.append('page', page);
             params.append('limit', limit);
             params.append('sort', sort);
+            if (colors) params.append('colors', colors);
+            if (sizes) params.append('sizes', sizes);
+            if (materials) params.append('materials', materials);
+            if (categories) params.append('categories', categories);
+            if (availability) params.append('availability', availability);
+            
             const response = await axiosInstance.get(`/product/by-category?${params.toString()}`);
             return response.data;
         } catch (error) {

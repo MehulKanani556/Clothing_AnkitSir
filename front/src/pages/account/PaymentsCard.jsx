@@ -7,6 +7,8 @@ import { useDispatch, useSelector } from 'react-redux'
 import { fetchSavedCards, deleteSavedCard, selectCard } from '../../redux/slice/paymentCard.slice'
 import { RiVisaLine, RiMastercardLine } from 'react-icons/ri'
 import { SiAmericanexpress } from 'react-icons/si'
+import { Elements } from '@stripe/react-stripe-js'
+import { stripePromise } from '../../utils/stripe'
 
 export default function PaymentsCard() {
     const dispatch = useDispatch();
@@ -180,10 +182,12 @@ export default function PaymentsCard() {
                 )}
 
                 {/* Add Card Sidebar */}
-                <PaymentSidebar
-                    isOpen={sidebarOpen}
-                    onClose={handleCloseSidebar}
-                />
+                <Elements stripe={stripePromise}>
+                    <PaymentSidebar
+                        isOpen={sidebarOpen}
+                        onClose={handleCloseSidebar}
+                    />
+                </Elements>
 
                 {/* Remove Card Confirmation Modal */}
                 {removeModalOpen && (

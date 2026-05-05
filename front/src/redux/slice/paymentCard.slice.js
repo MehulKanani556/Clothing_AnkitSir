@@ -35,7 +35,22 @@ export const addSavedCard = createAsyncThunk(
     async ({ cardData, setAsDefault = false }, { rejectWithValue }) => {
         try {
             const response = await axiosInstance.post('/user/card/save', cardData);
-            const result = response.data?.result;
+            
+            // Refresh the cards list
+            const refreshResp = await axiosInstance.get('/user/saved-cards');
+            return refreshResp.data?.result;
+        } catch (error) {
+            return handleErrors(error, rejectWithValue);
+        }
+    }
+);
+
+// Add new card using Stripe Payment Method
+export const addSavedCardStripe = createAsyncThunk(
+    'payment/addSavedCardStripe',
+    async (paymentMethodId, { rejectWithValue }) => {
+        try {
+            await axiosInstance.post('/user/card/save-stripe', { paymentMethodId });
             
             // Refresh the cards list
             const refreshResp = await axiosInstance.get('/user/saved-cards');
@@ -111,6 +126,20 @@ const paymentSlice = createSlice({
             .addCase(addSavedCard.rejected, (state, action) => {
                 state.actionLoading = false;
                 toast.error(action.payload?.message || 'Failed to add card');
+            })
+
+            // addSavedCardStripe
+            .addCase(addSavedCardStripe.pending, (state) => {
+                state.actionLoading = true;
+            })
+            .addCase(addSavedCardStripe.fulfilled, (state, action) => {
+                state.actionLoading = false;
+                state.cards = action.payload || [];
+                toast.success('Card saved successfully');
+            })
+            .addCase(addSavedCardStripe.rejected, (state, action) => {
+                state.actionLoading = false;
+                toast.error(action.payload?.message || 'Failed to save card');
             })
 
             // deleteSavedCard

@@ -97,7 +97,9 @@ import {
   getPaymentStatusController,
   confirmStripePaymentController,
   getSavedCardsController,
-  deleteSavedCardController
+  deleteSavedCardController,
+  createSetupIntentController,
+  saveStripePaymentMethodController
 } from "../controller/payment.controller.js";
 import {
   updateProfileController,
@@ -275,6 +277,8 @@ router.put("/user/address/select/:addressId", UserAuth, selectAddressController)
 
 // --- Card Management Routes ---
 router.post("/user/card/save", UserAuth, saveCard);
+router.post("/user/card/save-stripe", UserAuth, saveStripePaymentMethodController);
+router.post("/payment/create-setup-intent", UserAuth, createSetupIntentController);
 router.get("/user/saved-cards", UserAuth, getSavedCardsController); // Use payment controller (Stripe-based)
 router.delete("/user/card/delete/:cardId", UserAuth, deleteSavedCardController); // Use payment controller
 router.put("/user/card/select/:cardId", UserAuth, selectCardController);

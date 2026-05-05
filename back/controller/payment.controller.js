@@ -610,6 +610,112 @@ export const confirmStripePaymentController = async (req, res) => {
   }
 };
 
+export const createSetupIntentController = async (req, res) => {
+  try {
+    const userId = req.user.id || req.user._id;
+    const user = await UserModel.findById(userId);
+
+    if (!user) {
+      return sendNotFoundResponse(res, "User not found");
+    }
+
+    if (!user.stripeCustomerId) {
+      const customer = await stripe.customers.create({
+        email: user.email,
+        name: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
+        metadata: { userId: userId.toString() },
+      });
+      user.stripeCustomerId = customer.id;
+      await user.save();
+    }
+
+    const setupIntent = await stripe.setupIntents.create({
+      customer: user.stripeCustomerId,
+      payment_method_types: ["card"],
+    });
+
+    return sendSuccessResponse(res, "Setup Intent created", {
+      clientSecret: setupIntent.client_secret,
+    });
+  } catch (error) {
+    console.error("Create Setup Intent Error:", error.message);
+    return sendErrorResponse(res, 500, "Error creating setup intent", error.message);
+  }
+};
+
+export const saveStripePaymentMethodController = async (req, res) => {
+  try {
+    const userId = req.user.id || req.user._id;
+    const { paymentMethodId } = req.body;
+
+    if (!paymentMethodId) {
+      return sendBadRequestResponse(res, "Payment Method ID is required");
+    }
+
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      return sendNotFoundResponse(res, "User not found");
+    }
+
+    // Retrieve payment method from Stripe
+    const paymentMethod = await stripe.paymentMethods.retrieve(paymentMethodId);
+
+    if (!paymentMethod.card) {
+      return sendBadRequestResponse(res, "Invalid payment method: No card details found");
+    }
+
+    // Check if card already exists in DB
+    const existingCard = user.savedCards.find(
+      (card) => card.stripePaymentMethodId === paymentMethodId || 
+               (card.last4 === paymentMethod.card.last4 && 
+                card.brand === paymentMethod.card.brand && 
+                card.expiryMonth === paymentMethod.card.exp_month && 
+                card.expiryYear === paymentMethod.card.exp_year)
+    );
+
+    if (existingCard) {
+      return sendBadRequestResponse(res, "This card is already saved");
+    }
+
+    if (user.savedCards.length >= 3) {
+      return sendBadRequestResponse(res, "Maximum cards limit reached (3)");
+    }
+
+    // Attach to customer if not already attached
+    if (!paymentMethod.customer) {
+      if (!user.stripeCustomerId) {
+        const customer = await stripe.customers.create({
+          email: user.email,
+          name: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
+          metadata: { userId: userId.toString() },
+        });
+        user.stripeCustomerId = customer.id;
+      }
+      await stripe.paymentMethods.attach(paymentMethodId, {
+        customer: user.stripeCustomerId,
+      });
+    }
+
+    const cardData = {
+      stripePaymentMethodId: paymentMethod.id,
+      last4: paymentMethod.card.last4,
+      brand: paymentMethod.card.brand,
+      expiryMonth: paymentMethod.card.exp_month,
+      expiryYear: paymentMethod.card.exp_year,
+      cardHolderName: paymentMethod.billing_details?.name || null,
+      isDefault: user.savedCards.length === 0,
+    };
+
+    user.savedCards.push(cardData);
+    await user.save();
+
+    return sendSuccessResponse(res, "Card saved successfully", cardData);
+  } catch (error) {
+    console.error("Save Stripe Payment Method Error:", error.message);
+    return sendErrorResponse(res, 500, "Error saving card", error.message);
+  }
+};
+
 
 export const getPaymentStatusController = async (req, res) => {
   try {
