@@ -277,6 +277,7 @@ router.put("/user/address/select/:addressId", UserAuth, selectAddressController)
 router.post("/user/card/save", UserAuth, saveCard);
 router.get("/user/saved-cards", UserAuth, getSavedCardsController); // Use payment controller (Stripe-based)
 router.delete("/user/card/delete/:cardId", UserAuth, deleteSavedCardController); // Use payment controller
+router.put("/user/card/select/:cardId", UserAuth, selectCardController);
 router.post("/user/delete-account/request", UserAuth, requestAccountDeletionController);
 router.post("/user/delete-account/verify", UserAuth, verifyDeletionOtpController);
 router.post("/user/delete-account/finalize", UserAuth, finalizeAccountDeletionController);

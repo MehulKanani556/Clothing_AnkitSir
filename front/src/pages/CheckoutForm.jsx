@@ -543,7 +543,7 @@ function CheckoutFormContent() {
                                                 formik.touched.lastName && formik.errors.lastName
                                                     ? 'border-red-400'
                                                     : 'border-border'
-                                            } text-base focus:outline-none text-dark focus:border-primary transition-colors`}
+                                            } text-base text-dark focus:outline-none  focus:border-primary transition-colors`}
                                         />
                                         {formik.touched.lastName && formik.errors.lastName && (
                                             <p className="text-xs text-red-500 mt-1">{formik.errors.lastName}</p>
@@ -599,7 +599,7 @@ function CheckoutFormContent() {
                                         formik.touched.address && formik.errors.address
                                             ? 'border-red-400'
                                             : 'border-border'
-                                    } text-base focus:outline-none focus:border-primary transition-colors`}
+                                    } text-base text-dark  focus:outline-none focus:border-primary transition-colors`}
                                 />
                                 {formik.touched.address && formik.errors.address && (
                                     <p className="text-xs text-red-500 mt-1">{formik.errors.address}</p>
@@ -611,7 +611,7 @@ function CheckoutFormContent() {
                                     placeholder="Apt, suite, etc"
                                     value={formik.values.apartment}
                                     onChange={formik.handleChange}
-                                    className="w-full px-4 py-3 border border-border text-base focus:outline-none focus:border-primary transition-colors"
+                                    className="w-full text-dark px-4 py-3 border border-border text-base focus:outline-none focus:border-primary transition-colors"
                                 />
 
                                 <div className="grid grid-cols-2 gap-4">
@@ -627,7 +627,7 @@ function CheckoutFormContent() {
                                                 formik.touched.city && formik.errors.city
                                                     ? 'border-red-400'
                                                     : 'border-border'
-                                            } text-base focus:outline-none focus:border-primary transition-colors`}
+                                            } text-base text-dark  focus:outline-none focus:border-primary transition-colors`}
                                         />
                                         {formik.touched.city && formik.errors.city && (
                                             <p className="text-xs text-red-500 mt-1">{formik.errors.city}</p>
@@ -645,7 +645,7 @@ function CheckoutFormContent() {
                                                 formik.touched.state && formik.errors.state
                                                     ? 'border-red-400'
                                                     : 'border-border'
-                                            } text-base focus:outline-none focus:border-primary transition-colors`}
+                                            } text-base text-dark focus:outline-none focus:border-primary transition-colors`}
                                         />
                                         {formik.touched.state && formik.errors.state && (
                                             <p className="text-xs text-red-500 mt-1">{formik.errors.state}</p>
@@ -664,7 +664,7 @@ function CheckoutFormContent() {
                                         formik.touched.postCode && formik.errors.postCode
                                             ? 'border-red-400'
                                             : 'border-border'
-                                    } text-base focus:outline-none focus:border-primary transition-colors`}
+                                    } text-base text-dark focus:outline-none focus:border-primary transition-colors`}
                                 />
                                 {formik.touched.postCode && formik.errors.postCode && (
                                     <p className="text-xs text-red-500 mt-1">{formik.errors.postCode}</p>

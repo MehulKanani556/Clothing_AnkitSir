@@ -65,10 +65,8 @@ export const selectCard = createAsyncThunk(
     'payment/selectCard',
     async (cardId, { rejectWithValue }) => {
         try {
-            // Note: This endpoint may not exist in backend, but keeping for compatibility
-            // In Stripe flow, card selection is handled differently
-            const refreshResp = await axiosInstance.get('/user/saved-cards');
-            return { ...refreshResp.data?.result, selectedCardId: cardId };
+            const response = await axiosInstance.put(`/user/card/select/${cardId}`);
+            return response.data?.result;
         } catch (error) {
             return handleErrors(error, rejectWithValue);
         }
@@ -93,7 +91,7 @@ const paymentSlice = createSlice({
             .addCase(fetchSavedCards.fulfilled, (state, action) => {
                 state.loading = false;
                 state.cards = action.payload || [];
-                state.selectedCardId = action.payload?.selectedCardId || null;
+                state.selectedCardId = action.payload?.find(c => c.isDefault)?._id || null;
             })
             .addCase(fetchSavedCards.rejected, (state, action) => {
                 state.loading = false;
@@ -106,8 +104,8 @@ const paymentSlice = createSlice({
             })
             .addCase(addSavedCard.fulfilled, (state, action) => {
                 state.actionLoading = false;
-                state.cards = action.payload?.cards || [];
-                state.selectedCardId = action.payload?.selectedCardId || null;
+                state.cards = action.payload || [];
+                state.selectedCardId = action.payload?.find(c => c.isDefault)?._id || null;
                 toast.success('Card added successfully');
             })
             .addCase(addSavedCard.rejected, (state, action) => {
@@ -121,8 +119,8 @@ const paymentSlice = createSlice({
             })
             .addCase(deleteSavedCard.fulfilled, (state, action) => {
                 state.actionLoading = false;
-                state.cards = action.payload?.cards || [];
-                state.selectedCardId = action.payload?.selectedCardId || null;
+                state.cards = action.payload || [];
+                state.selectedCardId = action.payload?.find(c => c.isDefault)?._id || null;
                 toast.success('Card removed');
             })
             .addCase(deleteSavedCard.rejected, (state, action) => {
@@ -136,8 +134,8 @@ const paymentSlice = createSlice({
             })
             .addCase(selectCard.fulfilled, (state, action) => {
                 state.actionLoading = false;
-                state.cards = action.payload?.cards || [];
-                state.selectedCardId = action.payload?.selectedCardId || null;
+                state.cards = action.payload || [];
+                state.selectedCardId = action.payload?.find(c => c.isDefault)?._id || null;
                 toast.success('Default card updated');
             })
             .addCase(selectCard.rejected, (state, action) => {

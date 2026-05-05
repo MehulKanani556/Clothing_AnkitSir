@@ -116,7 +116,7 @@ export default function PaymentsCard() {
                     <div className="md:space-y-6 space-y-4">
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                             {cards.map((card) => {
-                                const isDefault = card._id === selectedCardId;
+                                // const isDefault = card._id === selectedCardId;
                                 return (
                                     <div
                                         key={card._id}
@@ -129,7 +129,7 @@ export default function PaymentsCard() {
                                                 </div>
                                                 <div className="flex items-center gap-2">
                                                     <span className="md:text-base text-sm font-bold text-dark">{card.cardType || 'Card'}</span>
-                                                    {isDefault && (
+                                                    {card.isDefault && (
                                                         <>
                                                             <div className="border-l border-border h-5 w-px"></div>
                                                             <span className="md:text-base text-sm text-lightText font-semibold tracking-widest uppercase">
@@ -152,7 +152,7 @@ export default function PaymentsCard() {
                                             <p className="md:text-base text-sm font-semibold text-mainText mt-1">{card.cardHolderName}</p>
                                             <div className="flex items-center gap-2 justify-between">
                                                 <p className="md:text-base text-sm font-medium text-lightText mt-1">Expires {card.expiryDate}</p>
-                                                {!isDefault && (
+                                                {!card.isDefault && (
                                                     <div className="flex justify-end">
                                                         <button
                                                             onClick={() => handleSetDefault(card._id)}

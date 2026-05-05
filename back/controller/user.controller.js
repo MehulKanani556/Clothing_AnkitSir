@@ -365,10 +365,28 @@ export const selectCardController = async (req, res) => {
             return sendNotFoundResponse(res, "Card not found in your profile!");
         }
 
+        // Set all cards to false, then target to true
+        user.savedCards.forEach(card => {
+            card.isDefault = (card._id.toString() === cardId);
+        });
+
         user.selectedCard = cardId;
         await user.save();
 
-        return sendSuccessResponse(res, "Card selected successfully", user);
+        // Return same structure as getSavedCardsController
+        const savedCards = user.savedCards.map(card => ({
+            _id: card._id,
+            last4: card.last4 || (card.cardNumber ? card.cardNumber.slice(-4) : ''),
+            brand: card.brand || (card.cardType || 'Card'),
+            expiryMonth: card.expiryMonth || (card.expiryDate ? card.expiryDate.split('/')[0] : ''),
+            expiryYear: card.expiryYear || (card.expiryDate ? card.expiryDate.split('/')[1] : ''),
+            cardHolderName: card.cardHolderName,
+            isDefault: card.isDefault,
+            displayNumber: card.last4 ? `•••• •••• •••• ${card.last4}` : card.cardNumber,
+            expiryDate: card.expiryDate || `${String(card.expiryMonth).padStart(2, '0')}/${String(card.expiryYear).slice(-2)}`,
+        }));
+
+        return sendSuccessResponse(res, "Card set as default successfully", savedCards);
     } catch (err) {
         return sendErrorResponse(res, 500, "Error selecting card", err.message);
     }
