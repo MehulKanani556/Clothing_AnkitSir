@@ -173,7 +173,7 @@ const VariantManager = ({ productId, variant, onClose }) => {
             <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-0" onClick={onClose} />
             <div className="relative z-10 w-full flex justify-center py-4 md:py-10">
                 <div className="animate-in zoom-in-95 duration-200 w-full max-w-4xl">
-                    <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden max-h-[85vh] flex flex-col">
+                    <div className="bg-white rounded-none shadow-2xl border border-slate-200 overflow-hidden max-h-[85vh] flex flex-col">
 
                         {/* Header */}
                         <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 flex-shrink-0">
@@ -185,7 +185,7 @@ const VariantManager = ({ productId, variant, onClose }) => {
                                     Product Variant Manager
                                 </p>
                             </div>
-                            <button onClick={onClose} className="p-2 hover:bg-white rounded-xl text-slate-400 hover:text-black transition-all">
+                            <button onClick={onClose} className="p-2 hover:bg-white rounded-none text-slate-400 hover:text-black transition-all">
                                 <MdClose size={18} />
                             </button>
                         </div>
@@ -209,11 +209,11 @@ const VariantManager = ({ productId, variant, onClose }) => {
                                             onDragEnter={() => onDragEnter(index)}
                                             onDragEnd={onDragEnd}
                                             onDragOver={(e) => e.preventDefault()}
-                                            className="relative w-20 h-20 rounded-xl overflow-hidden border-2 border-slate-200 group cursor-grab active:cursor-grabbing select-none"
+                                            className="relative w-20 h-20 rounded-none overflow-hidden border-2 border-slate-200 group cursor-grab active:cursor-grabbing select-none"
                                         >
                                             <img src={slot.preview} alt={`img-${index}`} className="w-full h-full object-cover" />
                                             {/* Position badge */}
-                                            <div className="absolute top-1 left-1 bg-black/60 text-white text-[10px] font-bold rounded px-1">
+                                            <div className="absolute top-1 left-1 bg-black/60 text-white text-[10px] font-bold rounded-none px-1">
                                                 {index + 1}
                                             </div>
                                             {/* Drag handle */}
@@ -231,7 +231,7 @@ const VariantManager = ({ productId, variant, onClose }) => {
                                         </div>
                                     ))}
                                     {/* Add button */}
-                                    <label className="w-20 h-20 rounded-xl border-2 border-dashed border-slate-200 hover:border-black transition-all flex flex-col items-center justify-center cursor-pointer bg-slate-50 flex-shrink-0">
+                                    <label className="w-20 h-20 rounded-none border-2 border-dashed border-slate-200 hover:border-black transition-all flex flex-col items-center justify-center cursor-pointer bg-slate-50 flex-shrink-0">
                                         <MdCloudUpload size={22} className="text-slate-400" />
                                         <span className="text-[10px] text-slate-400 mt-1">Add</span>
                                         <input type="file" accept="image/*" multiple onChange={handleImageAdd} className="hidden" />
@@ -246,7 +246,7 @@ const VariantManager = ({ productId, variant, onClose }) => {
                                     <input
                                         type="text"
                                         placeholder="e.g. Red, Blue, Black"
-                                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 mt-1 focus:border-black focus:ring-2 focus:ring-black/5 transition-all outline-none text-sm font-medium"
+                                        className="w-full px-4 py-2.5 rounded-none border border-slate-200 mt-1 focus:border-black focus:ring-2 focus:ring-black/5 transition-all outline-none text-sm font-medium"
                                         value={formData.color}
                                         onChange={(e) => setFormData(prev => ({ ...prev, color: e.target.value }))}
                                         required
@@ -257,14 +257,14 @@ const VariantManager = ({ productId, variant, onClose }) => {
                                     <div className="flex gap-2 mt-1">
                                         <input
                                             type="color"
-                                            className="w-12 h-10 rounded-lg border border-slate-200 cursor-pointer"
+                                            className="w-12 h-10 rounded-none border border-slate-200 cursor-pointer"
                                             value={formData.colorCode}
                                             onChange={(e) => setFormData(prev => ({ ...prev, colorCode: e.target.value }))}
                                         />
                                         <input
                                             type="text"
                                             placeholder="#000000"
-                                            className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 focus:border-black focus:ring-2 focus:ring-black/5 transition-all outline-none text-sm font-medium"
+                                            className="flex-1 px-4 py-2.5 rounded-none border border-slate-200 focus:border-black focus:ring-2 focus:ring-black/5 transition-all outline-none text-sm font-medium"
                                             value={formData.colorCode}
                                             onChange={(e) => setFormData(prev => ({ ...prev, colorCode: e.target.value }))}
                                         />
@@ -273,15 +273,15 @@ const VariantManager = ({ productId, variant, onClose }) => {
                             </div>
 
                             {/* Toggles */}
-                            <div className="flex gap-6 p-3 bg-slate-50 rounded-xl">
+                            <div className="flex gap-6 p-3 bg-slate-50 rounded-none">
                                 <label className="flex items-center gap-3 cursor-pointer">
-                                    <input type="checkbox" className="w-5 h-5 rounded border-slate-300"
+                                    <input type="checkbox" className="w-5 h-5 rounded-none border-slate-300"
                                         checked={formData.isDefault}
                                         onChange={(e) => setFormData(prev => ({ ...prev, isDefault: e.target.checked }))} />
                                     <span className="text-sm font-medium text-slate-700">Set as Default Variant</span>
                                 </label>
                                 <label className="flex items-center gap-3 cursor-pointer">
-                                    <input type="checkbox" className="w-5 h-5 rounded border-slate-300"
+                                    <input type="checkbox" className="w-5 h-5 rounded-none border-slate-300"
                                         checked={formData.isActive}
                                         onChange={(e) => setFormData(prev => ({ ...prev, isActive: e.target.checked }))} />
                                     <span className="text-sm font-medium text-slate-700">Active</span>
@@ -289,7 +289,7 @@ const VariantManager = ({ productId, variant, onClose }) => {
                             </div>
 
                             {/* Pricing type */}
-                            <div className="flex items-center gap-4 p-3 bg-slate-50 rounded-xl">
+                            <div className="flex items-center gap-4 p-3 bg-slate-50 rounded-none">
                                 <label className="flex items-center gap-3 cursor-pointer">
                                     <input type="radio" name="pricingType" checked={!useOptions} onChange={() => setUseOptions(false)} className="w-4 h-4" />
                                     <span className="text-sm font-medium text-slate-700">Single Price</span>
@@ -306,7 +306,7 @@ const VariantManager = ({ productId, variant, onClose }) => {
                                     <div>
                                         <label className="text-xs font-bold text-slate-700 ml-1">Price (₹) *</label>
                                         <input type="number" placeholder="999"
-                                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 mt-1 focus:border-black outline-none text-sm font-medium"
+                                            className="w-full px-4 py-2.5 rounded-none border border-slate-200 mt-1 focus:border-black outline-none text-sm font-medium"
                                             value={formData.price}
                                             onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
                                             required={!useOptions} />
@@ -314,7 +314,7 @@ const VariantManager = ({ productId, variant, onClose }) => {
                                     <div>
                                         <label className="text-xs font-bold text-slate-700 ml-1">Stock *</label>
                                         <input type="number" placeholder="100"
-                                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 mt-1 focus:border-black outline-none text-sm font-medium"
+                                            className="w-full px-4 py-2.5 rounded-none border border-slate-200 mt-1 focus:border-black outline-none text-sm font-medium"
                                             value={formData.stock}
                                             onChange={(e) => setFormData(prev => ({ ...prev, stock: e.target.value }))}
                                             required={!useOptions} />
@@ -322,7 +322,7 @@ const VariantManager = ({ productId, variant, onClose }) => {
                                     <div>
                                         <label className="text-xs font-bold text-slate-700 ml-1">Discount (%)</label>
                                         <input type="number" placeholder="0" min="0" max="100"
-                                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 mt-1 focus:border-black outline-none text-sm font-medium"
+                                            className="w-full px-4 py-2.5 rounded-none border border-slate-200 mt-1 focus:border-black outline-none text-sm font-medium"
                                             value={formData.discount}
                                             onChange={(e) => setFormData(prev => ({ ...prev, discount: e.target.value }))} />
                                     </div>
@@ -335,34 +335,34 @@ const VariantManager = ({ productId, variant, onClose }) => {
                                     <div className="flex items-center justify-between">
                                         <label className="text-xs font-bold text-slate-700">Size Options</label>
                                         <button type="button" onClick={addOption}
-                                            className="flex items-center gap-1 text-xs font-bold text-black hover:bg-slate-100 px-3 py-1.5 rounded-lg transition-all">
+                                            className="flex items-center gap-1 text-xs font-bold text-black hover:bg-slate-100 px-3 py-1.5 rounded-none transition-all">
                                             <MdAdd size={16} /> Add Size
                                         </button>
                                     </div>
                                     {formData.options.map((option, i) => (
-                                        <div key={i} className="grid grid-cols-6 gap-3 p-3 bg-slate-50 rounded-xl">
+                                        <div key={i} className="grid grid-cols-6 gap-3 p-3 bg-slate-50 rounded-none">
                                             <input type="text" placeholder="Size"
-                                                className="px-3 py-2 rounded-lg border border-slate-200 outline-none text-xs"
+                                                className="px-3 py-2 rounded-none border border-slate-200 outline-none text-xs"
                                                 value={option.size} onChange={(e) => updateOption(i, 'size', e.target.value)} required />
                                             <input type="number" placeholder="Price"
-                                                className="px-3 py-2 rounded-lg border border-slate-200 outline-none text-xs"
+                                                className="px-3 py-2 rounded-none border border-slate-200 outline-none text-xs"
                                                 value={option.price} onChange={(e) => updateOption(i, 'price', e.target.value)} required />
                                             <input type="number" placeholder="Stock"
-                                                className="px-3 py-2 rounded-lg border border-slate-200 outline-none text-xs"
+                                                className="px-3 py-2 rounded-none border border-slate-200 outline-none text-xs"
                                                 value={option.stock} onChange={(e) => updateOption(i, 'stock', e.target.value)} required />
                                             <input type="number" placeholder="Disc %" min="0" max="100"
-                                                className="px-3 py-2 rounded-lg border border-slate-200 outline-none text-xs"
+                                                className="px-3 py-2 rounded-none border border-slate-200 outline-none text-xs"
                                                 value={option.discount || 0} onChange={(e) => updateOption(i, 'discount', e.target.value)} />
                                             <div className="text-xs text-slate-400 flex items-center">Auto SKU</div>
                                             <button type="button" onClick={() => removeOption(i)}
-                                                className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center justify-center">
+                                                className="p-1.5 text-red-600 hover:bg-red-50 rounded-none transition-colors flex items-center justify-center">
                                                 <MdDelete size={18} />
                                             </button>
                                         </div>
                                     ))}
                                     {formData.options.length === 0 && (
                                         <button type="button" onClick={addOption}
-                                            className="w-full py-6 border-2 border-dashed border-slate-300 rounded-xl hover:border-black transition-all flex flex-col items-center gap-1 text-slate-400 hover:text-black">
+                                            className="w-full py-6 border-2 border-dashed border-slate-300 rounded-none hover:border-black transition-all flex flex-col items-center gap-1 text-slate-400 hover:text-black">
                                             <MdAdd size={24} />
                                             <span className="text-xs font-bold">Add First Size</span>
                                         </button>
@@ -376,7 +376,7 @@ const VariantManager = ({ productId, variant, onClose }) => {
                                     <div key={field}>
                                         <label className="text-xs font-bold text-slate-700 ml-1">{label}</label>
                                         <input type="number" step={step} placeholder={ph}
-                                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 mt-1 focus:border-black outline-none text-sm font-medium"
+                                            className="w-full px-4 py-2.5 rounded-none border border-slate-200 mt-1 focus:border-black outline-none text-sm font-medium"
                                             value={field === 'weight' ? formData.weight : formData.dimensions[field]}
                                             onChange={(e) => field === 'weight'
                                                 ? setFormData(prev => ({ ...prev, weight: e.target.value }))
@@ -387,7 +387,7 @@ const VariantManager = ({ productId, variant, onClose }) => {
                             </div>
 
                             {isEditMode && variant?.sku && (
-                                <div className="p-3 bg-blue-50 rounded-xl border border-blue-200">
+                                <div className="p-3 bg-blue-50 rounded-none border border-blue-200">
                                     <p className="text-xs font-bold text-blue-900">SKU: {variant.sku}</p>
                                     <p className="text-xs text-blue-600 mt-0.5">Auto-generated and unique</p>
                                 </div>
@@ -397,16 +397,16 @@ const VariantManager = ({ productId, variant, onClose }) => {
                             <div className="flex items-center gap-3 pt-3 border-t border-slate-100">
                                 {isEditMode && (
                                     <button type="button" onClick={handleDelete}
-                                        className="px-5 py-2.5 border border-red-200 text-red-600 font-bold rounded-xl hover:bg-red-50 transition-all text-sm">
+                                        className="px-5 py-2.5 border border-red-200 text-red-600 font-bold rounded-none hover:bg-red-50 transition-all text-sm">
                                         Delete
                                     </button>
                                 )}
                                 <button type="button" onClick={onClose}
-                                    className="flex-1 px-5 py-2.5 border border-slate-200 text-slate-500 font-bold rounded-xl hover:bg-slate-50 hover:text-black transition-all text-sm">
+                                    className="flex-1 px-5 py-2.5 border border-slate-200 text-slate-500 font-bold rounded-none hover:bg-slate-50 hover:text-black transition-all text-sm">
                                     Cancel
                                 </button>
                                 <button type="submit" disabled={loading}
-                                    className="flex-[2] px-5 py-2.5 bg-black hover:bg-slate-800 disabled:bg-slate-100 disabled:text-slate-400 text-white font-black rounded-xl shadow-xl shadow-black/20 transition-all flex items-center justify-center gap-2 active:scale-95 text-sm">
+                                    className="flex-[2] px-5 py-2.5 bg-black hover:bg-slate-800 disabled:bg-slate-100 disabled:text-slate-400 text-white font-black rounded-none shadow-xl shadow-black/20 transition-all flex items-center justify-center gap-2 active:scale-95 text-sm">
                                     {loading ? <AiOutlineLoading3Quarters size={20} className="animate-spin" /> : <MdSave size={20} />}
                                     {isEditMode ? 'Update Variant' : 'Create Variant'}
                                 </button>

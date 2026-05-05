@@ -14,7 +14,8 @@ import {
   MdMoreVert,
   MdSearch,
   MdFilterList,
-  MdLayers
+  MdLayers,
+  MdRefresh
 } from 'react-icons/md';
 import CategoryForm from './CategoryForm';
 import Pagination from '../../components/Pagination';
@@ -95,132 +96,150 @@ const CategoryList = () => {
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900">Categories</h2>
-          <p className="text-slate-500 text-sm">Manage your product categories here.</p>
+          <h2 className="text-2xl font-black text-mainText tracking-tight">Product Categories</h2>
+          <p className="text-lightText text-sm font-medium">View and manage your store categories here.</p>
         </div>
-        <button
-          onClick={() => {
-            setEditingCategory(null);
-            setIsModalOpen(true);
-          }}
-          className="flex items-center justify-center gap-2 bg-black text-white px-6 py-3 rounded-2xl font-bold hover:bg-slate-800 transition-all shadow-xl shadow-black/10 active:scale-95"
-        >
-          <MdAdd size={20} />
-          <span>Add New Category</span>
-        </button>
+        <div className="flex gap-3">
+          <button 
+            onClick={() => dispatch(fetchCategories())}
+            className="flex items-center gap-2.5 bg-white text-mainText px-6 py-2.5 rounded-none font-bold hover:shadow-lg hover:shadow-black/5 transition-all border border-slate-200 active:scale-95 shadow-sm"
+          >
+            <MdRefresh size={20} className={loading ? 'animate-spin' : ''} />
+            <span className="text-[14px]">Refresh List</span>
+          </button>
+          <button
+            onClick={() => {
+              setEditingCategory(null);
+              setIsModalOpen(true);
+            }}
+            className="flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-none font-black hover:opacity-90 transition-all shadow-xl shadow-primary/20 active:scale-95 uppercase text-xs tracking-widest"
+          >
+            <MdAdd size={20} />
+            Add Category
+          </button>
+        </div>
       </div>
 
       {/* Stats and Search */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <div className="lg:col-span-3 bg-white p-4 rounded-3xl border border-slate-200 flex flex-col md:flex-row gap-4 items-center shadow-sm">
+        <div className="lg:col-span-3 bg-background p-4 rounded-none border border-border flex flex-col md:flex-row gap-4 items-center shadow-sm">
           <div className="relative flex-1 w-full">
-            <MdSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <MdSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-lightText" size={18} />
             <input
               type="text"
-              placeholder="Search categories..."
-              className="w-full pl-12 pr-4 py-2.5 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-black focus:ring-4 focus:ring-black/5 transition-all text-sm"
+              placeholder="Search by category name..."
+              className="w-full pl-12 pr-4 py-3 bg-mainBG border border-border rounded-none outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all text-sm text-mainText font-medium"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <button className="flex items-center gap-2 px-6 py-2.5 text-slate-600 hover:bg-black hover:text-white rounded-2xl transition-all text-sm border border-slate-100 font-semibold group">
+          <button className="flex items-center gap-2 px-6 py-3 text-lightText hover:bg-mainBG hover:text-mainText rounded-none transition-all text-[11px] border border-border font-black uppercase tracking-widest group">
             <MdFilterList size={16} className="group-hover:rotate-180 transition-transform duration-500" />
-            <span>Filters</span>
+            Filters
           </button>
         </div>
-        <div className="bg-black p-5 rounded-3xl border border-black flex items-center justify-between shadow-xl shadow-black/10">
-          <div>
-            <p className="text-white/50 text-[10px] font-bold uppercase tracking-widest">Total Categories</p>
-            <p className="text-3xl font-black text-white">{categories.length}</p>
+        <div className="bg-primary p-6 rounded-none border border-primary/10 flex items-center justify-between shadow-xl shadow-primary/20 group overflow-hidden relative">
+          <div className="relative z-10">
+            <p className="text-white/50 text-[10px] font-black uppercase tracking-[0.2em]">Active</p>
+            <p className="text-3xl font-black text-white leading-tight">{categories.length}</p>
           </div>
-          <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+          <div className="w-14 h-14 bg-white/10 rounded-none flex items-center justify-center backdrop-blur-md relative z-10 border border-white/10">
             <MdLayers className="text-white" size={28} />
           </div>
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-none -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700" />
         </div>
       </div>
 
       {/* Table Section */}
-      <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
+      <div className="bg-background rounded-none border border-border overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50/50 border-b border-slate-100">
-                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Image</th>
-                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">ID</th>
-                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Category Name</th>
-                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Main Category</th>
-                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Created At</th>
-                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Actions</th>
+              <tr className="bg-mainBG/50 border-b border-border">
+                <th className="px-8 py-5 text-[10px] font-black text-lightText uppercase tracking-[0.2em]">Preview</th>
+                <th className="px-8 py-5 text-[10px] font-black text-lightText uppercase tracking-[0.2em]">Identity</th>
+                <th className="px-8 py-5 text-[10px] font-black text-lightText uppercase tracking-[0.2em]">Classification</th>
+                <th className="px-8 py-5 text-[10px] font-black text-lightText uppercase tracking-[0.2em]">Parent Hierarchy</th>
+                <th className="px-8 py-5 text-[10px] font-black text-lightText uppercase tracking-[0.2em]">Registration</th>
+                <th className="px-8 py-5 text-[10px] font-black text-lightText uppercase tracking-[0.2em] text-right">Control</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50">
+            <tbody className="divide-y divide-border/50">
               {loading && categories.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="px-6 py-12 text-center text-slate-400 italic">
-                    <div className="flex flex-col items-center gap-2">
-                      <div className="w-8 h-8 border-4 border-black border-t-transparent rounded-full animate-spin"></div>
-                      <span>Loading categories...</span>
+                  <td colSpan="6" className="px-8 py-20 text-center">
+                    <div className="flex flex-col items-center gap-4">
+                      <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-none animate-spin"></div>
+                      <span className="text-[11px] font-black uppercase tracking-widest text-lightText opacity-50">Syncing database...</span>
                     </div>
                   </td>
                 </tr>
               ) : filteredCategories.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="px-6 py-12 text-center text-slate-400 italic">No categories found matching your search.</td>
+                  <td colSpan="6" className="px-8 py-20 text-center font-black uppercase tracking-widest text-xs text-lightText opacity-50">
+                    No categories found matching your search.
+                  </td>
                 </tr>
               ) : (
                 paginatedCategories.map((category) => (
-                  <tr key={category._id} className="hover:bg-slate-50/50 transition-colors group">
-                    <td className="px-6 py-4">
-                      <div className="w-12 h-12 rounded-xl bg-slate-100 overflow-hidden border border-slate-100 group-hover:border-black/10 transition-colors">
+                  <tr key={category._id} className="hover:bg-mainBG/30 transition-colors group">
+                    <td className="px-8 py-5 whitespace-nowrap">
+                      <div className="w-14 h-14 rounded-none bg-mainBG overflow-hidden border border-border group-hover:border-primary/20 transition-all duration-500 shadow-sm">
                         {category.categoryImage ? (
                           <img
                             src={category.categoryImage.startsWith('http') ? category.categoryImage : `http://localhost:8000/${category.categoryImage}`}
                             alt={category.categoryName}
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                             onError={(e) => { e.target.src = 'https://ui-avatars.com/api/?name=' + category.categoryName }}
                           />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-xs font-bold text-slate-300">
-                            NO IMG
+                          <div className="w-full h-full flex items-center justify-center text-[10px] font-black text-lightText/20 uppercase tracking-tighter">
+                            No Img
                           </div>
                         )}
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-slate-400 font-mono">
-                      #{category._id.slice(-6)}
+                    <td className="px-8 py-5 whitespace-nowrap font-mono text-[11px] font-black text-lightText/60">
+                      #{category._id.slice(-6).toUpperCase()}
                     </td>
-                    <td className="px-6 py-4">
-                      <span className="font-bold text-slate-900 text-base">{category.categoryName}</span>
+                    <td className="px-8 py-5 whitespace-nowrap">
+                      <span className="text-sm font-black text-mainText tracking-tight">{category.categoryName}</span>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm text-slate-600">{category.mainCategoryId?.mainCategoryName || 'N/A'}</span>
+                    <td className="px-8 py-5 whitespace-nowrap">
+                      <span className="px-3 py-1 bg-primary/5 text-primary rounded-none text-[10px] font-black uppercase tracking-widest border border-primary/10">
+                        {category.mainCategoryId?.mainCategoryName || 'Unassigned'}
+                      </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-slate-600">
-                      {new Date(category.createdAt).toLocaleDateString('en-GB', {
-                        day: '2-digit',
-                        month: 'short',
-                        year: 'numeric'
-                      })}
+                    <td className="px-8 py-5 whitespace-nowrap">
+                      <div className="flex flex-col">
+                        <span className="text-[11px] font-black text-mainText">
+                          {new Date(category.createdAt).toLocaleDateString('en-GB', {
+                            day: '2-digit',
+                            month: 'short',
+                            year: 'numeric'
+                          })}
+                        </span>
+                        <span className="text-[10px] text-lightText font-bold uppercase tracking-widest">Added</span>
+                      </div>
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <td className="px-8 py-5 text-right whitespace-nowrap">
+                      <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => {
                             setEditingCategory(category);
                             setIsModalOpen(true);
                           }}
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          className="p-2.5 text-primary hover:bg-primary hover:text-white rounded-none transition-all duration-300 shadow-sm border border-border group-hover:border-primary/20"
+                          title="Edit"
                         >
                           <MdEdit size={18} />
                         </button>
                         <button
                           onClick={() => handleDelete(category._id)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          className="p-2.5 text-red-500 hover:bg-red-500 hover:text-white rounded-none transition-all duration-300 shadow-sm border border-border group-hover:border-red-200"
+                          title="Delete"
                         >
                           <MdDelete size={18} />
-                        </button>
-                        <button className="p-2 text-slate-400 hover:bg-slate-100 rounded-lg transition-colors">
-                          <MdMoreVert size={18} />
                         </button>
                       </div>
                     </td>
@@ -244,9 +263,9 @@ const CategoryList = () => {
       {/* Modal Overlay */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex justify-center items-start p-4 md:p-8 overflow-y-auto">
-          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-0" onClick={() => setIsModalOpen(false)}></div>
+          <div className="fixed inset-0 bg-primary/20 backdrop-blur-md z-0" onClick={() => setIsModalOpen(false)}></div>
           <div className="relative z-10 w-full flex justify-center py-4 md:py-10">
-            <div className="animate-in zoom-in-95 duration-200 w-full max-w-xl">
+            <div className="animate-in zoom-in-95 duration-300 w-full max-w-xl">
               <CategoryForm
                 initialValues={editingCategory}
                 onSubmit={editingCategory ? handleUpdate : handleCreate}

@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { fetchProducts, deleteProduct } from '../../../redux/slice/product.slice';
 import {
     MdAdd, MdEdit, MdDelete, MdSearch, MdFilterList,
-    MdShoppingBag, MdVisibility, MdToggleOn, MdToggleOff, MdWarning
+    MdShoppingBag, MdVisibility, MdToggleOn, MdToggleOff, MdWarning, MdRefresh
 } from 'react-icons/md';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import Pagination from '../../components/Pagination';
@@ -22,29 +22,29 @@ const DeleteModal = ({ product, onConfirm, onCancel, deleting }) => {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={onCancel} />
-            <div className="relative z-10 bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-md animate-in zoom-in-95 duration-200">
+            <div className="relative z-10 bg-background rounded-none shadow-2xl border border-border w-full max-w-md animate-in zoom-in-95 duration-200">
                 {/* Header */}
-                <div className="p-6 border-b border-slate-100">
+                <div className="p-6 border-b border-border">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-red-100 rounded-2xl flex items-center justify-center flex-shrink-0">
+                        <div className="w-10 h-10 bg-red-100 rounded-none flex items-center justify-center flex-shrink-0">
                             <MdWarning className="text-red-600" size={22} />
                         </div>
                         <div>
-                            <h3 className="font-black text-slate-900">Delete Product</h3>
-                            <p className="text-xs text-slate-500 mt-0.5">This action cannot be undone</p>
+                            <h3 className="font-black text-mainText">Delete Product</h3>
+                            <p className="text-xs text-lightText mt-0.5">This action cannot be undone</p>
                         </div>
                     </div>
                 </div>
 
                 {/* Body */}
                 <div className="p-6 space-y-4">
-                    <p className="text-sm text-slate-700">
-                        You are about to delete <span className="font-bold text-slate-900">"{product.name}"</span> and all its variants.
+                    <p className="text-sm text-mainText">
+                        You are about to delete <span className="font-bold text-mainText">"{product.name}"</span> and all its variants.
                     </p>
 
                     {/* Variants list */}
                     {variants.length > 0 ? (
-                        <div className="bg-red-50 border border-red-100 rounded-2xl overflow-hidden">
+                        <div className="bg-red-50 border border-red-100 rounded-none overflow-hidden">
                             <div className="px-4 py-2.5 bg-red-100/60 border-b border-red-100">
                                 <p className="text-xs font-bold text-red-800 uppercase tracking-wide">
                                     {variants.length} variant{variants.length !== 1 ? 's' : ''} will be deleted · Total stock: {totalStock}
@@ -59,18 +59,18 @@ const DeleteModal = ({ product, onConfirm, onCancel, deleting }) => {
                                         <div key={v._id || i} className="px-4 py-2.5 flex items-center justify-between gap-3">
                                             <div className="flex items-center gap-2.5">
                                                 {v.images?.[0] && (
-                                                    <img src={v.images[0]} alt={v.color} className="w-8 h-8 rounded-lg object-cover border border-red-200" />
+                                                    <img src={v.images[0]} alt={v.color} className="w-8 h-8 rounded-none object-cover border border-red-200" />
                                                 )}
                                                 <div>
-                                                    <p className="text-xs font-bold text-slate-800">{v.color}</p>
+                                                    <p className="text-xs font-bold text-mainText">{v.color}</p>
                                                     {v.options?.length > 0 && (
-                                                        <p className="text-[10px] text-slate-500">{v.options.length} size{v.options.length !== 1 ? 's' : ''}</p>
+                                                        <p className="text-[10px] text-lightText">{v.options.length} size{v.options.length !== 1 ? 's' : ''}</p>
                                                     )}
                                                 </div>
                                             </div>
                                             <div className="text-right">
                                                 <p className="text-xs font-bold text-red-700">{variantStock} in stock</p>
-                                                {v.sku && <p className="text-[10px] text-slate-400">{v.sku}</p>}
+                                                {v.sku && <p className="text-[10px] text-lightText/60">{v.sku}</p>}
                                             </div>
                                         </div>
                                     );
@@ -87,14 +87,14 @@ const DeleteModal = ({ product, onConfirm, onCancel, deleting }) => {
                     <button
                         onClick={onCancel}
                         disabled={deleting}
-                        className="flex-1 px-5 py-2.5 border border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-slate-50 transition-all text-sm disabled:opacity-50"
+                        className="flex-1 px-5 py-2.5 border border-border text-lightText font-bold rounded-none hover:bg-mainBG transition-all text-sm disabled:opacity-50"
                     >
                         Cancel
                     </button>
                     <button
                         onClick={onConfirm}
                         disabled={deleting}
-                        className="flex-[2] px-5 py-2.5 bg-red-600 hover:bg-red-700 disabled:bg-red-300 text-white font-black rounded-xl transition-all flex items-center justify-center gap-2 text-sm active:scale-95"
+                        className="flex-[2] px-5 py-2.5 bg-red-600 hover:bg-red-700 disabled:bg-red-300 text-white font-black rounded-none transition-all flex items-center justify-center gap-2 text-sm active:scale-95"
                     >
                         {deleting
                             ? <><AiOutlineLoading3Quarters size={16} className="animate-spin" /> Deleting...</>
@@ -176,61 +176,70 @@ const ProductList = () => {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h2 className="text-2xl font-bold text-slate-900">Products</h2>
-                    <p className="text-slate-500 text-sm">Manage your product catalog here.</p>
+                    <h2 className="text-2xl font-bold text-mainText">Manage Products</h2>
+                    <p className="text-lightText text-sm">View and manage all your products here.</p>
                 </div>
-                <button
-                    onClick={() => navigate('/admin/product/create')}
-                    className="flex items-center justify-center gap-2 bg-black text-white px-6 py-3 rounded-2xl font-bold hover:bg-slate-800 transition-all shadow-xl shadow-black/10 active:scale-95"
-                >
-                    <MdAdd size={20} />
-                    Add New Product
-                </button>
+                <div className="flex gap-3">
+                    <button 
+                        onClick={() => dispatch(fetchProducts())}
+                        className="flex items-center justify-center gap-2.5 bg-white text-mainText px-6 py-2.5 rounded-none font-bold hover:shadow-lg hover:shadow-black/5 transition-all border border-slate-200 active:scale-95 shadow-sm"
+                    >
+                        <MdRefresh size={20} className={loading ? 'animate-spin' : ''} />
+                        <span className="text-[14px]">Refresh List</span>
+                    </button>
+                    <button
+                        onClick={() => navigate('/admin/product/create')}
+                        className="flex items-center justify-center gap-2 bg-primary text-white px-6 py-3 rounded-none font-bold hover:opacity-90 transition-all shadow-xl shadow-primary/20 active:scale-95"
+                    >
+                        <MdAdd size={20} />
+                        Add New Product
+                    </button>
+                </div>
             </div>
 
             {/* Search + Stats */}
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                <div className="lg:col-span-3 bg-white p-4 rounded-3xl border border-slate-200 flex gap-4 items-center shadow-sm">
+                <div className="lg:col-span-3 bg-background p-4 rounded-none border border-border flex gap-4 items-center shadow-sm">
                     <div className="relative flex-1">
-                        <MdSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                        <MdSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-lightText" size={18} />
                         <input
                             type="text"
                             placeholder="Search products..."
-                            className="w-full pl-12 pr-4 py-2.5 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-black focus:ring-4 focus:ring-black/5 transition-all text-sm"
+                            className="w-full pl-12 pr-4 py-2.5 bg-mainBG border border-border rounded-none outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all text-sm text-mainText"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    <button className="flex items-center gap-2 px-6 py-2.5 text-slate-600 hover:bg-black hover:text-white rounded-2xl transition-all text-sm border border-slate-100 font-semibold group">
+                    <button className="flex items-center gap-2 px-6 py-2.5 text-lightText hover:bg-primary hover:text-white rounded-none transition-all text-sm border border-border font-semibold group">
                         <MdFilterList size={16} className="group-hover:rotate-180 transition-transform duration-500" />
                         Filters
                     </button>
                 </div>
-                <div className="bg-black p-5 rounded-3xl flex items-center justify-between shadow-xl shadow-black/10">
+                <div className="bg-primary p-5 rounded-none flex items-center justify-between shadow-xl shadow-primary/10">
                     <div>
                         <p className="text-white/50 text-[10px] font-bold uppercase tracking-widest">Total Products</p>
                         <p className="text-3xl font-black text-white">{products.length}</p>
                     </div>
-                    <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center">
+                    <div className="w-14 h-14 bg-white/10 rounded-none flex items-center justify-center">
                         <MdShoppingBag className="text-white" size={28} />
                     </div>
                 </div>
             </div>
 
             {/* Grid */}
-            <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+            <div className="bg-background rounded-none border border-border p-6 shadow-sm">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {loading && products.length === 0 ? (
                         <div className="col-span-full flex flex-col items-center justify-center py-20 gap-4">
-                            <div className="w-12 h-12 border-4 border-black border-t-transparent rounded-full animate-spin" />
-                            <span className="text-slate-400">Loading products...</span>
+                            <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-none animate-spin" />
+                            <span className="text-lightText">Loading products...</span>
                         </div>
                     ) : filteredProducts.length === 0 ? (
-                        <div className="col-span-full text-center py-20 text-slate-400">
+                        <div className="col-span-full text-center py-20 text-lightText">
                             No products found.
                         </div>
                     ) : paginatedProducts.map((product) => (
-                        <div key={product._id} className="bg-white rounded-3xl border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300 group">
+                        <div key={product._id} className="bg-background rounded-none border border-border overflow-hidden hover:shadow-xl transition-all duration-300 group">
                             <div className="relative aspect-square bg-slate-100 overflow-hidden">
                                 {getDefaultImage(product) ? (
                                     <img src={getDefaultImage(product)} alt={product.name}
@@ -241,38 +250,38 @@ const ProductList = () => {
                                     </div>
                                 )}
                                 {product.badge && (
-                                    <div className="absolute top-3 left-3 bg-black text-white px-3 py-1 rounded-full text-xs font-bold">
+                                    <div className="absolute top-3 left-3 bg-black text-white px-3 py-1 rounded-none text-xs font-bold">
                                         {product.badge}
                                     </div>
                                 )}
                                 <div className="absolute top-3 right-3">
                                     {product.isActive
-                                        ? <MdToggleOn className="text-green-500 bg-white rounded-full" size={28} />
-                                        : <MdToggleOff className="text-slate-400 bg-white rounded-full" size={28} />
+                                        ? <MdToggleOn className="text-green-500 bg-white rounded-none" size={28} />
+                                        : <MdToggleOff className="text-slate-400 bg-white rounded-none" size={28} />
                                     }
                                 </div>
                                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                                     <button onClick={() => navigate(`/admin/product/edit/${product._id}`)}
-                                        className="p-3 bg-white text-black rounded-xl hover:scale-110 transition-transform">
+                                        className="p-3 bg-white text-black rounded-none hover:scale-110 transition-transform">
                                         <MdEdit size={20} />
                                     </button>
                                     <button onClick={() => navigate(`/admin/product/view/${product._id}`)}
-                                        className="p-3 bg-white text-black rounded-xl hover:scale-110 transition-transform">
+                                        className="p-3 bg-white text-black rounded-none hover:scale-110 transition-transform">
                                         <MdVisibility size={20} />
                                     </button>
                                     <button onClick={() => handleDeleteClick(product)}
-                                        className="p-3 bg-red-500 text-white rounded-xl hover:scale-110 transition-transform">
+                                        className="p-3 bg-red-500 text-white rounded-none hover:scale-110 transition-transform">
                                         <MdDelete size={20} />
                                     </button>
                                 </div>
                             </div>
                             <div className="p-4 space-y-2">
-                                <h3 className="font-bold text-slate-900 line-clamp-2">{product.name}</h3>
+                                <h3 className="font-bold text-mainText line-clamp-2">{product.name}</h3>
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm text-slate-500">{product.mainCategory?.mainCategoryName}</span>
-                                    <span className="text-lg font-black text-black">{getPrice(product)}</span>
+                                    <span className="text-sm text-lightText">{product.mainCategory?.mainCategoryName}</span>
+                                    <span className="text-lg font-black text-primary">{getPrice(product)}</span>
                                 </div>
-                                <div className="flex items-center gap-4 text-xs text-slate-400 pt-2 border-t border-slate-100">
+                                <div className="flex items-center gap-4 text-xs text-lightText pt-2 border-t border-border">
                                     <span>Views: {product.view || 0}</span>
                                     <span>Sold: {product.sold || 0}</span>
                                     <span>Variants: {product.variants?.length || 0}</span>

@@ -86,7 +86,7 @@ const CustomerView = () => {
     if (loading) {
         return (
             <div className="flex flex-col items-center justify-center py-20 gap-4">
-                <div className="w-12 h-12 border-4 border-black border-t-transparent rounded-full animate-spin" />
+                <div className="w-12 h-12 border-4 border-black border-t-transparent rounded-none animate-spin" />
                 <span className="text-slate-400">Loading customer details...</span>
             </div>
         );
@@ -98,7 +98,7 @@ const CustomerView = () => {
                 <p className="text-slate-400">Customer not found</p>
                 <button
                     onClick={() => navigate('/admin/customers')}
-                    className="mt-4 px-6 py-2 bg-black text-white rounded-xl hover:bg-slate-800 transition-all"
+                    className="mt-4 px-6 py-2 bg-black text-white rounded-none hover:bg-slate-800 transition-all"
                 >
                     Back to Customers
                 </button>
@@ -113,7 +113,7 @@ const CustomerView = () => {
                 <div className="flex items-center gap-4">
                     <button
                         onClick={() => navigate('/admin/customers')}
-                        className="p-2 hover:bg-slate-100 rounded-xl transition-colors"
+                        className="p-2 hover:bg-slate-100 rounded-none transition-colors"
                     >
                         <MdArrowBack size={24} />
                     </button>
@@ -125,7 +125,7 @@ const CustomerView = () => {
                 <button
                     onClick={handleStatusToggle}
                     disabled={updating}
-                    className={`flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-bold transition-all shadow-xl active:scale-95 ${
+                    className={`flex items-center justify-center gap-2 px-6 py-3 rounded-none font-bold transition-all shadow-xl active:scale-95 ${
                         customer.isUserDeleted
                             ? 'bg-green-600 hover:bg-green-700 text-white'
                             : 'bg-red-600 hover:bg-red-700 text-white'
@@ -144,9 +144,9 @@ const CustomerView = () => {
             {/* Customer Info Cards */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Profile Card */}
-                <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+                <div className="bg-white rounded-none border border-slate-200 p-6 shadow-sm">
                     <div className="flex flex-col items-center text-center">
-                        <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-3xl mb-4">
+                        <div className="w-24 h-24 rounded-none bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-3xl mb-4">
                             {customer.firstName?.charAt(0)}{customer.lastName?.charAt(0)}
                         </div>
                         <h3 className="text-xl font-bold text-slate-900 mb-1">
@@ -155,17 +155,17 @@ const CustomerView = () => {
                         <p className="text-sm text-slate-500 mb-4">Customer ID: {customer._id.slice(-8)}</p>
                         
                         {customer.isUserDeleted ? (
-                            <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold bg-red-100 text-red-700">
+                            <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-none text-sm font-bold bg-red-100 text-red-700">
                                 <MdBlock size={16} />
                                 Account Deleted
                             </span>
                         ) : customer.emailVerified ? (
-                            <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold bg-green-100 text-green-700">
+                            <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-none text-sm font-bold bg-green-100 text-green-700">
                                 <MdVerifiedUser size={16} />
                                 Verified Account
                             </span>
                         ) : (
-                            <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold bg-yellow-100 text-yellow-700">
+                            <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-none text-sm font-bold bg-yellow-100 text-yellow-700">
                                 <MdCancel size={16} />
                                 Unverified Account
                             </span>
@@ -174,11 +174,11 @@ const CustomerView = () => {
                 </div>
 
                 {/* Contact Info */}
-                <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+                <div className="bg-white rounded-none border border-slate-200 p-6 shadow-sm">
                     <h3 className="text-lg font-bold text-slate-900 mb-4">Contact Information</h3>
                     <div className="space-y-4">
                         <div className="flex items-start gap-3">
-                            <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <div className="w-10 h-10 bg-blue-100 rounded-none flex items-center justify-center flex-shrink-0">
                                 <MdEmail className="text-blue-600" size={20} />
                             </div>
                             <div>
@@ -189,7 +189,7 @@ const CustomerView = () => {
                         
                         {customer.phone && (
                             <div className="flex items-start gap-3">
-                                <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <div className="w-10 h-10 bg-green-100 rounded-none flex items-center justify-center flex-shrink-0">
                                     <MdPhone className="text-green-600" size={20} />
                                 </div>
                                 <div>
@@ -200,7 +200,7 @@ const CustomerView = () => {
                         )}
 
                         <div className="flex items-start gap-3">
-                            <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <div className="w-10 h-10 bg-purple-100 rounded-none flex items-center justify-center flex-shrink-0">
                                 <MdCalendarToday className="text-purple-600" size={20} />
                             </div>
                             <div>
@@ -212,10 +212,10 @@ const CustomerView = () => {
                 </div>
 
                 {/* Quick Stats */}
-                <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+                <div className="bg-white rounded-none border border-slate-200 p-6 shadow-sm">
                     <h3 className="text-lg font-bold text-slate-900 mb-4">Quick Stats</h3>
                     <div className="space-y-4">
-                        <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+                        <div className="flex items-center justify-between p-3 bg-slate-50 rounded-none">
                             <div className="flex items-center gap-3">
                                 <MdLocationOn className="text-slate-400" size={20} />
                                 <span className="text-sm text-slate-600">Addresses</span>
@@ -223,7 +223,7 @@ const CustomerView = () => {
                             <span className="text-lg font-bold text-slate-900">{customer.address?.length || 0}</span>
                         </div>
 
-                        <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+                        <div className="flex items-center justify-between p-3 bg-slate-50 rounded-none">
                             <div className="flex items-center gap-3">
                                 <MdCreditCard className="text-slate-400" size={20} />
                                 <span className="text-sm text-slate-600">Saved Cards</span>
@@ -231,7 +231,7 @@ const CustomerView = () => {
                             <span className="text-lg font-bold text-slate-900">{customer.savedCards?.length || 0}</span>
                         </div>
 
-                        <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+                        <div className="flex items-center justify-between p-3 bg-slate-50 rounded-none">
                             <div className="flex items-center gap-3">
                                 <MdShoppingBag className="text-slate-400" size={20} />
                                 <span className="text-sm text-slate-600">Recently Viewed</span>
@@ -244,17 +244,17 @@ const CustomerView = () => {
 
             {/* Addresses Section */}
             {customer.address && customer.address.length > 0 && (
-                <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+                <div className="bg-white rounded-none border border-slate-200 p-6 shadow-sm">
                     <h3 className="text-lg font-bold text-slate-900 mb-4">Saved Addresses</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {customer.address.map((addr, index) => (
-                            <div key={addr._id || index} className="p-4 border border-slate-200 rounded-2xl hover:border-slate-300 transition-colors">
+                            <div key={addr._id || index} className="p-4 border border-slate-200 rounded-none hover:border-slate-300 transition-colors">
                                 <div className="flex items-start justify-between mb-2">
                                     <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">
                                         {addr.addressType || 'Address'}
                                     </span>
                                     {customer.selectedAddress?.toString() === addr._id?.toString() && (
-                                        <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                                        <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-none">
                                             Default
                                         </span>
                                     )}
@@ -280,7 +280,7 @@ const CustomerView = () => {
             )}
 
             {/* Orders Section */}
-            <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+            <div className="bg-white rounded-none border border-slate-200 p-6 shadow-sm">
                 <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
                     <MdShoppingBag size={24} />
                     Order History ({orders.length})
@@ -288,7 +288,7 @@ const CustomerView = () => {
                 
                 {loadingOrders ? (
                     <div className="flex flex-col items-center justify-center py-12 gap-4">
-                        <div className="w-8 h-8 border-4 border-black border-t-transparent rounded-full animate-spin" />
+                        <div className="w-8 h-8 border-4 border-black border-t-transparent rounded-none animate-spin" />
                         <span className="text-slate-400 text-sm">Loading orders...</span>
                     </div>
                 ) : orders.length === 0 ? (
@@ -301,7 +301,7 @@ const CustomerView = () => {
                         {orders.map((order) => (
                             <div 
                                 key={order._id} 
-                                className="p-4 border border-slate-200 rounded-2xl hover:border-slate-300 transition-all hover:shadow-md cursor-pointer"
+                                className="p-4 border border-slate-200 rounded-none hover:border-slate-300 transition-all hover:shadow-md cursor-pointer"
                                 onClick={() => navigate(`/admin/order/view/${order._id}`)}
                             >
                                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-3">
@@ -312,7 +312,7 @@ const CustomerView = () => {
                                         </p>
                                     </div>
                                     <div className="flex items-center gap-3">
-                                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${
+                                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-none text-xs font-bold ${
                                             order.orderStatus === 'Delivered' ? 'bg-green-100 text-green-700' :
                                             order.orderStatus === 'On the way' ? 'bg-blue-100 text-blue-700' :
                                             order.orderStatus === 'Cancelled' ? 'bg-red-100 text-red-700' :
@@ -320,7 +320,7 @@ const CustomerView = () => {
                                         }`}>
                                             {order.orderStatus}
                                         </span>
-                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-none text-xs font-bold ${
                                             order.paymentStatus === 'Paid' ? 'bg-green-100 text-green-700' :
                                             order.paymentStatus === 'Failed' ? 'bg-red-100 text-red-700' :
                                             'bg-yellow-100 text-yellow-700'
@@ -355,15 +355,15 @@ const CustomerView = () => {
 
             {/* Notification Preferences */}
             {customer.notificationPreferences && (
-                <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+                <div className="bg-white rounded-none border border-slate-200 p-6 shadow-sm">
                     <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
                         <MdNotifications size={24} />
                         Notification Preferences
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+                        <div className="flex items-center justify-between p-3 bg-slate-50 rounded-none">
                             <span className="text-sm text-slate-600">Email Notifications</span>
-                            <span className={`text-xs font-bold px-3 py-1 rounded-full ${
+                            <span className={`text-xs font-bold px-3 py-1 rounded-none ${
                                 customer.notificationPreferences.email 
                                     ? 'bg-green-100 text-green-700' 
                                     : 'bg-red-100 text-red-700'
@@ -371,9 +371,9 @@ const CustomerView = () => {
                                 {customer.notificationPreferences.email ? 'Enabled' : 'Disabled'}
                             </span>
                         </div>
-                        <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+                        <div className="flex items-center justify-between p-3 bg-slate-50 rounded-none">
                             <span className="text-sm text-slate-600">SMS Notifications</span>
-                            <span className={`text-xs font-bold px-3 py-1 rounded-full ${
+                            <span className={`text-xs font-bold px-3 py-1 rounded-none ${
                                 customer.notificationPreferences.sms 
                                     ? 'bg-green-100 text-green-700' 
                                     : 'bg-red-100 text-red-700'
@@ -381,9 +381,9 @@ const CustomerView = () => {
                                 {customer.notificationPreferences.sms ? 'Enabled' : 'Disabled'}
                             </span>
                         </div>
-                        <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+                        <div className="flex items-center justify-between p-3 bg-slate-50 rounded-none">
                             <span className="text-sm text-slate-600">Push Notifications</span>
-                            <span className={`text-xs font-bold px-3 py-1 rounded-full ${
+                            <span className={`text-xs font-bold px-3 py-1 rounded-none ${
                                 customer.notificationPreferences.push 
                                     ? 'bg-green-100 text-green-700' 
                                     : 'bg-red-100 text-red-700'
@@ -397,7 +397,7 @@ const CustomerView = () => {
 
             {/* Account Deletion Info */}
             {customer.isUserDeleted && customer.deletedAt && (
-                <div className="bg-red-50 border border-red-200 rounded-3xl p-6">
+                <div className="bg-red-50 border border-red-200 rounded-none p-6">
                     <h3 className="text-lg font-bold text-red-900 mb-2">Account Deletion Information</h3>
                     <p className="text-sm text-red-700">
                         This account was deleted on {formatDate(customer.deletedAt)}

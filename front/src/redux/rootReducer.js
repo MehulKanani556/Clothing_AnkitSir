@@ -10,6 +10,10 @@ import notificationReducer from "./slice/notification.slice.js";
 import contactReducer from "./slice/contact.slice.js";
 import cartReducer from "./slice/cart.slice.js";
 import lookbookReducer from "./slice/lookbook.slice.js";
+import couponReducer from "./slice/coupon.slice.js";
+import newsletterReducer from "./slice/newsletter.slice.js";
+import paymentHistoryReducer from "./slice/payment.slice.js";
+import settingsReducer from "./slice/settings.slice.js";
 
 export const rootReducer = combineReducers({
     auth: authReducer,
@@ -23,4 +27,8 @@ export const rootReducer = combineReducers({
     contact: contactReducer,
     cart: cartReducer,
     lookbook: lookbookReducer,
+    coupon: couponReducer,
+    newsletter: newsletterReducer,
+    paymentHistory: paymentHistoryReducer,
+    settings: settingsReducer,
 });

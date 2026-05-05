@@ -148,6 +148,8 @@ import {
   updateLookbook,
   deleteLookbook
 } from "../controller/lookbook.controller.js";
+import { getSettings, updateSettings } from "../controller/settings.controller.js";
+
 
 const router = express.Router();
 
@@ -318,6 +320,11 @@ router.get("/lookbook/admin/get-all", UserAuth, adminAuth, getAllLookbooksAdmin)
 router.get("/lookbook/get-by-slug/:slug", getLookbookBySlug);
 router.put("/lookbook/update/:id", UserAuth, adminAuth, upload.single("lookImage"), updateLookbook);
 router.delete("/lookbook/delete/:id", UserAuth, adminAuth, deleteLookbook);
+
+// --- Settings Routes ---
+router.get("/settings/get", UserAuth, adminAuth, getSettings);
+router.put("/settings/update", UserAuth, adminAuth, updateSettings);
+
 
 //aws
 router.get("/list", async (req, res) => {

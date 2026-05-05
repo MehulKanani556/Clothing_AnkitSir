@@ -9,6 +9,7 @@ import { sendBadRequestResponse, sendErrorResponse, sendNotFoundResponse, sendSu
 // Optional Stripe integration, if installed.
 import Stripe from "stripe";
 import { createNotification } from "../utils/notification.utils.js";
+import { sendOrderConfirmationEmail, sendStatusUpdateEmail } from "../utils/Email.utils.js";
 const STRIPE_SECRET = process.env.STRIPE_SECRET;
 const stripe = new Stripe(STRIPE_SECRET);
 
@@ -321,6 +322,12 @@ export const confirmStripePayment = async (req, res) => {
                 updatedBy: "system"
             });
             await order.save();
+            
+            // Send Confirmation Email
+            const user = await User.findById(order.userId);
+            if (user && user.email) {
+                sendOrderConfirmationEmail(user, order);
+            }
         }
 
         return sendSuccessResponse(res, "Payment confirmed successfully", { orderId: order._id, paymentStatus: "Paid" });
@@ -504,7 +511,12 @@ export const updateOrderStatusAdmin = async (req, res) => {
         await order.save({ session });
         await session.commitTransaction();
 
-        // Send notification
+        // Send Email & Notification
+        const user = await User.findById(order.userId);
+        if (user && user.email) {
+            sendStatusUpdateEmail(user, order, orderStatus);
+        }
+
         createNotification({
             userId: order.userId,
             title: `Order ${orderStatus}`,
@@ -605,7 +617,12 @@ export const cancelOrder = async (req, res) => {
 
         await session.commitTransaction();
 
-        // Send notification
+        // Send Email & Notification
+        const user = await User.findById(userId);
+        if (user && user.email) {
+            sendStatusUpdateEmail(user, order, 'Cancelled');
+        }
+
         createNotification({
             userId,
             title: "Order Cancelled",

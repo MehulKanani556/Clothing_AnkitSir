@@ -17,7 +17,7 @@ import {
     fetchSubCategories,
     fetchInsideSubCategories
 } from '../../../redux/slice/category.slice';
-import { MdArrowBack, MdSave, MdAdd, MdDelete, MdCloudUpload } from 'react-icons/md';
+import { MdArrowBack, MdSave, MdAdd, MdDelete, MdCloudUpload, MdCheck } from 'react-icons/md';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 
 const ProductForm = () => {
@@ -410,29 +410,33 @@ const ProductForm = () => {
     };
 
     return (
-        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Header */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-6">
                 <button
                     onClick={() => navigate('/admin/product')}
-                    className="p-2 hover:bg-slate-100 rounded-xl transition-colors"
+                    className="p-3 bg-white hover:bg-primary/5 rounded-none transition-all border border-border hover:border-primary/20 hover:shadow-sm active:scale-95"
                 >
-                    <MdArrowBack size={24} />
+                    <MdArrowBack size={24} className="text-lightText" />
                 </button>
                 <div>
-                    <h2 className="text-2xl font-bold text-slate-900">
-                        {isEditMode ? 'Edit Product' : 'Create New Product'}
+                    <h2 className="text-2xl font-black text-mainText tracking-tight">
+                        {isEditMode ? 'Edit Product' : 'Add New Product'}
                     </h2>
-                    <p className="text-slate-500 text-sm">
-                        {isEditMode ? 'Update product information' : 'Add a new product to your catalog'}
+                    <p className="text-[11px] text-lightText font-black uppercase tracking-widest mt-1">
+                        {isEditMode ? 'Update product information' : 'Create a new item for your store'}
                     </p>
                 </div>
             </div>
 
             {/* Form */}
-            <form onSubmit={formik.handleSubmit} className="space-y-4">
-                <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-4">
-                    <h3 className="text-base font-bold text-slate-900">Basic Information</h3>
+            <form onSubmit={formik.handleSubmit} className="space-y-6">
+                {/* General Details */}
+                <div className="bg-background rounded-none border border-border p-8 space-y-6 shadow-sm">
+                    <div className="flex items-center gap-3 border-b border-border pb-4 mb-2">
+                        <div className="w-2 h-6 bg-primary rounded-none"></div>
+                        <h3 className="text-base font-black text-mainText uppercase tracking-tight">General Details</h3>
+                    </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="md:col-span-2">
@@ -440,7 +444,7 @@ const ProductForm = () => {
                             <input
                                 type="text"
                                 placeholder="e.g. Men's Cotton T-Shirt"
-                                className={`w-full px-4 py-2.5 rounded-xl border mt-1 transition-all outline-none text-sm font-medium ${formik.touched.name && formik.errors.name
+                                className={`w-full px-4 py-2.5 rounded-none border mt-1 transition-all outline-none text-sm font-medium ${formik.touched.name && formik.errors.name
                                     ? 'border-red-300 focus:border-red-500 bg-red-50/10'
                                     : 'border-slate-200 focus:border-black focus:ring-2 focus:ring-black/5'
                                     }`}
@@ -451,23 +455,23 @@ const ProductForm = () => {
                             )}
                         </div>
 
-                        <div>
-                            <label className="text-xs font-bold text-slate-700 ml-1">Brand</label>
+                        <div className="space-y-2">
+                            <label className="text-[11px] font-black text-mainText uppercase tracking-widest ml-1 opacity-70">Brand Name</label>
                             <input
                                 type="text"
                                 placeholder="e.g. Nike, Adidas"
-                                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 mt-1 focus:border-black focus:ring-2 focus:ring-black/5 transition-all outline-none text-sm font-medium"
+                                className="w-full px-6 py-4 rounded-none border border-border bg-mainBG/10 focus:border-primary focus:ring-8 focus:ring-primary/5 transition-all outline-none text-sm font-black tracking-tight"
                                 {...formik.getFieldProps('brand')}
                             />
                         </div>
 
-                        <div>
-                            <label className="text-xs font-bold text-slate-700 ml-1">Badge</label>
+                        <div className="space-y-2">
+                            <label className="text-[11px] font-black text-mainText uppercase tracking-widest ml-1 opacity-70">Product Tag</label>
                             <select
-                                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 mt-1 focus:border-black focus:ring-2 focus:ring-black/5 transition-all outline-none text-sm font-medium"
+                                className="w-full px-6 py-4 rounded-none border border-border bg-mainBG/10 focus:border-primary focus:ring-8 focus:ring-primary/5 transition-all outline-none text-sm font-black tracking-tight appearance-none"
                                 {...formik.getFieldProps('badge')}
                             >
-                                <option value="">No Badge</option>
+                                <option value="">No Tag</option>
                                 <option value="NEW">NEW</option>
                                 <option value="FAV">FAV</option>
                                 <option value="RESTOCK">RESTOCK</option>
@@ -477,10 +481,10 @@ const ProductForm = () => {
                             </select>
                         </div>
 
-                        <div>
-                            <label className="text-xs font-bold text-slate-700 ml-1">Gender *</label>
+                        <div className="space-y-2">
+                            <label className="text-[11px] font-black text-mainText uppercase tracking-widest ml-1 opacity-70">Category For *</label>
                             <select
-                                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 mt-1 focus:border-black focus:ring-2 focus:ring-black/5 transition-all outline-none text-sm font-medium"
+                                className="w-full px-6 py-4 rounded-none border border-border bg-mainBG/10 focus:border-primary focus:ring-8 focus:ring-primary/5 transition-all outline-none text-sm font-black tracking-tight appearance-none"
                                 {...formik.getFieldProps('gender')}
                             >
                                 <option value="Men">Men</option>
@@ -491,36 +495,39 @@ const ProductForm = () => {
                     </div>
                 </div>
 
-                {/* Categories */}
-                <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-4">
-                    <h3 className="text-base font-bold text-slate-900">Categories</h3>
+                {/* Product Category */}
+                <div className="bg-background rounded-none border border-border p-8 space-y-6 shadow-sm">
+                    <div className="flex items-center gap-3 border-b border-border pb-4 mb-2">
+                        <div className="w-2 h-6 bg-primary rounded-none"></div>
+                        <h3 className="text-base font-black text-mainText uppercase tracking-tight">Product Category</h3>
+                    </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label className="text-xs font-bold text-slate-700 ml-1">Main Category *</label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                            <label className="text-[11px] font-black text-mainText uppercase tracking-widest ml-1 opacity-70">Top Category *</label>
                             <select
-                                className={`w-full px-4 py-2.5 rounded-xl border mt-1 transition-all outline-none text-sm font-medium ${formik.touched.mainCategory && formik.errors.mainCategory
+                                className={`w-full px-6 py-4 rounded-none border transition-all outline-none text-sm font-black tracking-tight appearance-none bg-mainBG/10 ${formik.touched.mainCategory && formik.errors.mainCategory
                                     ? 'border-red-300 focus:border-red-500 bg-red-50/10'
-                                    : 'border-slate-200 focus:border-black focus:ring-2 focus:ring-black/5'
+                                    : 'border-border focus:border-primary focus:ring-8 focus:ring-primary/5'
                                     }`}
                                 {...formik.getFieldProps('mainCategory')}
                             >
-                                <option value="">Select Main Category</option>
+                                <option value="">Select Top Category</option>
                                 {mainCategories.map((cat) => (
                                     <option key={cat._id} value={cat._id}>{cat.mainCategoryName}</option>
                                 ))}
                             </select>
                             {formik.touched.mainCategory && formik.errors.mainCategory && (
-                                <p className="text-xs font-bold text-red-500 ml-1 mt-1">{formik.errors.mainCategory}</p>
+                                <p className="text-[10px] font-black text-red-500 ml-1 uppercase tracking-widest mt-1">{formik.errors.mainCategory}</p>
                             )}
                         </div>
 
-                        <div>
-                            <label className="text-xs font-bold text-slate-700 ml-1">Category *</label>
+                        <div className="space-y-2">
+                            <label className="text-[11px] font-black text-mainText uppercase tracking-widest ml-1 opacity-70">Category *</label>
                             <select
-                                className={`w-full px-4 py-2.5 rounded-xl border mt-1 transition-all outline-none text-sm font-medium ${formik.touched.category && formik.errors.category
+                                className={`w-full px-6 py-4 rounded-none border transition-all outline-none text-sm font-black tracking-tight appearance-none bg-mainBG/10 ${formik.touched.category && formik.errors.category
                                     ? 'border-red-300 focus:border-red-500 bg-red-50/10'
-                                    : 'border-slate-200 focus:border-black focus:ring-2 focus:ring-black/5'
+                                    : 'border-border focus:border-primary focus:ring-8 focus:ring-primary/5'
                                     }`}
                                 {...formik.getFieldProps('category')}
                                 disabled={!formik.values.mainCategory}
@@ -531,16 +538,16 @@ const ProductForm = () => {
                                 ))}
                             </select>
                             {formik.touched.category && formik.errors.category && (
-                                <p className="text-xs font-bold text-red-500 ml-1 mt-1">{formik.errors.category}</p>
+                                <p className="text-[10px] font-black text-red-500 ml-1 uppercase tracking-widest mt-1">{formik.errors.category}</p>
                             )}
                         </div>
 
-                        <div>
-                            <label className="text-xs font-bold text-slate-700 ml-1">Sub Category *</label>
+                        <div className="space-y-2">
+                            <label className="text-[11px] font-black text-mainText uppercase tracking-widest ml-1 opacity-70">Sub Category *</label>
                             <select
-                                className={`w-full px-4 py-2.5 rounded-xl border mt-1 transition-all outline-none text-sm font-medium ${formik.touched.subCategory && formik.errors.subCategory
+                                className={`w-full px-6 py-4 rounded-none border transition-all outline-none text-sm font-black tracking-tight appearance-none bg-mainBG/10 ${formik.touched.subCategory && formik.errors.subCategory
                                     ? 'border-red-300 focus:border-red-500 bg-red-50/10'
-                                    : 'border-slate-200 focus:border-black focus:ring-2 focus:ring-black/5'
+                                    : 'border-border focus:border-primary focus:ring-8 focus:ring-primary/5'
                                     }`}
                                 {...formik.getFieldProps('subCategory')}
                                 disabled={!formik.values.category}
@@ -551,18 +558,18 @@ const ProductForm = () => {
                                 ))}
                             </select>
                             {formik.touched.subCategory && formik.errors.subCategory && (
-                                <p className="text-xs font-bold text-red-500 ml-1 mt-1">{formik.errors.subCategory}</p>
+                                <p className="text-[10px] font-black text-red-500 ml-1 uppercase tracking-widest mt-1">{formik.errors.subCategory}</p>
                             )}
                         </div>
 
-                        <div>
-                            <label className="text-xs font-bold text-slate-700 ml-1">Inside Sub Category</label>
+                        <div className="space-y-2">
+                            <label className="text-[11px] font-black text-mainText uppercase tracking-widest ml-1 opacity-70">Detailed Category</label>
                             <select
-                                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 mt-1 focus:border-black focus:ring-2 focus:ring-black/5 transition-all outline-none text-sm font-medium"
+                                className="w-full px-6 py-4 rounded-none border border-border bg-mainBG/10 focus:border-primary focus:ring-8 focus:ring-primary/5 transition-all outline-none text-sm font-black tracking-tight appearance-none"
                                 {...formik.getFieldProps('insideSubCategory')}
                                 disabled={!formik.values.subCategory}
                             >
-                                <option value="">Select Inside Sub Category (Optional)</option>
+                                <option value="">Select Detailed Category (Optional)</option>
                                 {filteredInsideSubCategories.map((cat) => (
                                     <option key={cat._id} value={cat._id}>{cat.insideSubCategoryName}</option>
                                 ))}
@@ -571,27 +578,30 @@ const ProductForm = () => {
                     </div>
                 </div>
 
-                {/* Product Details */}
-                <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-4">
-                    <h3 className="text-base font-bold text-slate-900">Product Details</h3>
+                {/* Product Description */}
+                <div className="bg-background rounded-none border border-border p-8 space-y-6 shadow-sm">
+                    <div className="flex items-center gap-3 border-b border-border pb-4 mb-2">
+                        <div className="w-2 h-6 bg-primary rounded-none"></div>
+                        <h3 className="text-base font-black text-mainText uppercase tracking-tight">Product Description</h3>
+                    </div>
 
-                    <div className="space-y-3">
-                        <div>
-                            <label className="text-xs font-bold text-slate-700 ml-1">Description</label>
+                    <div className="space-y-6">
+                        <div className="space-y-2">
+                            <label className="text-[11px] font-black text-mainText uppercase tracking-widest ml-1 opacity-70">Description</label>
                             <textarea
                                 rows="3"
-                                placeholder="Detailed product description..."
-                                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 mt-1 focus:border-black focus:ring-2 focus:ring-black/5 transition-all outline-none text-sm font-medium resize-none"
+                                placeholder="Write a detailed description of the product..."
+                                className="w-full px-6 py-4 rounded-none border border-border bg-mainBG/10 focus:border-primary focus:ring-8 focus:ring-primary/5 transition-all outline-none text-sm font-medium resize-none"
                                 {...formik.getFieldProps('productDetails.description')}
                             />
                         </div>
 
-                        <div>
-                            <label className="text-xs font-bold text-slate-700 ml-1">Key Points (one per line)</label>
+                        <div className="space-y-2">
+                            <label className="text-[11px] font-black text-mainText uppercase tracking-widest ml-1 opacity-70">Key Features (one per line)</label>
                             <textarea
                                 rows="3"
-                                placeholder="Premium quality fabric&#10;Comfortable fit&#10;Machine washable"
-                                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 mt-1 focus:border-black focus:ring-2 focus:ring-black/5 transition-all outline-none text-sm font-medium resize-none"
+                                placeholder="e.g. Premium quality fabric&#10;Comfortable fit&#10;Machine washable"
+                                className="w-full px-6 py-4 rounded-none border border-border bg-mainBG/10 focus:border-primary focus:ring-8 focus:ring-primary/5 transition-all outline-none text-sm font-medium resize-none"
                                 {...formik.getFieldProps('productDetails.points')}
                             />
                         </div>
@@ -599,7 +609,7 @@ const ProductForm = () => {
                 </div>
 
                 {/* Additional Info */}
-                <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-4">
+                <div className="bg-white rounded-none border border-slate-200 p-5 space-y-4">
                     <h3 className="text-base font-bold text-slate-900">Additional Information</h3>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -608,7 +618,7 @@ const ProductForm = () => {
                             <input
                                 type="text"
                                 placeholder="e.g. 100% Cotton"
-                                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 mt-1 focus:border-black focus:ring-2 focus:ring-black/5 transition-all outline-none text-sm font-medium"
+                                className="w-full px-4 py-2.5 rounded-none border border-slate-200 mt-1 focus:border-black focus:ring-2 focus:ring-black/5 transition-all outline-none text-sm font-medium"
                                 {...formik.getFieldProps('material')}
                             />
                         </div>
@@ -618,7 +628,7 @@ const ProductForm = () => {
                             <input
                                 type="text"
                                 placeholder="e.g. India"
-                                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 mt-1 focus:border-black focus:ring-2 focus:ring-black/5 transition-all outline-none text-sm font-medium"
+                                className="w-full px-4 py-2.5 rounded-none border border-slate-200 mt-1 focus:border-black focus:ring-2 focus:ring-black/5 transition-all outline-none text-sm font-medium"
                                 {...formik.getFieldProps('countryOfOrigin')}
                             />
                         </div>
@@ -628,7 +638,7 @@ const ProductForm = () => {
                             <textarea
                                 rows="2"
                                 placeholder="Machine wash cold, tumble dry low..."
-                                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 mt-1 focus:border-black focus:ring-2 focus:ring-black/5 transition-all outline-none text-sm font-medium resize-none"
+                                className="w-full px-4 py-2.5 rounded-none border border-slate-200 mt-1 focus:border-black focus:ring-2 focus:ring-black/5 transition-all outline-none text-sm font-medium resize-none"
                                 {...formik.getFieldProps('careInstructions')}
                             />
                         </div>
@@ -638,59 +648,65 @@ const ProductForm = () => {
                             <input
                                 type="text"
                                 placeholder="summer, casual, trending"
-                                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 mt-1 focus:border-black focus:ring-2 focus:ring-black/5 transition-all outline-none text-sm font-medium"
+                                className="w-full px-4 py-2.5 rounded-none border border-slate-200 mt-1 focus:border-black focus:ring-2 focus:ring-black/5 transition-all outline-none text-sm font-medium"
                                 {...formik.getFieldProps('tags')}
                             />
                         </div>
                     </div>
                 </div>
 
-                {/* Delivery & Returns */}
-                <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-4">
-                    <h3 className="text-base font-bold text-slate-900">Delivery & Returns</h3>
+                {/* Shipping & Returns */}
+                <div className="bg-background rounded-none border border-border p-8 space-y-6 shadow-sm">
+                    <div className="flex items-center gap-3 border-b border-border pb-4 mb-2">
+                        <div className="w-2 h-6 bg-primary rounded-none"></div>
+                        <h3 className="text-base font-black text-mainText uppercase tracking-tight">Shipping & Returns</h3>
+                    </div>
 
-                    <div className="space-y-3">
-                        <div>
-                            <label className="text-xs font-bold text-slate-700 ml-1">Description</label>
+                    <div className="space-y-6">
+                        <div className="space-y-2">
+                            <label className="text-[11px] font-black text-mainText uppercase tracking-widest ml-1 opacity-70">Policy Description</label>
                             <textarea
                                 rows="2"
-                                placeholder="Delivery and return policy..."
-                                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 mt-1 focus:border-black focus:ring-2 focus:ring-black/5 transition-all outline-none text-sm font-medium resize-none"
+                                placeholder="Describe your shipping and return policy..."
+                                className="w-full px-6 py-4 rounded-none border border-border bg-mainBG/10 focus:border-primary focus:ring-8 focus:ring-primary/5 transition-all outline-none text-sm font-medium resize-none"
                                 {...formik.getFieldProps('deliveryReturns.description')}
                             />
                         </div>
 
-                        <div>
-                            <label className="text-xs font-bold text-slate-700 ml-1">Policy Points (one per line)</label>
+                        <div className="space-y-2">
+                            <label className="text-[11px] font-black text-mainText uppercase tracking-widest ml-1 opacity-70">Policy Points (one per line)</label>
                             <textarea
                                 rows="3"
-                                placeholder="Free delivery on orders above ₹999&#10;Easy 30-day returns&#10;Cash on delivery available"
-                                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 mt-1 focus:border-black focus:ring-2 focus:ring-black/5 transition-all outline-none text-sm font-medium resize-none"
+                                placeholder="e.g. Free delivery on orders above ₹999&#10;Easy 30-day returns"
+                                className="w-full px-6 py-4 rounded-none border border-border bg-mainBG/10 focus:border-primary focus:ring-8 focus:ring-primary/5 transition-all outline-none text-sm font-medium resize-none"
                                 {...formik.getFieldProps('deliveryReturns.points')}
                             />
                         </div>
                     </div>
                 </div>
 
-                {/* Product Variants */}
-                <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-4">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h3 className="text-base font-bold text-slate-900">Product Variants *</h3>
-                            <p className="text-xs text-slate-500 mt-1">
-                                At least one variant is required
-                                {categoryAttributes.length > 0 && (
-                                    <span className="ml-2 text-blue-600 font-bold">
-                                        • Category has {categoryAttributes.length} attribute(s): {categoryAttributes.map(a => a.name).join(', ')}
-                                    </span>
-                                )}
-                            </p>
+                {/* Product Sizes & Colors */}
+                <div className="bg-background rounded-none border border-border p-8 space-y-6 shadow-sm">
+                    <div className="flex items-center justify-between border-b border-border pb-4 mb-2">
+                        <div className="flex items-center gap-3">
+                            <div className="w-2 h-6 bg-primary rounded-none"></div>
+                            <div>
+                                <h3 className="text-base font-black text-mainText uppercase tracking-tight">Product Sizes & Colors *</h3>
+                                <p className="text-[10px] text-lightText font-black uppercase tracking-widest mt-1">
+                                    At least one color/variant is required
+                                    {categoryAttributes.length > 0 && (
+                                        <span className="ml-2 text-primary font-black">
+                                            • Category has {categoryAttributes.length} attribute(s): {categoryAttributes.map(a => a.name).join(', ')}
+                                        </span>
+                                    )}
+                                </p>
+                            </div>
                         </div>
                         {variants.length > 0 && (
                             <button
                                 type="button"
                                 onClick={addVariant}
-                                className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-xl font-bold hover:bg-slate-800 transition-all text-sm"
+                                className="flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-none font-black uppercase tracking-widest text-[11px] hover:opacity-90 transition-all shadow-xl shadow-primary/20 active:scale-95"
                             >
                                 <MdAdd size={18} />
                                 Add Variant
@@ -698,41 +714,43 @@ const ProductForm = () => {
                         )}
                     </div>
 
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                         {variants.map((variant, index) => (
-                            <div key={index} className="border border-slate-200 rounded-2xl p-4 space-y-4 bg-slate-50/50">
-                                <div className="flex items-center justify-between">
-                                    <h4 className="text-sm font-bold text-slate-700">Variant {index + 1}</h4>
+                            <div key={index} className="border border-border rounded-none p-6 space-y-6 bg-mainBG/20 group hover:border-primary/20 transition-all">
+                                <div className="flex items-center justify-between border-b border-border/50 pb-4">
+                                    <h4 className="text-xs font-black text-mainText uppercase tracking-widest">Variant {index + 1}</h4>
                                     {variants.length > 1 && (
                                         <button
                                             type="button"
                                             onClick={() => removeVariant(index)}
-                                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                            className="p-2.5 text-red-500 hover:bg-red-50 rounded-none transition-all active:scale-90"
                                         >
-                                            <MdDelete size={18} />
+                                            <MdDelete size={20} />
                                         </button>
                                     )}
                                 </div>
 
                                 {/* Images */}
-                                <div>
-                                    <label className="text-xs font-bold text-slate-700 ml-1">Images * (at least 1)</label>
-                                    <div className="grid grid-cols-5 gap-3 mt-2">
+                                <div className="space-y-3">
+                                    <label className="text-[11px] font-black text-mainText uppercase tracking-widest ml-1 opacity-70">Variant Images * (Add at least 1)</label>
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
                                         {variant.imagePreviews?.map((preview, imgIndex) => (
-                                            <div key={imgIndex} className="relative aspect-square rounded-xl overflow-hidden border-2 border-slate-200 group">
-                                                <img src={preview} alt={`Preview ${imgIndex}`} className="w-full h-full object-cover" />
-                                                <button
-                                                    type="button"
-                                                    onClick={() => removeVariantImage(index, imgIndex)}
-                                                    className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
-                                                >
-                                                    <MdDelete size={20} className="text-white" />
-                                                </button>
+                                            <div key={imgIndex} className="relative aspect-square rounded-none overflow-hidden border-2 border-border group/img bg-white">
+                                                <img src={preview} alt={`Preview ${imgIndex}`} className="w-full h-full object-cover transition-transform duration-500 group-hover/img:scale-110" />
+                                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeVariantImage(index, imgIndex)}
+                                                        className="bg-white text-red-500 p-2.5 rounded-none shadow-xl hover:scale-110 transition-transform active:scale-90"
+                                                    >
+                                                        <MdDelete size={20} />
+                                                    </button>
+                                                </div>
                                             </div>
                                         ))}
-                                        <label className="aspect-square rounded-xl border-2 border-dashed border-slate-300 hover:border-black transition-all flex flex-col items-center justify-center cursor-pointer bg-white">
-                                            <MdCloudUpload size={24} className="text-slate-400" />
-                                            <span className="text-xs text-slate-400 mt-1">Add</span>
+                                        <label className="aspect-square rounded-none border-2 border-dashed border-border hover:border-primary hover:bg-primary/5 transition-all flex flex-col items-center justify-center cursor-pointer bg-white group/upload">
+                                            <MdCloudUpload size={28} className="text-lightText group-hover/upload:text-primary transition-colors" />
+                                            <span className="text-[10px] font-black text-lightText uppercase tracking-widest mt-2">Add Image</span>
                                             <input
                                                 type="file"
                                                 accept="image/*"
@@ -742,96 +760,103 @@ const ProductForm = () => {
                                             />
                                         </label>
                                     </div>
-                                </div>
-
-                                {/* Color & Details */}
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="text-xs font-bold text-slate-700 ml-1">Color Name *</label>
+                                                              {/* Color & Details */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <label className="text-[11px] font-black text-mainText uppercase tracking-widest ml-1 opacity-70">Color Name *</label>
                                         <input
                                             type="text"
                                             placeholder="e.g. Red, Blue, Black"
-                                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 mt-1 focus:border-black focus:ring-2 focus:ring-black/5 transition-all outline-none text-sm font-medium bg-white"
+                                            className="w-full px-6 py-4 rounded-none border border-border bg-white focus:border-primary focus:ring-8 focus:ring-primary/5 transition-all outline-none text-sm font-black tracking-tight"
                                             value={variant.color}
                                             onChange={(e) => updateVariant(index, 'color', e.target.value)}
                                         />
                                     </div>
 
-                                    <div>
-                                        <label className="text-xs font-bold text-slate-700 ml-1">Color Code</label>
-                                        <div className="flex gap-2 mt-1">
-                                            <input
-                                                type="color"
-                                                className="w-12 h-10 rounded-lg border border-slate-200 cursor-pointer"
-                                                value={variant.colorCode}
-                                                onChange={(e) => updateVariant(index, 'colorCode', e.target.value)}
-                                            />
+                                    <div className="space-y-2">
+                                        <label className="text-[11px] font-black text-mainText uppercase tracking-widest ml-1 opacity-70">Color Hex Code</label>
+                                        <div className="flex gap-4">
+                                            <div className="relative w-14 h-14 rounded-none overflow-hidden border border-border shadow-sm shrink-0">
+                                                <input
+                                                    type="color"
+                                                    className="absolute inset-[-10px] w-[200%] h-[200%] cursor-pointer"
+                                                    value={variant.colorCode}
+                                                    onChange={(e) => updateVariant(index, 'colorCode', e.target.value)}
+                                                />
+                                            </div>
                                             <input
                                                 type="text"
                                                 placeholder="#000000"
-                                                className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 focus:border-black focus:ring-2 focus:ring-black/5 transition-all outline-none text-sm font-medium bg-white"
+                                                className="flex-1 px-6 py-4 rounded-none border border-border bg-white focus:border-primary focus:ring-8 focus:ring-primary/5 transition-all outline-none text-sm font-black tracking-tight"
                                                 value={variant.colorCode}
                                                 onChange={(e) => updateVariant(index, 'colorCode', e.target.value)}
                                             />
                                         </div>
                                     </div>
                                 </div>
+    </div>
 
                                 {/* Pricing Type Toggle */}
-                                <div className="flex items-center gap-4 p-3 bg-slate-50 rounded-xl">
-                                    <label className="flex items-center gap-3 cursor-pointer">
-                                        <input
-                                            type="radio"
-                                            name={`pricingType-${index}`}
-                                            checked={!variant.useOptions}
-                                            onChange={() => updateVariant(index, 'useOptions', false)}
-                                            className="w-4 h-4"
-                                        />
-                                        <span className="text-sm font-medium text-slate-700">Single Price</span>
+                                <div className="flex items-center gap-8 p-6 bg-mainBG/30 rounded-none border border-border/50">
+                                    <label className="flex items-center gap-3 cursor-pointer group/radio">
+                                        <div className="relative flex items-center justify-center">
+                                            <input
+                                                type="radio"
+                                                name={`pricingType-${index}`}
+                                                className="peer appearance-none w-5 h-5 rounded-none border-2 border-border checked:border-primary transition-all cursor-pointer"
+                                                checked={!variant.useOptions}
+                                                onChange={() => updateVariant(index, 'useOptions', false)}
+                                            />
+                                            <div className="absolute w-2.5 h-2.5 rounded-none bg-primary scale-0 peer-checked:scale-100 transition-transform"></div>
+                                        </div>
+                                        <span className="text-[11px] font-black text-mainText uppercase tracking-widest opacity-70 group-hover/radio:opacity-100 transition-opacity">Same Price for All Sizes</span>
                                     </label>
-                                    <label className="flex items-center gap-3 cursor-pointer">
-                                        <input
-                                            type="radio"
-                                            name={`pricingType-${index}`}
-                                            checked={variant.useOptions}
-                                            onChange={() => updateVariant(index, 'useOptions', true)}
-                                            className="w-4 h-4"
-                                        />
-                                        <span className="text-sm font-medium text-slate-700">Multiple Sizes/Prices</span>
+                                    <label className="flex items-center gap-3 cursor-pointer group/radio">
+                                        <div className="relative flex items-center justify-center">
+                                            <input
+                                                type="radio"
+                                                name={`pricingType-${index}`}
+                                                className="peer appearance-none w-5 h-5 rounded-none border-2 border-border checked:border-primary transition-all cursor-pointer"
+                                                checked={variant.useOptions}
+                                                onChange={() => updateVariant(index, 'useOptions', true)}
+                                            />
+                                            <div className="absolute w-2.5 h-2.5 rounded-none bg-primary scale-0 peer-checked:scale-100 transition-transform"></div>
+                                        </div>
+                                        <span className="text-[11px] font-black text-mainText uppercase tracking-widest opacity-70 group-hover/radio:opacity-100 transition-opacity">Different Price per Size</span>
                                     </label>
                                 </div>
 
                                 {/* Single Price Fields */}
                                 {!variant.useOptions && (
-                                    <div className="grid grid-cols-3 gap-4">
-                                        <div>
-                                            <label className="text-xs font-bold text-slate-700 ml-1">Price (₹) *</label>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        <div className="space-y-2">
+                                            <label className="text-[11px] font-black text-mainText uppercase tracking-widest ml-1 opacity-70">Selling Price (₹) *</label>
                                             <input
                                                 type="number"
-                                                placeholder="999"
-                                                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 mt-1 focus:border-black focus:ring-2 focus:ring-black/5 transition-all outline-none text-sm font-medium bg-white"
+                                                placeholder="e.g. 999"
+                                                className="w-full px-6 py-4 rounded-none border border-border bg-white focus:border-primary focus:ring-8 focus:ring-primary/5 transition-all outline-none text-sm font-black tracking-tight"
                                                 value={variant.price}
                                                 onChange={(e) => updateVariant(index, 'price', e.target.value)}
                                             />
                                         </div>
-                                        <div>
-                                            <label className="text-xs font-bold text-slate-700 ml-1">Stock *</label>
+                                        <div className="space-y-2">
+                                            <label className="text-[11px] font-black text-mainText uppercase tracking-widest ml-1 opacity-70">Total Stock *</label>
                                             <input
                                                 type="number"
-                                                placeholder="100"
-                                                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 mt-1 focus:border-black focus:ring-2 focus:ring-black/5 transition-all outline-none text-sm font-medium bg-white"
+                                                placeholder="e.g. 100"
+                                                className="w-full px-6 py-4 rounded-none border border-border bg-white focus:border-primary focus:ring-8 focus:ring-primary/5 transition-all outline-none text-sm font-black tracking-tight"
                                                 value={variant.stock}
                                                 onChange={(e) => updateVariant(index, 'stock', e.target.value)}
                                             />
                                         </div>
-                                        <div>
-                                            <label className="text-xs font-bold text-slate-700 ml-1">Discount (%)</label>
+                                        <div className="space-y-2">
+                                            <label className="text-[11px] font-black text-mainText uppercase tracking-widest ml-1 opacity-70">Discount (%)</label>
                                             <input
                                                 type="number"
                                                 placeholder="0"
                                                 min="0"
                                                 max="100"
-                                                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 mt-1 focus:border-black focus:ring-2 focus:ring-black/5 transition-all outline-none text-sm font-medium bg-white"
+                                                className="w-full px-6 py-4 rounded-none border border-border bg-white focus:border-primary focus:ring-8 focus:ring-primary/5 transition-all outline-none text-sm font-black tracking-tight"
                                                 value={variant.discount}
                                                 onChange={(e) => updateVariant(index, 'discount', e.target.value)}
                                             />
@@ -842,12 +867,12 @@ const ProductForm = () => {
                                 {/* Multiple Size Options */}
                                 {variant.useOptions && (
                                     <div className="space-y-3">
-                                        <div className="flex items-center justify-between">
-                                            <label className="text-xs font-bold text-slate-700">Size Options</label>
+                                        <div className="flex items-center justify-between border-b border-border/50 pb-2">
+                                            <label className="text-[11px] font-black text-mainText uppercase tracking-widest ml-1 opacity-70">Size Wise Pricing</label>
                                             <button
                                                 type="button"
                                                 onClick={() => addVariantOption(index)}
-                                                className="flex items-center gap-1 text-xs font-bold text-black hover:bg-slate-100 px-3 py-1.5 rounded-lg transition-all"
+                                                className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-none font-black uppercase tracking-widest text-[10px] hover:opacity-90 transition-all shadow-lg shadow-primary/10"
                                             >
                                                 <MdAdd size={16} />
                                                 Add Size
@@ -855,12 +880,12 @@ const ProductForm = () => {
                                         </div>
 
                                         {variant.options?.map((option, optIndex) => (
-                                            <div key={optIndex} className="grid grid-cols-6 gap-3 p-3 bg-white rounded-xl border border-slate-200">
+                                            <div key={optIndex} className="grid grid-cols-6 gap-3 p-3 bg-white rounded-none border border-slate-200">
                                                 <div>
                                                     <input
                                                         type="text"
                                                         placeholder="Size"
-                                                        className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-black focus:ring-2 focus:ring-black/5 transition-all outline-none text-xs font-medium"
+                                                        className="w-full px-3 py-2 rounded-none border border-slate-200 focus:border-black focus:ring-2 focus:ring-black/5 transition-all outline-none text-xs font-medium"
                                                         value={option.size || ''}
                                                         onChange={(e) => updateVariantOption(index, optIndex, 'size', e.target.value)}
                                                         required
@@ -870,7 +895,7 @@ const ProductForm = () => {
                                                     <input
                                                         type="number"
                                                         placeholder="Price"
-                                                        className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-black focus:ring-2 focus:ring-black/5 transition-all outline-none text-xs font-medium"
+                                                        className="w-full px-3 py-2 rounded-none border border-slate-200 focus:border-black focus:ring-2 focus:ring-black/5 transition-all outline-none text-xs font-medium"
                                                         value={option.price || ''}
                                                         onChange={(e) => updateVariantOption(index, optIndex, 'price', e.target.value)}
                                                         required
@@ -880,7 +905,7 @@ const ProductForm = () => {
                                                     <input
                                                         type="number"
                                                         placeholder="Stock"
-                                                        className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-black focus:ring-2 focus:ring-black/5 transition-all outline-none text-xs font-medium"
+                                                        className="w-full px-3 py-2 rounded-none border border-slate-200 focus:border-black focus:ring-2 focus:ring-black/5 transition-all outline-none text-xs font-medium"
                                                         value={option.stock || ''}
                                                         onChange={(e) => updateVariantOption(index, optIndex, 'stock', e.target.value)}
                                                         required
@@ -892,7 +917,7 @@ const ProductForm = () => {
                                                         placeholder="Disc %"
                                                         min="0"
                                                         max="100"
-                                                        className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-black focus:ring-2 focus:ring-black/5 transition-all outline-none text-xs font-medium"
+                                                        className="w-full px-3 py-2 rounded-none border border-slate-200 focus:border-black focus:ring-2 focus:ring-black/5 transition-all outline-none text-xs font-medium"
                                                         value={option.discount || 0}
                                                         onChange={(e) => updateVariantOption(index, optIndex, 'discount', e.target.value)}
                                                     />
@@ -904,7 +929,7 @@ const ProductForm = () => {
                                                     <button
                                                         type="button"
                                                         onClick={() => removeVariantOption(index, optIndex)}
-                                                        className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                        className="p-1.5 text-red-600 hover:bg-red-50 rounded-none transition-colors"
                                                     >
                                                         <MdDelete size={18} />
                                                     </button>
@@ -916,98 +941,115 @@ const ProductForm = () => {
                                             <button
                                                 type="button"
                                                 onClick={() => addVariantOption(index)}
-                                                className="w-full py-6 border-2 border-dashed border-slate-300 rounded-xl hover:border-black transition-all flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-black"
+                                                className="w-full py-12 border-2 border-dashed border-border rounded-none hover:border-primary hover:bg-primary/5 transition-all flex flex-col items-center justify-center gap-3 bg-white group/empty"
                                             >
-                                                <MdAdd size={24} />
-                                                <span className="text-xs font-bold">Add First Size</span>
+                                                <div className="w-12 h-12 rounded-none bg-mainBG/5 flex items-center justify-center group-hover/empty:bg-primary/10 transition-colors">
+                                                    <MdAdd size={24} className="text-lightText group-hover/empty:text-primary transition-colors" />
+                                                </div>
+                                                <span className="text-[11px] font-black text-lightText uppercase tracking-widest group-hover/empty:text-primary transition-colors">Add First Size Option</span>
                                             </button>
                                         )}
                                     </div>
                                 )}
 
                                 {/* Default Variant Toggle */}
-                                <div className="flex items-center gap-3 p-3 bg-white rounded-xl border border-slate-200">
-                                    <input
-                                        type="checkbox"
-                                        className="w-4 h-4 rounded border-slate-300 text-black focus:ring-black"
-                                        checked={variant.isDefault}
-                                        onChange={(e) => {
-                                            const newVariants = variants.map((v, i) => ({
-                                                ...v,
-                                                isDefault: i === index ? e.target.checked : false
-                                            }));
-                                            setVariants(newVariants);
-                                        }}
-                                    />
-                                    <label className="text-xs font-medium text-slate-700">Set as Default Variant</label>
+                                <div className="flex items-center gap-3 p-4 bg-mainBG/10 rounded-none border border-border/50">
+                                    <div className="relative flex items-center justify-center">
+                                        <input
+                                            type="checkbox"
+                                            className="peer appearance-none w-5 h-5 rounded-none border-2 border-border checked:bg-primary checked:border-primary transition-all cursor-pointer"
+                                            checked={variant.isDefault}
+                                            onChange={(e) => {
+                                                const newVariants = variants.map((v, i) => ({
+                                                    ...v,
+                                                    isDefault: i === index ? e.target.checked : false
+                                                }));
+                                                setVariants(newVariants);
+                                            }}
+                                        />
+                                        <MdCheck className="absolute text-white scale-0 peer-checked:scale-100 transition-transform pointer-events-none" size={14} />
+                                    </div>
+                                    <label className="text-[11px] font-black text-mainText uppercase tracking-widest opacity-70">Set as Primary Variant</label>
                                 </div>
                             </div>
                         ))}
                     </div>
 
-                    {
-                        variants.length === 0 && (
-                            <button
-                                type="button"
-                                onClick={addVariant}
-                                className="w-full py-8 border-2 border-dashed border-slate-300 rounded-2xl hover:border-black transition-all flex flex-col items-center justify-center gap-2 text-slate-400 hover:text-black"
-                            >
-                                <MdAdd size={32} />
-                                <span className="text-sm font-bold">Add Your First Variant</span>
-                            </button>
-                        )
-                    }
-                </div >
+                    {variants.length === 0 && (
+                        <button
+                            type="button"
+                            onClick={addVariant}
+                            className="w-full py-12 border-2 border-dashed border-border rounded-none hover:border-primary hover:bg-primary/5 transition-all flex flex-col items-center justify-center gap-4 bg-background group/empty"
+                        >
+                            <div className="w-16 h-16 rounded-none bg-mainBG/5 flex items-center justify-center group-hover/empty:bg-primary/10 transition-colors">
+                                <MdAdd size={32} className="text-lightText group-hover/empty:text-primary transition-colors" />
+                            </div>
+                            <div className="text-center">
+                                <span className="block text-sm font-black text-mainText uppercase tracking-tight">Add Your First Variant</span>
+                                <span className="block text-[10px] text-lightText font-black uppercase tracking-widest mt-1">Colors, Sizes, and Pricing</span>
+                            </div>
+                        </button>
+                    )}
+                </div>
 
-                {/* Status */}
-                < div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-4" >
-                    <h3 className="text-base font-bold text-slate-900">Status</h3>
+                {/* Visibility & Status */}
+                <div className="bg-background rounded-none border border-border p-8 space-y-6 shadow-sm">
+                    <div className="flex items-center gap-3 border-b border-border pb-4 mb-2">
+                        <div className="w-2 h-6 bg-primary rounded-none"></div>
+                        <h3 className="text-base font-black text-mainText uppercase tracking-tight">Visibility & Status</h3>
+                    </div>
 
-                    <div className="flex gap-6">
-                        <label className="flex items-center gap-3 cursor-pointer">
-                            <input
-                                type="checkbox"
-                                className="w-5 h-5 rounded border-slate-300 text-black focus:ring-black"
-                                {...formik.getFieldProps('isActive')}
-                                checked={formik.values.isActive}
-                            />
-                            <span className="text-sm font-medium text-slate-700">Active</span>
+                    <div className="flex flex-wrap gap-8">
+                        <label className="flex items-center gap-3 cursor-pointer group/status">
+                            <div className="relative flex items-center justify-center">
+                                <input
+                                    type="checkbox"
+                                    className="peer appearance-none w-6 h-6 rounded-none border-2 border-border checked:bg-primary checked:border-primary transition-all cursor-pointer"
+                                    {...formik.getFieldProps('isActive')}
+                                    checked={formik.values.isActive}
+                                />
+                                <MdCheck className="absolute text-white scale-0 peer-checked:scale-100 transition-transform pointer-events-none" size={16} />
+                            </div>
+                            <span className="text-[11px] font-black text-mainText uppercase tracking-widest opacity-70 group-hover/status:opacity-100 transition-opacity">Show on Website</span>
                         </label>
 
-                        <label className="flex items-center gap-3 cursor-pointer">
-                            <input
-                                type="checkbox"
-                                className="w-5 h-5 rounded border-slate-300 text-black focus:ring-black"
-                                {...formik.getFieldProps('isFeatured')}
-                                checked={formik.values.isFeatured}
-                            />
-                            <span className="text-sm font-medium text-slate-700">Featured</span>
+                        <label className="flex items-center gap-3 cursor-pointer group/status">
+                            <div className="relative flex items-center justify-center">
+                                <input
+                                    type="checkbox"
+                                    className="peer appearance-none w-6 h-6 rounded-none border-2 border-border checked:bg-primary checked:border-primary transition-all cursor-pointer"
+                                    {...formik.getFieldProps('isFeatured')}
+                                    checked={formik.values.isFeatured}
+                                />
+                                <MdCheck className="absolute text-white scale-0 peer-checked:scale-100 transition-transform pointer-events-none" size={16} />
+                            </div>
+                            <span className="text-[11px] font-black text-mainText uppercase tracking-widest opacity-70 group-hover/status:opacity-100 transition-opacity">Featured Product</span>
                         </label>
                     </div>
-                </div >
+                </div>
 
                 {/* Actions */}
-                < div className="flex items-center gap-3" >
+                <div className="flex items-center gap-4 pt-4">
                     <button
                         type="button"
                         onClick={() => navigate('/admin/product')}
-                        className="flex-1 px-5 py-2.5 border border-slate-200 text-slate-500 font-bold rounded-xl hover:bg-slate-50 hover:text-black transition-all text-sm"
+                        className="flex-1 px-8 py-4 border border-border text-lightText font-black uppercase tracking-widest rounded-none hover:bg-mainBG/5 hover:text-mainText transition-all text-[11px]"
                     >
                         Cancel
                     </button>
                     <button
                         type="submit"
                         disabled={loading || !formik.isValid}
-                        className="flex-[2] px-5 py-2.5 bg-black hover:bg-slate-800 disabled:bg-slate-100 disabled:text-slate-400 text-white font-black rounded-xl shadow-xl shadow-black/20 transition-all flex items-center justify-center gap-2 active:scale-95 text-sm"
+                        className="flex-[2] px-8 py-4 bg-primary text-white font-black uppercase tracking-widest rounded-none hover:opacity-90 transition-all shadow-xl shadow-primary/20 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed text-[11px] flex items-center justify-center gap-3"
                     >
                         {loading ? (
-                            <AiOutlineLoading3Quarters size={20} className="animate-spin" />
+                            <AiOutlineLoading3Quarters size={18} className="animate-spin" />
                         ) : (
-                            <MdSave size={20} />
+                            <MdSave size={18} />
                         )}
-                        {isEditMode ? 'Update Product' : 'Create Product & Variants'}
+                        <span>{isEditMode ? 'Update Product' : 'Create Product'}</span>
                     </button>
-                </div >
+                </div>
             </form >
         </div >
     );

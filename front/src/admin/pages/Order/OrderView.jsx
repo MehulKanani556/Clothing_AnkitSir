@@ -22,7 +22,7 @@ const StatusBadge = ({ status }) => {
     const Icon = config.icon;
 
     return (
-        <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold ${config.bg} ${config.text}`}>
+        <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-none text-sm font-bold ${config.bg} ${config.text}`}>
             <Icon size={16} />
             {status}
         </span>
@@ -40,7 +40,7 @@ const PaymentBadge = ({ status }) => {
     const { bg, text } = config[status] || { bg: 'bg-gray-100', text: 'text-gray-700' };
 
     return (
-        <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-bold ${bg} ${text}`}>
+        <span className={`inline-flex items-center px-3 py-1 rounded-none text-sm font-bold ${bg} ${text}`}>
             {status}
         </span>
     );
@@ -97,7 +97,7 @@ const OrderView = () => {
     if (loading) {
         return (
             <div className="flex flex-col items-center justify-center py-20 gap-4">
-                <div className="w-12 h-12 border-4 border-black border-t-transparent rounded-full animate-spin" />
+                <div className="w-12 h-12 border-4 border-black border-t-transparent rounded-none animate-spin" />
                 <span className="text-slate-400">Loading order details...</span>
             </div>
         );
@@ -118,7 +118,7 @@ const OrderView = () => {
                 <div className="flex items-center gap-4">
                     <button
                         onClick={() => navigate(-1)}
-                        className="p-2 hover:bg-slate-100 rounded-xl transition-colors"
+                        className="p-2 hover:bg-slate-100 rounded-none transition-colors"
                     >
                         <MdArrowBack size={24} />
                     </button>
@@ -130,14 +130,14 @@ const OrderView = () => {
                 <div className="flex gap-3">
                     <button
                         onClick={() => window.print()}
-                        className="flex items-center gap-2 px-6 py-3 border border-slate-200 rounded-2xl font-bold hover:bg-slate-50 transition-all"
+                        className="flex items-center gap-2 px-6 py-3 border border-slate-200 rounded-none font-bold hover:bg-slate-50 transition-all"
                     >
                         <MdPrint size={20} />
                         Print
                     </button>
                     <button
                         onClick={() => navigate(`/admin/orders`)}
-                        className="flex items-center gap-2 bg-black text-white px-6 py-3 rounded-2xl font-bold hover:bg-slate-800 transition-all"
+                        className="flex items-center gap-2 bg-black text-white px-6 py-3 rounded-none font-bold hover:bg-slate-800 transition-all"
                     >
                         <MdEdit size={20} />
                         Update Status
@@ -147,15 +147,15 @@ const OrderView = () => {
 
             {/* Status Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+                <div className="bg-white p-6 rounded-none border border-slate-200 shadow-sm">
                     <p className="text-slate-500 text-xs font-bold uppercase tracking-wide mb-2">Order Status</p>
                     <StatusBadge status={order.orderStatus} />
                 </div>
-                <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+                <div className="bg-white p-6 rounded-none border border-slate-200 shadow-sm">
                     <p className="text-slate-500 text-xs font-bold uppercase tracking-wide mb-2">Payment Status</p>
                     <PaymentBadge status={order.paymentStatus} />
                 </div>
-                <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+                <div className="bg-white p-6 rounded-none border border-slate-200 shadow-sm">
                     <p className="text-slate-500 text-xs font-bold uppercase tracking-wide mb-2">Total Amount</p>
                     <p className="text-2xl font-black text-slate-900">{formatCurrency(order.totalAmount)}</p>
                 </div>
@@ -165,7 +165,7 @@ const OrderView = () => {
                 {/* Left Column - Order Details */}
                 <div className="lg:col-span-2 space-y-6">
                     {/* Products */}
-                    <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
+                    <div className="bg-white rounded-none border border-slate-200 overflow-hidden shadow-sm">
                         <div className="px-6 py-4 border-b border-slate-200 bg-slate-50">
                             <div className="flex items-center gap-2">
                                 <MdShoppingCart size={20} className="text-slate-600" />
@@ -178,7 +178,7 @@ const OrderView = () => {
                                 const variant = item.variantId;
                                 return (
                                     <div key={index} className="flex gap-4 pb-4 border-b border-slate-100 last:border-0">
-                                        <div className="w-20 h-20 bg-slate-100 rounded-xl overflow-hidden flex-shrink-0">
+                                        <div className="w-20 h-20 bg-slate-100 rounded-none overflow-hidden flex-shrink-0">
                                             {variant?.images?.[0] ? (
                                                 <img
                                                     src={variant.images[0]}
@@ -211,7 +211,7 @@ const OrderView = () => {
 
                     {/* Order Timeline */}
                     {order.timeline && order.timeline.length > 0 && (
-                        <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
+                        <div className="bg-white rounded-none border border-slate-200 overflow-hidden shadow-sm">
                             <div className="px-6 py-4 border-b border-slate-200 bg-slate-50">
                                 <h3 className="font-bold text-slate-900">Order Timeline</h3>
                             </div>
@@ -220,7 +220,7 @@ const OrderView = () => {
                                     {order.timeline.map((event, index) => (
                                         <div key={index} className="flex gap-4">
                                             <div className="flex flex-col items-center">
-                                                <div className="w-3 h-3 bg-black rounded-full" />
+                                                <div className="w-3 h-3 bg-black rounded-none" />
                                                 {index < order.timeline.length - 1 && (
                                                     <div className="w-0.5 h-full bg-slate-200 my-1" />
                                                 )}
@@ -246,7 +246,7 @@ const OrderView = () => {
                 {/* Right Column - Customer & Payment Info */}
                 <div className="space-y-6">
                     {/* Customer Information */}
-                    <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
+                    <div className="bg-white rounded-none border border-slate-200 overflow-hidden shadow-sm">
                         <div className="px-6 py-4 border-b border-slate-200 bg-slate-50">
                             <div className="flex items-center gap-2">
                                 <MdPerson size={20} className="text-slate-600" />
@@ -284,7 +284,7 @@ const OrderView = () => {
 
                     {/* Shipping Address */}
                     {order.shippingAddress && (
-                        <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
+                        <div className="bg-white rounded-none border border-slate-200 overflow-hidden shadow-sm">
                             <div className="px-6 py-4 border-b border-slate-200 bg-slate-50">
                                 <div className="flex items-center gap-2">
                                     <MdLocationOn size={20} className="text-slate-600" />
@@ -315,7 +315,7 @@ const OrderView = () => {
                     )}
 
                     {/* Payment Information */}
-                    <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
+                    <div className="bg-white rounded-none border border-slate-200 overflow-hidden shadow-sm">
                         <div className="px-6 py-4 border-b border-slate-200 bg-slate-50">
                             <div className="flex items-center gap-2">
                                 <MdPayment size={20} className="text-slate-600" />
@@ -352,7 +352,7 @@ const OrderView = () => {
 
                     {/* Coupon Info */}
                     {order.appliedCoupon?.code && (
-                        <div className="bg-green-50 rounded-3xl border border-green-200 p-6">
+                        <div className="bg-green-50 rounded-none border border-green-200 p-6">
                             <p className="text-xs text-green-700 uppercase tracking-wide font-bold mb-1">Coupon Applied</p>
                             <p className="font-bold text-green-900">{order.appliedCoupon.code}</p>
                             <p className="text-sm text-green-700 mt-1">
