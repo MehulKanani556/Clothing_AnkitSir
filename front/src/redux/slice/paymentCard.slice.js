@@ -21,6 +21,7 @@ export const fetchSavedCards = createAsyncThunk(
     async (_, { rejectWithValue }) => {
         try {
             const response = await axiosInstance.get('/user/saved-cards');
+       
             return response.data?.result;
         } catch (error) {
             return handleErrors(error, rejectWithValue);
@@ -91,7 +92,7 @@ const paymentSlice = createSlice({
             })
             .addCase(fetchSavedCards.fulfilled, (state, action) => {
                 state.loading = false;
-                state.cards = action.payload?.cards || [];
+                state.cards = action.payload || [];
                 state.selectedCardId = action.payload?.selectedCardId || null;
             })
             .addCase(fetchSavedCards.rejected, (state, action) => {
