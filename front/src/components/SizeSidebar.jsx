@@ -12,11 +12,16 @@ export const SIZE_OPTIONS = [
     { size: 'XXXL', available: true, status: 'Low Stock' }
 ];
 
-const SizeSidebar = ({ isOpen, onClose, selectedSize, onSelectSize, sizeOptions }) => {
-    const displayOptions = sizeOptions && sizeOptions.length > 0 ? sizeOptions : SIZE_OPTIONS;
+const SizeSidebar = ({ isOpen, onClose, selectedSize, onSelectSize, sizeOptions, onNotifyMe }) => {
+    const displayOptions = sizeOptions || [];
 
     const handleSizeSelect = (sizeOption) => {
-        if (!sizeOption.available) return;
+        if (!sizeOption.available) {
+            if (sizeOption.status && sizeOption.status.includes('Notify Me') && onNotifyMe) {
+                onNotifyMe(sizeOption.size);
+            }
+            return;
+        }
         onSelectSize(sizeOption.size);
     };
 
@@ -95,9 +100,11 @@ const SizeSidebar = ({ isOpen, onClose, selectedSize, onSelectSize, sizeOptions 
                                         {sizeOption.status && (
                                             <div className="flex flex-col items-end">
                                                 <span
-                                                    className={`text-[10px] font-bold uppercase tracking-widest ${
+                                                    className={`text-[10px] font-bold uppercase tracking-widest transition-all ${
                                                         sizeOption.status.includes('Sold Out')
-                                                            ? isAvailable ? 'text-red-500' : 'text-red-500/60'
+                                                            ? isAvailable 
+                                                                ? 'text-red-500' 
+                                                                : 'text-red-500/60 group-hover:text-red-500 group-hover:scale-105 cursor-pointer'
                                                             : 'text-orange-500'
                                                     }`}
                                                 >

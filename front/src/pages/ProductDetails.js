@@ -136,10 +136,46 @@ const ProductDetails = () => {
         if (variants && variants.length > 0) {
             const defaultV = variants.find(v => v.isDefault) || variants[0];
             setSelectedVariant(defaultV);
+            
+            // Auto-select size if there are no options (One Size)
+            if (!defaultV.options || defaultV.options.length === 0) {
+                setSelectedSize('One Size');
+            } else {
+                setSelectedSize(null);
+            }
         }
     }, [variants]);
 
+    const sizeOptions = selectedVariant?.options?.map(opt => ({
+        size: opt.size,
+        available: opt.stock > 0,
+        price: opt.price,
+        stock: opt.stock,
+        status: opt.stock <= 0 ? 'Sold Out - Notify Me' : opt.stock <= 5 ? 'Low Stock' : null
+    })) || [];
+    const hasOptions = sizeOptions.length > 0;
+    
+    let isSoldOut = false;
+    if (selectedVariant) {
+        if (hasOptions) {
+            if (selectedSize && selectedSize !== 'One Size') {
+                const selectedSizeData = sizeOptions.find(s => s.size === selectedSize);
+                isSoldOut = selectedSizeData && selectedSizeData.stock <= 0;
+            } else {
+                // If options exist but none selected, check if ALL are sold out
+                isSoldOut = sizeOptions.every(s => s.stock <= 0);
+            }
+        } else {
+            isSoldOut = selectedVariant.stock <= 0;
+        }
+    }
+
     const handleAddToCartClick = async () => {
+        if (isSoldOut) {
+            toast.success("We'll notify you when this item is back in stock!");
+            return;
+        }
+
         if (!selectedSize) {
             setSizeSidebarOpen(true);
             return;
@@ -150,7 +186,8 @@ const ProductDetails = () => {
             await dispatch(addToCart({
                 productId: currentProduct._id,
                 productVariantId: selectedVariant?._id,
-                selectedSize: selectedSize.size || selectedSize,
+                // Only send size if it's a real selection, not our 'One Size' placeholder
+                selectedSize: selectedSize === 'One Size' ? null : (selectedSize.size || selectedSize),
                 quantity: 1
             })).unwrap();
 
@@ -172,19 +209,34 @@ const ProductDetails = () => {
         type: "product"
     })) || [];
 
-    const productPrice = selectedVariant?.options?.length > 0
-        ? selectedVariant.options[0].price
-        : (currentProduct?.basePrice || 0);
+    const productPrice = (() => {
+        if (selectedSize && selectedVariant?.options?.length > 0) {
+            const sizeOption = selectedVariant.options.find(opt => opt.size === (selectedSize.size || selectedSize));
+            if (sizeOption) return sizeOption.price;
+        }
+        
+        // Prioritize finalPrice, then variant price, then options price, then base price
+        const priceToUse = selectedVariant?.finalPrice ?? selectedVariant?.price;
+        if (priceToUse !== undefined && priceToUse !== null) {
+            return priceToUse;
+        }
 
-    const sizeOptions = selectedVariant?.options?.map(opt => ({
-        size: opt.size,
-        available: opt.stock > 0,
-        price: opt.price
-    })) || [];
+        return selectedVariant?.options?.length > 0
+            ? selectedVariant.options[0].price
+            : (currentProduct?.basePrice || 0);
+    })();
+
 
     const handleSelectVariant = (variant) => {
         setSelectedVariant(variant);
-        setSelectedSize(null); // Clear size selection when color Changes
+        
+        // Handle size selection for new variant
+        if (!variant.options || variant.options.length === 0) {
+            setSelectedSize('One Size');
+        } else {
+            setSelectedSize(null);
+        }
+        
         setColorSidebarOpen(false);
     };
 
@@ -418,57 +470,55 @@ const ProductDetails = () => {
                                 <MdKeyboardArrowRight size={18} />
                             </button>
 
-                            <button
-                                onClick={() => setSizeSidebarOpen(true)}
-                                className="flex items-center gap-3 group outline-none hover:opacity-70 transition-opacity"
-                            >
-                                <span className="text-[14px] lg:text-[15px] text-lightText font-normal">Size:</span>
-                                <span className="text-[14px] lg:text-[15px] text-dark font-normal">
-                                    {selectedSize || 'Select size'}
-                                </span>
-                                <MdKeyboardArrowRight size={18} />
-                            </button>
+                            {/* ── Size Button (Only if options exist) ── */}
+                            {selectedVariant?.options && selectedVariant.options.length > 0 && (
+                                <button
+                                    onClick={() => setSizeSidebarOpen(true)}
+                                    className="flex items-center gap-3 group outline-none hover:opacity-70 transition-opacity"
+                                >
+                                    <span className="text-[14px] lg:text-[15px] text-lightText font-normal">Size:</span>
+                                    <span className="text-[14px] lg:text-[15px] text-dark font-normal">
+                                        {selectedSize || 'Select size'}
+                                    </span>
+                                    <MdKeyboardArrowRight size={18} />
+                                </button>
+                            )}
                         </div>
 
                         {/* Add to Cart CTA */}
-                        {(() => {
-                            const sizeOptions = selectedVariant?.options || [];
-                            const selectedSizeData = sizeOptions.find(s => s.size === selectedSize);
-                            const isSoldOut = selectedSizeData && selectedSizeData.stock <= 0;
-
-                            return (
-                                <button
-                                    onClick={handleAddToCartClick}
-                                    disabled={addingToCart}
-                                    className={`w-full py-2 lg:py-4 font-black text-[13px] lg:text-[14px] tracking-[0.25em] uppercase shadow-sm mb-6 lg:mb-8 outline-none transition-all duration-300 ${(!selectedSize || isSoldOut)
-                                        ? 'bg-[#E9ECEF] text-[#ADB5BD] cursor-not-allowed'
-                                        : 'bg-[#14372F] text-white cursor-pointer hover:opacity-90'
-                                        }`}
-                                >
-                                    {addingToCart
-                                        ? 'Adding...'
-                                        : !selectedSize
-                                            ? 'Select Size'
-                                            : isSoldOut
-                                                ? 'notify me when available'
-                                                : 'Add to cart'}
-                                </button>
-                            );
-                        })()}
+                        <button
+                            onClick={handleAddToCartClick}
+                            disabled={addingToCart}
+                            className={`w-full py-2 lg:py-4 font-black text-[13px] lg:text-[14px] tracking-[0.25em] uppercase shadow-sm mb-6 lg:mb-8 outline-none transition-all duration-300 ${(!selectedSize || (isSoldOut && !isSoldOut)) // simplified logic
+                                ? 'bg-[#E9ECEF] text-[#ADB5BD] cursor-not-allowed' // wait, this was the old logic
+                                : 'bg-[#14372F] text-white cursor-pointer hover:opacity-90'
+                                }`}
+                            style={isSoldOut ? { backgroundColor: '#E9ECEF', color: '#ADB5BD' } : {}}
+                        >
+                            {addingToCart
+                                ? 'Adding...'
+                                : !selectedSize
+                                    ? 'Select Size'
+                                    : isSoldOut
+                                        ? 'notify me when available'
+                                        : 'Add to cart'}
+                        </button>
 
                         {/* Product Footer Links */}
                         <div className="flex flex-col sm:flex-row items-center justify-between gap-6 sm:gap-4 pt-8 lg:pt-14 border-t border-gray-100/50">
-                            {['Product Details', 'Size Guide', 'Delivery & Returns'].map((link) => (
-                                <button
-                                    key={link}
-                                    onClick={() => openProductInfo(link)}
-                                    className="flex items-center gap-2 text-[11px] lg:text-[13px] font-black transition-all group outline-none uppercase tracking-widest"
-                                    style={{ fontWeight: "600" }}
-                                >
-                                    {link}
-                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-lightText group-hover:translate-x-1 transition-transform lg:w-[12px] lg:h-[12px]"><path d="m9 18 6-6-6-6" /></svg>
-                                </button>
-                            ))}
+                            {['Product Details', 'Size Guide', 'Delivery & Returns']
+                                .filter(link => link !== 'Size Guide' || (selectedVariant?.options && selectedVariant.options.length > 0))
+                                .map((link) => (
+                                    <button
+                                        key={link}
+                                        onClick={() => openProductInfo(link)}
+                                        className="flex items-center gap-2 text-[11px] lg:text-[13px] font-black transition-all group outline-none uppercase tracking-widest"
+                                        style={{ fontWeight: "600" }}
+                                    >
+                                        {link}
+                                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-lightText group-hover:translate-x-1 transition-transform lg:w-[12px] lg:h-[12px]"><path d="m9 18 6-6-6-6" /></svg>
+                                    </button>
+                                ))}
                         </div>
                     </div>
                 </div>
@@ -634,6 +684,9 @@ const ProductDetails = () => {
                 selectedSize={selectedSize}
                 onSelectSize={handleSelectSize}
                 sizeOptions={sizeOptions}
+                onNotifyMe={(size) => {
+                    toast.success(`We'll notify you when size ${size} is back in stock!`);
+                }}
             />
 
             <ProductInfoSidebar

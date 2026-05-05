@@ -108,9 +108,7 @@ export const addToCart = async (req, res) => {
 
       availableStock = sizeObj.stock || 0;
     } else {
-      if (selectedSize) {
-        return sendBadRequestResponse(res, "This variant does not have sizes. Do not send selectedSize.");
-      }
+      // If variant has no options, ignore selectedSize if provided (generous validation)
       availableStock = variant.stock || 0;
     }
 
