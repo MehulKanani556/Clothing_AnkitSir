@@ -105,7 +105,6 @@ const ProductDetails = () => {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [showMiniBar, setShowMiniBar] = useState(false);
     const [addingToCart, setAddingToCart] = useState(false);
-    const sliderRef = useRef(null);
     const mainSectionRef = useRef(null);
 
     useEffect(() => {
@@ -242,128 +241,6 @@ const ProductDetails = () => {
         setProductInfoOpen(true);
     };
 
-    // Navigate to specific image
-    const goToImage = (index) => {
-        if (index >= 0 && index < productImages.length) {
-            setCurrentImageIndex(index);
-            if (sliderRef.current) {
-                const isMobile = window.innerWidth < 1024;
-                if (isMobile) {
-                    const imageWidth = sliderRef.current.clientWidth;
-                    sliderRef.current.scrollTo({
-                        left: index * imageWidth,
-                        behavior: 'smooth'
-                    });
-                } else {
-                    const imageHeight = sliderRef.current.clientHeight;
-                    sliderRef.current.scrollTo({
-                        top: index * imageHeight,
-                        behavior: 'smooth'
-                    });
-                }
-            }
-        }
-    };
-
-    // Navigate to next image
-    const nextImage = () => {
-        if (productImages.length === 0) return;
-        const nextIndex = (currentImageIndex + 1) % productImages.length;
-        goToImage(nextIndex);
-    };
-
-    // Navigate to previous image
-    const prevImage = () => {
-        if (productImages.length === 0) return;
-        const prevIndex = currentImageIndex === 0 ? productImages.length - 1 : currentImageIndex - 1;
-        goToImage(prevIndex);
-    };
-
-    // Handle scroll to update current image index
-    const handleScroll = () => {
-        if (sliderRef.current && productImages.length > 0) {
-            const isMobile = window.innerWidth < 1024;
-            if (isMobile) {
-                const scrollLeft = sliderRef.current.scrollLeft;
-                const imageWidth = sliderRef.current.clientWidth;
-                const newIndex = Math.round(scrollLeft / imageWidth);
-                if (newIndex !== currentImageIndex && newIndex >= 0 && newIndex < productImages.length) {
-                    setCurrentImageIndex(newIndex);
-                }
-            } else {
-                const scrollTop = sliderRef.current.scrollTop;
-                const imageHeight = sliderRef.current.clientHeight;
-                const newIndex = Math.round(scrollTop / imageHeight);
-                if (newIndex !== currentImageIndex && newIndex >= 0 && newIndex < productImages.length) {
-                    setCurrentImageIndex(newIndex);
-                }
-            }
-        }
-    };
-
-    // Handle keyboard navigation
-    useEffect(() => {
-        const handleKeyDown = (e) => {
-            if (e.key === 'ArrowUp') {
-                e.preventDefault();
-                prevImage();
-            } else if (e.key === 'ArrowDown') {
-                e.preventDefault();
-                nextImage();
-            }
-        };
-
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [currentImageIndex]);
-
-    // Handle wheel event to control image scrolling
-    React.useEffect(() => {
-        const handleWheel = (e) => {
-            if (window.innerWidth < 1024) return; // Disable on mobile/tablet
-
-            const rightColumn = document.querySelector('.product-details-container');
-
-            if (!rightColumn) return;
-
-            // Check if cursor is over right column only
-            const rightColumnRect = rightColumn.getBoundingClientRect();
-            const isOverRightColumn = (
-                e.clientX >= rightColumnRect.left &&
-                e.clientX <= rightColumnRect.right &&
-                e.clientY >= rightColumnRect.top &&
-                e.clientY <= rightColumnRect.bottom
-            );
-
-            if (isOverRightColumn) {
-                // Check if we're at the boundaries
-                const isAtFirstImage = currentImageIndex === 0;
-                const isAtLastImage = currentImageIndex === productImages.length - 1;
-
-                if (e.deltaY < 0 && isAtFirstImage) {
-                    return;
-                } else if (e.deltaY > 0 && isAtLastImage) {
-                    return;
-                }
-
-                // Otherwise, control image navigation
-                e.preventDefault();
-                if (e.deltaY > 0 && !isAtLastImage) {
-                    nextImage();
-                } else if (e.deltaY < 0 && !isAtFirstImage) {
-                    prevImage();
-                }
-            }
-        };
-
-        // Add wheel event listener to the entire document
-        document.addEventListener('wheel', handleWheel, { passive: false });
-
-        return () => {
-            document.removeEventListener('wheel', handleWheel);
-        };
-    }, [currentImageIndex]);
-
     // Handle scroll for Floating Card visibility
     useEffect(() => {
         const handleCardVisibility = () => {
@@ -381,6 +258,43 @@ const ProductDetails = () => {
             window.removeEventListener('scroll', handleCardVisibility);
         };
     }, [loading]);
+
+    // Intersection Observer for scroll tracking
+    const imageRefs = useRef([]);
+    useEffect(() => {
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.5
+        };
+
+        const observerCallback = (entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const index = parseInt(entry.target.getAttribute('data-index'));
+                    setCurrentImageIndex(index);
+                }
+            });
+        };
+
+        const observer = new IntersectionObserver(observerCallback, observerOptions);
+        imageRefs.current.forEach(ref => {
+            if (ref) observer.observe(ref);
+        });
+
+        return () => {
+            imageRefs.current.forEach(ref => {
+                if (ref) observer.unobserve(ref);
+            });
+        };
+    }, [productImages]);
+
+    const scrollToImage = (index) => {
+        const element = imageRefs.current[index];
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
 
     if (loading) {
         return (
@@ -407,50 +321,47 @@ const ProductDetails = () => {
     return (
         <div className="w-full bg-[#F8F9FA] font-sans text-dark selection:bg-dark selection:text-white">
             {/* Main Product Section */}
-            <div ref={mainSectionRef} className="w-full grid grid-cols-1 lg:grid-cols-2">
-                {/* Left Column: Vertical Image Slider */}
-                <div className="image-scroll-container relative h-[50vh] md:h-[calc(100vh-113px)] overflow-hidden bg-gray-50/20">
-                    {/* Image Slider */}
-                    <div
-                        ref={sliderRef}
-                        className="h-full overflow-y-hidden lg:overflow-y-auto overflow-x-auto lg:overflow-x-hidden custom-scrollbar snap-x lg:snap-y snap-mandatory"
-                        onScroll={handleScroll}
-                    >
-                        <div className="flex flex-row lg:flex-col h-full lg:h-auto">
-                            {productImages.map((image, index) => (
-                                <div
-                                    key={image.id}
-                                    onClick={() => setImageModalOpen(true)}
-                                    className="w-full lg:w-full h-[50vh] md:h-[calc(100vh-80px)] bg-white flex items-center justify-center flex-shrink-0 snap-start cursor-pointer transition-all duration-500"
-                                >
-                                    <img
-                                        src={image?.src}
-                                        alt={image?.alt}
-                                        className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-                                    />
-                                </div>
-                            ))}
+            <div ref={mainSectionRef} className="w-full grid grid-cols-1 lg:grid-cols-2 items-start">
+                {/* Left Column: Scrollable Images */}
+                <div className="relative flex flex-col gap-0 w-full">
+                    {productImages.map((image, index) => (
+                        <div
+                            key={image.id}
+                            ref={el => imageRefs.current[index] = el}
+                            data-index={index}
+                            onClick={() => {
+                                setCurrentImageIndex(index);
+                                setImageModalOpen(true);
+                            }}
+                            className="w-full h-[70vh] md:h-[85vh] lg:h-screen bg-white flex items-center justify-center cursor-pointer transition-all duration-500"
+                        >
+                            <img
+                                src={image?.src}
+                                alt={image?.alt}
+                                className="w-full h-full object-cover"
+                            />
                         </div>
-                    </div>
+                    ))}
 
-                    {/* Image Indicators */}
-                    <div className="absolute z-20 flex gap-3 bottom-10 left-1/2 -translate-x-1/2 flex-row lg:bottom-auto lg:top-[91%] lg:-translate-y-1/2 lg:left-6 lg:translate-x-0 lg:flex-col">
+                    {/* Vertical Indicators */}
+                    <div className="hidden lg:flex fixed left-10 bottom-10 z-30 flex-col gap-3">
                         {productImages.map((_, index) => (
                             <button
                                 key={index}
-                                onClick={() => goToImage(index)}
-                                className={`w-[7px] h-[7px] sm:w-2 sm:h-2 rounded-full transition-all duration-300 ${index === currentImageIndex
-                                    ? 'bg-black scale-125'
-                                    : 'bg-black/30 hover:bg-black/50'
-                                    }`}
-                                aria-label={`Go to slide ${index + 1}`}
-                            />
+                                onClick={() => scrollToImage(index)}
+                                className={`group flex items-center gap-4 outline-none`}
+                            >
+                                <div className={`w-1.5 h-1.5 rounded-full transition-all duration-500 ${index === currentImageIndex
+                                    ? 'bg-dark scale-125'
+                                    : 'bg-dark/20 group-hover:bg-dark/40'
+                                    }`} />
+                            </button>
                         ))}
                     </div>
                 </div>
 
                 {/* Right Column: Content Area */}
-                <div className="product-details-container h-auto lg:h-[calc(100vh-80px)] items-center justify-center p-6 md:p-10 lg:p-18 sticky top-0 flex">
+                <div className="product-details-container lg:sticky lg:top-0 h-auto lg:h-screen flex items-center justify-center p-6 md:p-10 lg:p-18">
                     <div className="max-w-xl w-full flex flex-col">
                         {/* Top Navigation Row */}
                         <div className="flex items-center justify-between mb-8 lg:mb-12">
@@ -799,14 +710,14 @@ const ProductDetails = () => {
 
                     {/* Right: Action Button */}
                     <button
-                        disabled={!selectedSize}
+                        onClick={handleAddToCartClick}
                         className={`whitespace-nowrap flex-shrink-0 px-4 md:px-8 lg:px-10 py-3 md:py-4 text-[9px] md:text-[12px] font-black uppercase tracking-[0.15em] transition-all duration-300
                             ${selectedSize
                                 ? 'bg-[#14372F] text-white hover:opacity-95 active:scale-97 shadow-lg shadow-[#14372F]/10'
-                                : 'bg-[#E9ECEF] text-[#ADB5BD] cursor-not-allowed'
+                                : 'bg-[#E9ECEF] text-[#ADB5BD] cursor-pointer'
                             }`}
                     >
-                        {selectedSize ? 'Add to cart' : 'Select Size'}
+                        {addingToCart ? 'Adding...' : selectedSize ? 'Add to cart' : 'Select Size'}
                     </button>
                 </div>
             </div>
@@ -816,18 +727,6 @@ const ProductDetails = () => {
                     .custom-scrollbar::-webkit-scrollbar { width: 0px; background: transparent; }
                     .custom-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
                     
-                    .image-scroll-container {
-                        scroll-behavior: smooth;
-                    }
-                    
-                    .snap-y {
-                        scroll-snap-type: y mandatory;
-                    }
-                    
-                    .snap-start {
-                        scroll-snap-align: start;
-                    }
-                    
                     .color-sidebar-scroll::-webkit-scrollbar { width: 4px; }
                     .color-sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
                     .color-sidebar-scroll::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 99px; }
@@ -835,20 +734,6 @@ const ProductDetails = () => {
                     
                     @media (max-width: 1024px) {
                         .h-screen { height: auto; min-height: 100vh; overflow: auto; }
-                    }
-                    
-                    /* Smooth transitions for image hover effects */
-                    .image-scroll-container img {
-                        transition: transform 0.3s ease-in-out;
-                    }
-                    
-                    /* Enhanced button hover effects */
-                    .image-scroll-container button:hover {
-                        transform: scale(1.05);
-                    }
-                    
-                    .image-scroll-container button:active {
-                        transform: scale(0.95);
                     }
                 `
             }} />
