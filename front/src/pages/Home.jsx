@@ -830,7 +830,7 @@ export default function Home() {
                             </p>
                             <div className='text-center lg:text-left'>
 
-                                <button className="group inline-flex items-center gap-3 bg-primary hover:bg-[#254537] text-white  px-6 py-3.5 text-xs md:text-lg font-semibold uppercase tracking-[0.2em] transition-all duration-300 mb-16 lg:mb-20">
+                                <button onClick={() => navigate('/collection/shop')} className="group inline-flex items-center gap-3 bg-primary hover:bg-[#254537] text-white  px-6 py-3.5 text-xs md:text-lg font-semibold uppercase tracking-[0.2em] transition-all duration-300 mb-16 lg:mb-20">
                                     <span>VIEW THE PIECES</span>
                                     <HiOutlineArrowUpRight className="text-base transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
                                 </button>
@@ -843,8 +843,7 @@ export default function Home() {
                                 topSellingProducts.map((product, idx) => (
                                     <div
                                         key={product._id || idx}
-                                        onMouseEnter={() => setSelectedHouseProduct(idx)}
-                                        onClick={() => navigate(`/product/${product.slug}`)}
+                                        onClick={() => setSelectedHouseProduct(idx)}
                                         className={`flex items-center justify-between p-4 md:p-6 bg-mainBG border-b border-border/50 transition-all duration-500 cursor-pointer group/item
                                             ${selectedHouseProduct === idx ? 'bg-white shadow-sm' : 'bg-transparent hover:bg-white/50'}`}
                                     >
@@ -862,7 +861,13 @@ export default function Home() {
                                             </div>
                                         </div>
                                         {selectedHouseProduct === idx && (
-                                            <div className="hidden md:flex items-center gap-2 text-xs md:text-lg font-semibold  text-primary uppercase animate-fade-in">
+                                            <div
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    navigate(`/product/${product.slug}`);
+                                                }}
+                                                className="hidden md:flex items-center gap-2 text-xs md:text-lg font-semibold text-primary uppercase animate-fade-in hover:opacity-80"
+                                            >
                                                 <span>VIEW PRODUCT</span>
                                                 <HiOutlineArrowUpRight className="text-sm" />
                                             </div>
@@ -877,7 +882,7 @@ export default function Home() {
                                 ].map((item, idx) => (
                                     <div
                                         key={idx}
-                                        onMouseEnter={() => setSelectedHouseProduct(idx)}
+                                        onClick={() => setSelectedHouseProduct(idx)}
                                         className={`flex items-center justify-between p-4 md:p-6 bg-mainBG border-b border-border/50 transition-all duration-500 cursor-pointer group/item
                                             ${selectedHouseProduct === idx ? 'bg-white shadow-sm' : 'bg-transparent hover:bg-white/50'}`}
                                     >
@@ -973,7 +978,7 @@ export default function Home() {
                             ].map((item, idx) => (
                                 <div
                                     key={idx}
-                                    onMouseEnter={() => setSelectedHouseProduct(idx)}
+                                    onClick={() => setSelectedHouseProduct(idx)}
                                     className={`flex items-center justify-between p-4 md:p-6 bg-mainBG border-b border-border/50 transition-all duration-500 cursor-pointer group/item
                                         ${selectedHouseProduct === idx ? 'bg-white shadow-sm' : 'bg-transparent hover:bg-white/50'}`}
                                 >
@@ -1378,7 +1383,7 @@ export default function Home() {
                                                 value={formik.values.email}
                                                 onChange={formik.handleChange}
                                                 onBlur={formik.handleBlur}
-                                                className={`flex-1 border px-4 py-3 text-xs md:text-lg focus:outline-none focus:border-primary bg-white/50 ${formik.touched.email && formik.errors.email ? 'border-red-500' : 'border-border'}`}
+                                                className={`flex-1 border px-4 py-3 text-black text-xs md:text-lg focus:outline-none focus:border-primary bg-white/50 ${formik.touched.email && formik.errors.email ? 'border-red-500' : 'border-border'}`}
                                             />
                                             <button
                                                 type="submit"

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchProductBySlug, addRecentlyViewed } from '../redux/slice/product.slice';
 import { IoShareSocialOutline, IoChevronUp, IoChevronDown } from "react-icons/io5";
+import { FaWhatsapp, FaFacebookF, FaTwitter, FaRegCopy } from 'react-icons/fa';
 import { fetchProductById, fetchVariantsByProductId, clearCurrentProduct, fetchProducts, toggleWishlist, fetchWishlist } from '../redux/slice/product.slice';
 import WishlistButton from '../components/WishlistButton';
 import { SlArrowLeft, SlArrowRight } from "react-icons/sl";
@@ -106,7 +107,19 @@ const ProductDetails = () => {
     const [showMiniBar, setShowMiniBar] = useState(false);
     const [showDots, setShowDots] = useState(true);
     const [addingToCart, setAddingToCart] = useState(false);
+    const [shareDropdownOpen, setShareDropdownOpen] = useState(false);
+    const shareDropdownRef = useRef(null);
     const mainSectionRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (shareDropdownRef.current && !shareDropdownRef.current.contains(event.target)) {
+                setShareDropdownOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
 
     useEffect(() => {
         if (slug) {
@@ -455,9 +468,69 @@ const ProductDetails = () => {
                                     activeColor="text-[#14372F]"
                                     inactiveColor="text-dark/80"
                                 />
-                                <button className="text-dark/80 hover:text-dark hover:scale-110 transition-all outline-none">
-                                    <IoShareSocialOutline size={22} />
-                                </button>
+                                <div className="relative flex items-center justify-center" ref={shareDropdownRef}>
+                                    <button
+                                        onClick={() => setShareDropdownOpen(!shareDropdownOpen)}
+                                        className="text-dark/80 hover:text-dark hover:scale-110 transition-all outline-none flex items-center justify-center"
+                                        aria-label="Share product"
+                                    >
+                                        <IoShareSocialOutline size={22} />
+                                    </button>
+                                    {shareDropdownOpen && (
+                                        <div className="absolute right-0 mt-[160px] md:mt-[170px] w-52 bg-white border border-black/10 shadow-xl rounded-sm py-1.5 z-50 animate-fade-in origin-top-right">
+                                            <div className="px-3.5 py-1.5 border-b border-black/5 mb-1">
+                                                <p className="text-[10px] font-bold tracking-widest text-lightText uppercase">Share via</p>
+                                            </div>
+                                            <a
+                                                href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`Check out this gorgeous ${currentProduct?.name || 'product'} on our store! ` + window.location.href)}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="flex items-center gap-3 px-3.5 py-2 text-xs font-semibold text-dark hover:bg-black/5 transition-colors"
+                                                onClick={() => setShareDropdownOpen(false)}
+                                            >
+                                                <FaWhatsapp size={15} className="text-[#25D366]" />
+                                                <span>WhatsApp</span>
+                                            </a>
+                                            <a
+                                                href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="flex items-center gap-3 px-3.5 py-2 text-xs font-semibold text-dark hover:bg-black/5 transition-colors"
+                                                onClick={() => setShareDropdownOpen(false)}
+                                            >
+                                                <FaFacebookF size={14} className="text-[#1877F2]" />
+                                                <span>Facebook</span>
+                                            </a>
+                                            <a
+                                                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Check out this gorgeous ${currentProduct?.name || 'product'} on our store!`)}&url=${encodeURIComponent(window.location.href)}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="flex items-center gap-3 px-3.5 py-2 text-xs font-semibold text-dark hover:bg-black/5 transition-colors"
+                                                onClick={() => setShareDropdownOpen(false)}
+                                            >
+                                                <FaTwitter size={14} className="text-[#1DA1F2]" />
+                                                <span>Twitter / X</span>
+                                            </a>
+                                            <div className="border-t border-black/5 mt-1 pt-1">
+                                                <button
+                                                    onClick={async () => {
+                                                        try {
+                                                            await navigator.clipboard.writeText(window.location.href);
+                                                            toast.success("Link copied to clipboard!");
+                                                        } catch (err) {
+                                                            toast.error("Failed to copy link.");
+                                                        }
+                                                        setShareDropdownOpen(false);
+                                                    }}
+                                                    className="w-full flex items-center gap-3 px-3.5 py-2 text-xs font-semibold text-dark hover:bg-black/5 transition-colors text-left"
+                                                >
+                                                    <FaRegCopy size={14} className="text-lightText" />
+                                                    <span>Copy Link</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
 

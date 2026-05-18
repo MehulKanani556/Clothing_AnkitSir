@@ -88,17 +88,53 @@ export default function Support() {
             />
 
             <section className="pb-16 md:pb-24 px-4 md:px-10 lg:px-20 max-w-7xl mx-auto">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-16 gap-y-2 md:gap-y-4">
-                    {faqs.map((faq, index) => (
-                        <FAQItem
-                            key={`faq-${index}`}
-                            faq={faq}
-                            index={index}
-                            isOpen={openFaq === index}
-                            onToggle={toggleFaq}
-                        />
-                    ))}
-                    {faqs.length === 0 && (
+                <div className="block lg:hidden">
+                    <div className="flex flex-col">
+                        {faqs.length > 0 ? (
+                            faqs.map((faq, index) => (
+                                <FAQItem
+                                    key={`faq-mobile-${index}`}
+                                    faq={faq}
+                                    index={index}
+                                    isOpen={openFaq === index}
+                                    onToggle={toggleFaq}
+                                />
+                            ))
+                        ) : (
+                            <div className="text-center py-10 text-lightText">
+                                No matching questions found.
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                <div className="hidden lg:grid lg:grid-cols-2 gap-x-16 items-start">
+                    {faqs.length > 0 ? (
+                        <>
+                            <div className="flex flex-col">
+                                {faqs.map((faq, index) => index % 2 === 0 && (
+                                    <FAQItem
+                                        key={`faq-left-${index}`}
+                                        faq={faq}
+                                        index={index}
+                                        isOpen={openFaq === index}
+                                        onToggle={toggleFaq}
+                                    />
+                                ))}
+                            </div>
+                            <div className="flex flex-col">
+                                {faqs.map((faq, index) => index % 2 !== 0 && (
+                                    <FAQItem
+                                        key={`faq-right-${index}`}
+                                        faq={faq}
+                                        index={index}
+                                        isOpen={openFaq === index}
+                                        onToggle={toggleFaq}
+                                    />
+                                ))}
+                            </div>
+                        </>
+                    ) : (
                         <div className="col-span-full text-center py-10 text-lightText">
                             No matching questions found.
                         </div>

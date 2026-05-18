@@ -32,7 +32,7 @@ export const fetchPopularSearches = createAsyncThunk(
     async (_, { rejectWithValue }) => {
         try {
             const response = await axios.get(`${BASE_URL}/search/popular`);
-            return response.data.data;
+            return response.data.result || response.data.data || [];
         } catch (error) {
             return rejectWithValue(error.response?.data || error.message);
         }
@@ -44,7 +44,7 @@ export const fetchRecentSearches = createAsyncThunk(
     async (_, { rejectWithValue }) => {
         try {
             const response = await axiosInstance.get(`/search/recent`);
-            return response.data.data;
+            return response.data.result || response.data.data || [];
         } catch (error) {
             return rejectWithValue(error.response?.data || error.message);
         }
@@ -56,7 +56,7 @@ export const fetchTrendingProducts = createAsyncThunk(
     async (_, { rejectWithValue }) => {
         try {
             const response = await axios.get(`${BASE_URL}/search/trending`);
-            return response.data.data;
+            return response.data.result || response.data.data || [];
         } catch (error) {
             return rejectWithValue(error.response?.data || error.message);
         }

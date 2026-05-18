@@ -53,7 +53,7 @@ const SupportContact = () => {
     });
 
     return (
-        <section className="py-24 px-4 md:px-10 lg:px-20 mx-auto">
+        <section className="py-10 md:py-24 px-4 md:px-10 lg:px-20 mx-auto">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-20">
                 {/* Left side: Image and Features */}
                 <div className="space-y-12">

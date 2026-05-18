@@ -10,7 +10,7 @@ import SupportContact from '../components/support/SupportContact';
 
 const DetailHero = ({ category, searchQuery, setSearchQuery }) => (
     <section className="pt-20 pb-12 px-4 md:px-10 lg:px-20 text-center max-w-5xl mx-auto">
-        <p className="text-[10px] md:text-lg font-semibold uppercase text-mainText mb-4">
+        <p className="text-xs md:text-lg font-semibold uppercase text-mainText mb-4">
             SUPPORT
         </p>
         <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-primary mb-4 uppercase">
@@ -70,18 +70,53 @@ export default function SupportDetail() {
                 setSearchQuery={setSearchQuery} 
             />
 
-            <section className="pb-24 px-4 md:px-10 lg:px-20 max-w-7xl mx-auto">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-16 gap-y-4">
+            <section className="pb-10 md:pb-24 px-4 md:px-10 lg:px-20 max-w-7xl mx-auto">
+                <div className="block lg:hidden">
+                    <div className="flex flex-col">
+                        {filteredFaqs.length > 0 ? (
+                            filteredFaqs.map((faq, index) => (
+                                <FAQItem 
+                                    key={`faq-mobile-${index}`}
+                                    faq={faq}
+                                    index={index}
+                                    isOpen={openFaq === index}
+                                    onToggle={toggleFaq}
+                                />
+                            ))
+                        ) : (
+                            <div className="text-center py-20 text-lightText">
+                                No questions found matching your search.
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                <div className="hidden lg:grid lg:grid-cols-2 gap-x-16 items-start">
                     {filteredFaqs.length > 0 ? (
-                        filteredFaqs.map((faq, index) => (
-                            <FAQItem 
-                                key={`faq-${index}`}
-                                faq={faq}
-                                index={index}
-                                isOpen={openFaq === index}
-                                onToggle={toggleFaq}
-                            />
-                        ))
+                        <>
+                            <div className="flex flex-col">
+                                {filteredFaqs.map((faq, index) => index % 2 === 0 && (
+                                    <FAQItem 
+                                        key={`faq-left-${index}`}
+                                        faq={faq}
+                                        index={index}
+                                        isOpen={openFaq === index}
+                                        onToggle={toggleFaq}
+                                    />
+                                ))}
+                            </div>
+                            <div className="flex flex-col">
+                                {filteredFaqs.map((faq, index) => index % 2 !== 0 && (
+                                    <FAQItem 
+                                        key={`faq-right-${index}`}
+                                        faq={faq}
+                                        index={index}
+                                        isOpen={openFaq === index}
+                                        onToggle={toggleFaq}
+                                    />
+                                ))}
+                            </div>
+                        </>
                     ) : (
                         <div className="col-span-full text-center py-20 text-lightText">
                             No questions found matching your search.

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, Fragment } from 'react'
+import { useState, useEffect, useRef, useCallback, Fragment, useMemo } from 'react'
 import { HiOutlineShoppingBag, HiOutlineMagnifyingGlass, HiOutlineHeart, HiOutlineBell, HiArrowUpRight, HiOutlineUser } from "react-icons/hi2";
 import { IoClose } from "react-icons/io5";
 import { useDispatch, useSelector } from 'react-redux';
@@ -118,6 +118,7 @@ export default function Header() {
     const [isScrolled, setIsScrolled] = useState(false);
     const [megaMenuVisible, setMegaMenuVisible] = useState(false);
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+    const [historyCleared, setHistoryCleared] = useState(false);
 
     // Mobile menu navigation state
     const [menuStack, setMenuStack] = useState([]); // [{type: 'main'|'category', id: string, name: string}]
@@ -269,6 +270,7 @@ export default function Header() {
 
     useEffect(() => {
         if (isSearchOpen) {
+            setHistoryCleared(false);
             dispatch(fetchPopularSearches());
             dispatch(fetchRecentSearches());
             dispatch(fetchTrendingProducts());
@@ -278,13 +280,81 @@ export default function Header() {
         }
     }, [isSearchOpen, dispatch]);
 
+    const displayRecentSearches = useMemo(() => {
+        if (historyCleared) return [];
+        let local = [];
+        try {
+            const localData = localStorage.getItem('recentSearches');
+            local = localData ? JSON.parse(localData) : [];
+        } catch (e) {
+            console.error(e);
+        }
+
+        const combined = [...(recentSearches || []), ...local];
+        const seen = new Set();
+        return combined.filter(s => {
+            if (!s) return false;
+            const lower = s.toLowerCase();
+            if (seen.has(lower)) return false;
+            seen.add(lower);
+            return true;
+        }).slice(0, 5);
+    }, [recentSearches, historyCleared]);
+
+    const displayPopularSearches = useMemo(() => {
+        const defaults = ['Crochet Shorts', 'Linen Shirts', 'Leather Bags', 'Silk Scarves', 'Signature Fragrance'];
+        if (!popularSearches || popularSearches.length === 0) return defaults;
+        const combined = [...popularSearches, ...defaults];
+        const seen = new Set();
+        return combined.filter(s => {
+            if (!s) return false;
+            const lower = s.toLowerCase();
+            if (seen.has(lower)) return false;
+            seen.add(lower);
+            return true;
+        }).slice(0, 5);
+    }, [popularSearches]);
+
+    const executeSearch = useCallback((query) => {
+        if (!query || !query.trim()) return;
+        const trimmed = query.trim();
+        dispatch(logSearch(trimmed));
+
+        try {
+            const local = localStorage.getItem('recentSearches');
+            let searches = local ? JSON.parse(local) : [];
+            searches = [trimmed, ...searches.filter(s => s.toLowerCase() !== trimmed.toLowerCase())].slice(0, 5);
+            localStorage.setItem('recentSearches', JSON.stringify(searches));
+        } catch (e) {
+            console.error(e);
+        }
+
+        navigate(`/search?q=${encodeURIComponent(trimmed)}`);
+        setIsSearchOpen(false);
+        setSearchQuery('');
+        dispatch(clearSearchResults());
+    }, [dispatch, navigate]);
+
+    const selectSearchOption = useCallback((query) => {
+        if (!query || !query.trim()) return;
+        const trimmed = query.trim();
+        setSearchQuery(trimmed);
+        dispatch(searchProducts(trimmed));
+        dispatch(logSearch(trimmed));
+
+        try {
+            const local = localStorage.getItem('recentSearches');
+            let searches = local ? JSON.parse(local) : [];
+            searches = [trimmed, ...searches.filter(s => s.toLowerCase() !== trimmed.toLowerCase())].slice(0, 5);
+            localStorage.setItem('recentSearches', JSON.stringify(searches));
+        } catch (e) {
+            console.error(e);
+        }
+    }, [dispatch]);
+
     const handleSearchSubmit = (e) => {
         if (e.key === 'Enter' && searchQuery.trim()) {
-            dispatch(logSearch(searchQuery.trim()));
-            navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-            setIsSearchOpen(false);
-            setSearchQuery('');
-            dispatch(clearSearchResults());
+            executeSearch(searchQuery);
         }
     };
 
@@ -649,7 +719,7 @@ export default function Header() {
                             }`}>
                             {/* Horizontal Line as per design */}
                             <div className="w-full h-px bg-white/10" />
-                            <Link to="/account" onClick={() => resetMobileMenu()} className="text-[13px] font-semibold tracking-[0.1em] text-[#ADB5BD] hover:text-black uppercase transition-colors">Account</Link>
+                            {/* <Link to="/account" onClick={() => resetMobileMenu()} className="text-[13px] font-semibold tracking-[0.1em] text-[#ADB5BD] hover:text-black uppercase transition-colors">Account</Link> */}
                             <Link to="/wishlist" onClick={() => resetMobileMenu()} className="text-[13px] font-semibold tracking-[0.1em] text-[#ADB5BD] hover:text-black uppercase transition-colors">Wishlist</Link>
                             <Link to="/support" onClick={() => resetMobileMenu()} className="text-[13px] font-semibold tracking-[0.1em] text-[#ADB5BD] hover:text-black uppercase transition-colors">Customer Care</Link>
                             <Link to="/journal" onClick={() => resetMobileMenu()} className="text-[13px] font-semibold tracking-[0.1em] text-[#ADB5BD] hover:text-black uppercase transition-colors">Journal</Link>
@@ -825,19 +895,12 @@ export default function Header() {
                                     <h3 className="text-[11px] font-bold tracking-[0.18em] uppercase mb-4 text-dark">
                                         Popular Searches
                                     </h3>
-                                    <ul className="space-y-3">
-                                        {(popularSearches && popularSearches.length > 0
-                                            ? popularSearches
-                                            : ['Leather clothing', 'Sculptural Cross-body Bags', 'Oxford Shoes', 'Vitamin C Brightening Elixirs']
-                                        ).map((s, i) => (
+                                    <ul className="space-y-3 mb-8">
+                                        {displayPopularSearches.map((s, i) => (
                                             <li key={i}>
                                                 <button
-                                                    onClick={() => {
-                                                        dispatch(logSearch(s));
-                                                        navigate(`/search?q=${encodeURIComponent(s)}`);
-                                                        setIsSearchOpen(false);
-                                                    }}
-                                                    className="text-sm text-mainText hover:text-gold transition-colors text-left w-full"
+                                                    onClick={() => selectSearchOption(s)}
+                                                    className="text-sm text-mainText hover:text-gold transition-colors text-left w-full capitalize"
                                                 >
                                                     {s}
                                                 </button>
@@ -846,29 +909,41 @@ export default function Header() {
                                     </ul>
                                 </div>
 
-                                <div>
-                                    <h3 className="text-[11px] font-bold tracking-[0.18em] uppercase mb-4 text-dark">
-                                        {recentSearches?.length > 0 ? 'Recent Searches' : 'Suggestions'}
-                                    </h3>
-                                    <ul className="space-y-3">
-                                        {(recentSearches?.length > 0
-                                            ? recentSearches
-                                            : ['Barbara bag', 'Gifts for her', 'Gifts for him', "Men's new arrivals", "Women's new arrivals"]
-                                        ).map((s, i) => (
-                                            <li key={i}>
-                                                <button
-                                                    onClick={() => {
-                                                        navigate(`/search?q=${encodeURIComponent(s)}`);
-                                                        setIsSearchOpen(false);
-                                                    }}
-                                                    className="text-sm text-mainText hover:text-gold transition-colors text-left w-full"
-                                                >
-                                                    {s}
-                                                </button>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
+                                {displayRecentSearches.length > 0 && (
+                                    <div>
+                                        <div className="flex items-center justify-between mb-4">
+                                            <h3 className="text-[11px] font-bold tracking-[0.18em] uppercase text-dark">
+                                                Recent Searches
+                                            </h3>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    try {
+                                                        localStorage.removeItem('recentSearches');
+                                                    } catch (err) {
+                                                        console.error(err);
+                                                    }
+                                                    setHistoryCleared(true);
+                                                }}
+                                                className="text-[10px] font-bold tracking-[0.05em] text-lightText hover:text-gold uppercase transition-colors"
+                                            >
+                                                Clear
+                                            </button>
+                                        </div>
+                                        <ul className="space-y-3 mb-8">
+                                            {displayRecentSearches.map((s, i) => (
+                                                <li key={i}>
+                                                    <button
+                                                        onClick={() => selectSearchOption(s)}
+                                                        className="text-sm text-mainText hover:text-gold transition-colors text-left w-full capitalize"
+                                                    >
+                                                        {s}
+                                                    </button>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
                             </div>
 
                             {/* Right Content */}
@@ -1124,10 +1199,10 @@ export default function Header() {
                         <div className="divide-y divide-border/40">
                             <div className="p-4 flex justify-between bg-mainBG/30">
                                 <button onClick={() => dispatch(markAllAsRead())} className="text-[10px] font-bold text-primary uppercase tracking-widest hover:underline">Mark all as read</button>
-                                <button 
+                                <button
                                     onClick={() => {
                                         notifications.forEach(n => dispatch(deleteNotification(n._id)));
-                                    }} 
+                                    }}
                                     className="text-[10px] font-bold text-lightText/60 uppercase tracking-widest hover:underline hover:text-red-500 transition-colors"
                                 >
                                     Clear all

@@ -117,7 +117,7 @@ const CraftsmanshipSection = ({ sectionTitle, sectionTitle2, steps, imageLeft = 
             {/* Text panel */}
             <div className={`flex flex-col relative z-20 h-full ${imageLeft ? 'order-2' : 'md:order-1 order-2'}`}>
               {/* Watermark title */}
-              <h2 className="text-3xl sm:text-4xl md:text-7xl lg:text-[72px] font-bold text-[#ADB5BD]/20 uppercase tracking-tighter mb-4 md:mb-8 leading-none select-none font-urbanist">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-[72px] font-bold text-[#ADB5BD]/20 uppercase tracking-tighter mb-4 md:mb-8 leading-none select-none font-urbanist">
                 {sectionTitle} <br /> {sectionTitle2}
               </h2>
 
@@ -147,7 +147,7 @@ const Craftsmanship = () => {
     <div className="bg-white">
 
       {/* Hero Section */}
-      <section className="relative px-4 md:px-20 min-h-screen flex items-center bg-white font-urbanist overflow-hidden">
+      <section className="relative px-4 md:px-20 pt-12 pb-8 xl:py-0 xl:min-h-screen flex items-center bg-white font-urbanist overflow-hidden">
         <div className="max-w-screen-2xl mx-auto w-full">
           <motion.h1
             initial={{ opacity: 0, y: 30 }}

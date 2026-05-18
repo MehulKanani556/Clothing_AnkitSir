@@ -39,7 +39,7 @@ const ProductCard = ({ product, index = 0 }) => {
     // Check for low stock
     const getLowStockInfo = () => {
         if (!defaultVariant) return null;
-        
+
         // Check if variant has size options
         if (defaultVariant.options?.length > 0) {
             // Find the lowest stock across all sizes
@@ -343,6 +343,7 @@ export default function CollectionPage() {
     const [sort, setSort] = useState('newest');
     const [page, setPage] = useState(1);
     const [filterOpen, setFilterOpen] = useState(false);
+    const [isSortOpen, setIsSortOpen] = useState(false);
     const [activeFilters, setActiveFilters] = useState({
         availability: null,
         colors: [],
@@ -500,16 +501,43 @@ export default function CollectionPage() {
                             <div className="flex items-center gap-1.5 relative group">
                                 <span className="hidden md:inline text-[13px] font-extrabold uppercase tracking-widest text-lightText whitespace-nowrap">Sort by :</span>
                                 <div className="relative flex items-center">
-                                    <select
-                                        value={sort}
-                                        onChange={e => setSort(e.target.value)}
-                                        className="text-[11px] md:text-[13px] font-extrabold text-primary bg-transparent border-none outline-none cursor-pointer uppercase tracking-widest appearance-none pr-4 md:pr-5"
+                                    <button 
+                                        onClick={() => setIsSortOpen(!isSortOpen)}
+                                        className="text-[11px] md:text-[13px] font-extrabold text-primary bg-transparent border-none outline-none cursor-pointer uppercase tracking-widest pr-4 md:pr-5 flex items-center"
                                     >
-                                        {sortOptions.map(o => (
-                                            <option key={o.value} value={o.value} className="bg-white text-dark py-2 uppercase">{o.label}</option>
-                                        ))}
-                                    </select>
-                                    <svg width="10" height="6" viewBox="0 0 10 6" fill="none" className="absolute right-0 pointer-events-none text-primary group-hover:translate-y-0.5 transition-transform"><path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                                        {sortOptions.find(o => o.value === sort)?.label}
+                                    </button>
+                                    <svg width="10" height="6" viewBox="0 0 10 6" fill="none" className={`absolute right-0 pointer-events-none text-primary transition-transform ${isSortOpen ? 'rotate-180' : 'group-hover:translate-y-0.5'}`}>
+                                        <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                    
+                                    <AnimatePresence>
+                                        {isSortOpen && (
+                                            <>
+                                                <div className="fixed inset-0 z-30" onClick={() => setIsSortOpen(false)}></div>
+                                                <motion.div 
+                                                    initial={{ opacity: 0, y: 10 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    exit={{ opacity: 0, y: 10 }}
+                                                    transition={{ duration: 0.2 }}
+                                                    className="absolute top-full right-0 mt-4 w-48 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.12)] z-40 py-2 border border-border/50"
+                                                >
+                                                    {sortOptions.map(o => (
+                                                        <button 
+                                                            key={o.value} 
+                                                            onClick={() => {
+                                                                setSort(o.value);
+                                                                setIsSortOpen(false);
+                                                            }}
+                                                            className={`w-full text-left px-5 py-3 text-[11px] uppercase tracking-[0.2em] font-extrabold transition-colors hover:bg-[#F8F9FA] ${sort === o.value ? 'text-primary' : 'text-[#6C757D]'}`}
+                                                        >
+                                                            {o.label}
+                                                        </button>
+                                                    ))}
+                                                </motion.div>
+                                            </>
+                                        )}
+                                    </AnimatePresence>
                                 </div>
                             </div>
                         </div>
@@ -640,7 +668,7 @@ function CollectionGrid({ products }) {
                                             {(() => {
                                                 const defaultVariant = large.variants?.find(v => v.isDefault) || large.variants?.[0];
                                                 if (!defaultVariant) return null;
-                                                
+
                                                 let lowStockCount = null;
                                                 if (defaultVariant.options?.length > 0) {
                                                     const lowestStock = Math.min(...defaultVariant.options.map(opt => opt.stock || 0));
@@ -650,7 +678,7 @@ function CollectionGrid({ products }) {
                                                 } else if (defaultVariant.stock > 0 && defaultVariant.stock <= 5) {
                                                     lowStockCount = defaultVariant.stock;
                                                 }
-                                                
+
                                                 if (lowStockCount !== null) {
                                                     return (
                                                         <span className="absolute top-3 right-3 bg-[#FFF3CD] border border-[#FFE69C] text-[#856404] text-[10px] font-bold tracking-wider uppercase px-2 py-1 rounded-sm shadow-sm">

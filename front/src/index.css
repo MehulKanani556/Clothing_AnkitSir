@@ -69,3 +69,12 @@
   from { transform: scaleX(0); }
   to { transform: scaleX(1); }
 }
+
+/* Remove Chrome Autofill Background */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active {
+    transition: background-color 5000s ease-in-out 0s !important;
+    -webkit-text-fill-color: inherit !important;
+}

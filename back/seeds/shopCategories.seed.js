@@ -111,7 +111,7 @@ const categoriesData = [
                     "Knitwear & Dresses",
                     "Shirts and tops",
                     "T-shirts and sweatshirts",
-                    "Leather clothing",
+                    
                     "Swimwear",
                     "Trousers and shorts",
                     "Pajamas and underwear"

@@ -1,6 +1,8 @@
-import React, { useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useEffect, useMemo } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import { GoArrowUpRight } from "react-icons/go";
+import { fetchLookbooks } from '../redux/slice/lookbook.slice';
 import fashion from '../assets/images/fashion.jpg';
 import fragrance1 from '../assets/images/Fragrance1.jpg';
 import cosmetics1 from '../assets/images/Cosmetics1.jpg';
@@ -177,11 +179,22 @@ const JOURNAL_ARTICLES = [
 
 const JournalDetail = () => {
     const { id } = useParams();
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const { lookbooks } = useSelector((state) => state.lookbook);
     const article = JOURNAL_ARTICLES.find(a => a.id === parseInt(id)) || JOURNAL_ARTICLES[0];
+
+    // Randomly pick 2 lookbook images each time
+    const displayLookbooks = useMemo(() => {
+        if (!lookbooks || lookbooks.length === 0) return [];
+        const shuffled = [...lookbooks].sort(() => Math.random() - 0.5);
+        return shuffled.slice(0, 2);
+    }, [lookbooks]);
 
     useEffect(() => {
         window.scrollTo(0, 0);
-    }, [id]);
+        dispatch(fetchLookbooks());
+    }, [id, dispatch]);
 
     return (
         <div className="min-h-screen bg-white text-dark font-sans">
@@ -246,26 +259,27 @@ const JournalDetail = () => {
                         ))}
                     </div>
 
-                    {/* Detail Images Section (Static display) */}
-                    {article.detailImage && (
+                    {/* Dynamic Lookbook Images Section */}
+                    {displayLookbooks.length > 0 && (
                         <div className="mt-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                {article.detailImage.map((item, index) => (
+                                {displayLookbooks.map((look) => (
                                     <div
-                                        key={index}
+                                        key={look._id}
+                                        onClick={() => navigate('/lookbook-lpl', { state: { look } })}
                                         className="relative group cursor-pointer overflow-hidden shadow-lg transition-all duration-500"
                                     >
                                         <div className="h-[400px] overflow-hidden w-full">
                                             <img
-                                                src={item?.image}
-                                                alt="Journal Detail"
+                                                src={look?.lookImage}
+                                                alt={look?.title}
                                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[1.5s]"
                                             />
                                         </div>
                                         <div className="absolute bottom-0 left-0 right-0 bg-primary/95 hover:bg-[#1D5356] backdrop-blur-sm py-5 px-8 flex justify-between items-center text-white transition-colors duration-300">
                                             <div className="flex flex-col">
                                                 <span className="text-[11px] md:text-xs font-bold uppercase tracking-[0.1em] line-clamp-1">
-                                                    {item?.title}
+                                                    {look?.title}
                                                 </span>
                                             </div>
                                             <GoArrowUpRight className="text-xl shrink-0" />

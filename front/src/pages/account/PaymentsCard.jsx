@@ -154,27 +154,27 @@ export default function PaymentsCard() {
                                 }
 
                                 // Format brand name for display (capitalize first letter)
-                                const brandDisplay = card.brand 
+                                const brandDisplay = card.brand
                                     ? card.brand.charAt(0).toUpperCase() + card.brand.slice(1).toLowerCase()
                                     : 'Card';
-                                
+
                                 return (
                                     <div
                                         key={card._id}
-                                        className="bg-white md:p-6 p-4 flex flex-col justify-between"
+                                        className="bg-white md:p-6 p-4 flex flex-col justify-between border border-border"
                                     >
-                                        <div className="flex justify-between items-center mb-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-12 h-8 flex items-center justify-center">
+                                        <div className="flex justify-between items-start gap-2 mb-4">
+                                            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                                                <div className="w-12 h-8 flex items-center justify-center shrink-0">
                                                     {getCardIcon(card.brand)}
                                                 </div>
-                                                <div className="flex items-center gap-2">
-                                                    <span className="md:text-base text-sm font-bold text-dark">{brandDisplay}</span>
+                                                <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap min-w-0">
+                                                    <span className="text-sm md:text-base font-bold text-dark truncate">{brandDisplay}</span>
                                                     {card.isDefault && (
                                                         <>
-                                                            <div className="border-l border-border h-5 w-px"></div>
-                                                            <span className="md:text-base text-sm text-lightText font-semibold tracking-widest uppercase">
-                                                                (Default)
+                                                            <div className="hidden sm:block border-l border-border h-4 w-px"></div>
+                                                            <span className="text-[10px] md:text-sm text-gold font-bold tracking-wider uppercase bg-gold/10 px-2 py-0.5 rounded-sm shrink-0">
+                                                                Default
                                                             </span>
                                                         </>
                                                     )}
@@ -182,28 +182,28 @@ export default function PaymentsCard() {
                                             </div>
                                             <button
                                                 onClick={() => handleOpenRemove(card)}
-                                                className="text-sm font-medium text-lightText hover:text-red-500 transition-colors tracking-widest"
+                                                className="text-xs md:text-sm font-semibold text-lightText hover:text-red-500 transition-colors tracking-wider uppercase shrink-0 pt-1"
                                             >
                                                 Remove
                                             </button>
                                         </div>
 
-                                        <div className="">
+                                        <div className="space-y-1">
                                             <p className="md:text-base text-sm font-semibold text-mainText tracking-widest">
                                                 {card.displayNumber || `•••• •••• •••• ${card.last4}`}
                                             </p>
-                                            <p className="md:text-base text-sm font-semibold text-mainText mt-1">
+                                            <p className="md:text-base text-sm font-semibold text-mainText">
                                                 {card.cardHolderName || 'Card Holder'}
                                             </p>
-                                            <div className="flex items-center gap-2 justify-between">
-                                                <p className="md:text-base text-sm font-medium text-lightText mt-1">
+                                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 justify-between pt-1">
+                                                <p className="md:text-base text-sm font-medium text-lightText">
                                                     Expires {card.expiryDate}
                                                 </p>
                                                 {!card.isDefault && (
-                                                    <div className="flex justify-end">
+                                                    <div className="flex sm:justify-end">
                                                         <button
                                                             onClick={() => handleSetDefault(card._id)}
-                                                            className="text-sm font-medium text-primary hover:underline transition-all tracking-wide"
+                                                            className="text-xs md:text-sm font-medium text-primary hover:underline transition-all tracking-wide text-left sm:text-right"
                                                         >
                                                             Set as default
                                                         </button>
