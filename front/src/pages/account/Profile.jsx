@@ -119,9 +119,9 @@ export default function Profile() {
         ? new Date(user.createdAt).getFullYear()
         : new Date().getFullYear();
 
-    const defaultAddress = user?.address?.find(
-        (a) => String(a._id) === String(user?.selectedAddress)
-    ) || user?.address?.[0] || null;
+    const defaultAddress = Array.isArray(user?.address)
+        ? user.address.find((a) => String(a?._id) === String(user?.selectedAddress)) || user.address[0] || null
+        : null;
 
     const addressLine = defaultAddress
         ? [

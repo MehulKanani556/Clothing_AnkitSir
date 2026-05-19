@@ -400,7 +400,7 @@ export const authSlice = createSlice({
             .addCase(revokeSession.fulfilled, (state, action) => {
                 console.log('revokeSession fulfilled, removing session:', action.payload);
                 state.sessions = state.sessions.filter(s => s._id !== action.payload);
-                toast.success('Session revoked successfully');
+                // toast.success('Session revoked successfully');
             })
             .addCase(revokeSession.rejected, (state, action) => {
                 console.error('revokeSession rejected:', action.payload);

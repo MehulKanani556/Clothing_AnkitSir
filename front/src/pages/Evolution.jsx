@@ -279,7 +279,7 @@ export default function Evolution() {
                     </div>
 
                     {/* Image side */}
-                    <div className="w-full lg:w-1/2 hidden lg:block">
+                    <div className="w-full lg:w-1/2 hidden lg:block lg:pr-10 xl:pr-0">
                         <img
                             src={contactImg}
                             alt="EO Atelier"

@@ -257,7 +257,7 @@ const Journal = () => {
                                     <input
                                         type="email"
                                         placeholder="Enter email address"
-                                        className="flex-1 px-6 py-4 border border-gray-200 outline-none focus:border-[#14372F] transition-colors text-sm w-full"
+                                        className="flex-1 px-6 py-4 border border-gray-200 outline-none focus:border-[#14372F] transition-colors text-sm w-full text-blackget"
                                     />
                                     <button className="bg-[#14372F] px-8 py-4 text-white text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] hover:bg-[#0D241F] transition-all duration-300 w-full sm:w-auto whitespace-nowrap">
                                         Become a Member
